@@ -188,6 +188,38 @@ function getPhrasePlaybackText() {
   return getPhraseTextOrder(pfPhrase.filText, pfPhrase.enText, pfActiveLang).mainText;
 }
 
+function getAvailableVoices() {
+  if (!window.speechSynthesis) return [];
+  return cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
+}
+
+function findBestVoiceForLanguage(voices, playbackLang) {
+  if (!voices || voices.length === 0) return null;
+
+  const exactTags = playbackLang === 'fil' ? ['tl-PH', 'fil-PH'] : ['en-PH', 'en-US', 'en-GB'];
+  const targetPrefixes = playbackLang === 'fil' ? ['fil', 'tl'] : ['en'];
+  const searchNames = playbackLang === 'fil' ? ['Filipino', 'Tagalog'] : ['English'];
+
+  let selectedVoice = voices.find(v => exactTags.includes(v.lang));
+  if (!selectedVoice) {
+    selectedVoice = voices.find(v => v.lang && targetPrefixes.some(prefix => v.lang.toLowerCase().startsWith(prefix)));
+  }
+  if (!selectedVoice && playbackLang === 'fil') {
+    selectedVoice = voices.find(v => v.lang && /^(fil|tl)(-|$)/i.test(v.lang));
+  }
+  if (!selectedVoice && playbackLang === 'fil') {
+    selectedVoice = voices.find(v => v.lang && v.lang.toUpperCase().includes('PH'));
+  }
+  if (!selectedVoice) {
+    selectedVoice = voices.find(v => v.name && searchNames.some(term => v.name.includes(term)));
+  }
+  if (!selectedVoice && playbackLang !== 'fil') {
+    selectedVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+  }
+
+  return selectedVoice || null;
+}
+
 function speakPhrase() {
   if (!window.speechSynthesis) return;
 
@@ -212,33 +244,17 @@ function speakPhraseWithTTS(text) {
   utt.rate = 0.85;
   utt.pitch = 1;
 
-  let selectedVoice = null;
-  let voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
+  const voices = getAvailableVoices();
+  const selectedVoice = findBestVoiceForLanguage(voices, playbackLang);
 
-  if (voices && voices.length > 0) {
-    const targetPrefixes = playbackLang === 'fil' ? ['fil', 'tl'] : ['en'];
-    const exactTags = playbackLang === 'fil' ? ['tl-PH', 'fil-PH'] : ['en-PH', 'en-US'];
-
-    selectedVoice = voices.find(v => exactTags.includes(v.lang));
-    if (!selectedVoice) {
-      selectedVoice = voices.find(v => v.lang && targetPrefixes.some(prefix => v.lang.startsWith(prefix)));
-    }
-    if (!selectedVoice && playbackLang === 'fil') {
-      selectedVoice = voices.find(v => v.lang && /^(fil|tl)(-|$)/.test(v.lang));
-    }
-    if (!selectedVoice && playbackLang === 'fil') {
-      selectedVoice = voices.find(v => v.lang && v.lang.includes('PH'));
-    }
-    if (!selectedVoice) {
-      const searchLang = playbackLang === 'fil' ? ['Filipino', 'Tagalog'] : ['English'];
-      selectedVoice = voices.find(v => v.name && searchLang.some(term => v.name.includes(term)));
-    }
-    if (!selectedVoice && playbackLang !== 'fil') {
-      selectedVoice = voices.find(v => v.lang && v.lang.startsWith('en'));
-    }
-    if (selectedVoice) {
-      utt.voice = selectedVoice;
-    }
+  if (selectedVoice) {
+    utt.voice = selectedVoice;
+  } else if (!voices || voices.length === 0) {
+    alert('No TTS voices are available on this device/browser. Please install or enable a voice for speech playback.');
+    return;
+  } else {
+    const languageLabel = playbackLang === 'fil' ? 'Filipino/Tagalog' : 'English';
+    alert(`No ${languageLabel} voice was found. The browser will try its default voice instead.`);
   }
 
   const btn = document.getElementById('pf-speak');
