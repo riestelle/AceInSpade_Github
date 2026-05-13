@@ -34,7 +34,13 @@ const VIBRATION_TEST_PATTERNS = {
 };
 
 function getVibrationFunction() {
-  return navigator.vibrate || navigator.webkitVibrate || null;
+  if (typeof navigator.vibrate === 'function') {
+    return function(...args) { return navigator.vibrate.apply(navigator, args); };
+  }
+  if (typeof navigator.webkitVibrate === 'function') {
+    return function(...args) { return navigator.webkitVibrate.apply(navigator, args); };
+  }
+  return null;
 }
 
 function vibrate(patternOrKey) {
