@@ -51,14 +51,18 @@
 
     /* ── BASE ─────────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; background: var(--bg); }
+    html { height: 100%; background: #030d1a; }
     body {
+      height: 100%;
       font-family: var(--font);
       color: var(--text);
       -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
-      overflow-x: hidden;
+      overflow: hidden;
+      background: #030d1a;
+      display: flex;
+      justify-content: center;
     }
     input, select, textarea { font-family: var(--font); user-select: text; }
     button { font-family: var(--font); cursor: pointer; }
@@ -134,18 +138,25 @@
 
     /* ── APP WRAPPER ──────────────────────────────────────────────── */
     #app {
+      width: 100%;
       max-width: 480px;
-      margin: 0 auto;
-      min-height: 100dvh;
+      height: 100%;
       background: var(--bg);
       position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     /* ── SCREENS ──────────────────────────────────────────────────── */
     .screen {
       display: none;
       flex-direction: column;
-      min-height: 100dvh;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: absolute;
+      top: 0; left: 0;
     }
     .screen.active { display: flex; }
 
@@ -185,10 +196,9 @@
       justify-content: space-between;
       padding: 0 24px;
       height: 72px;
-      position: sticky;
-      top: 0;
-      z-index: 50;
       flex-shrink: 0;
+      z-index: 50;
+      width: 100%;
     }
     .topbar-logo {
       width: 40px; height: 40px;
@@ -291,7 +301,7 @@
     .fare-sub    { font-size: 13px; font-weight: 800; color: #412d00; letter-spacing: .1em; text-transform: uppercase; }
 
     /* ── HOME REDESIGN ────────────────────────────────────────────── */
-    .home-scroll { flex: 1; overflow-y: auto; }
+    .home-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; }
 
     /* Phase header strip */
     .phase-label {
@@ -599,8 +609,8 @@
       background: #e8edf0; border-radius: 12px; height: 360px;
       display: flex; align-items: center; justify-content: center;
     }
-    #gps-map-container { position: relative; }
-    #leaflet-map { height: 360px; border-radius: 12px; z-index: 1; filter: invert(0.93) hue-rotate(200deg); }
+    #gps-map-container { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+    #leaflet-map { flex: 1; min-height: 0; width: 100%; border-radius: 0; z-index: 1; filter: invert(0.93) hue-rotate(200deg); }
     #leaflet-map.fullscreen { height: 100dvh; border-radius: 0; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999; }
     .gps-map-controls { position: absolute; top: 16px; right: 16px; z-index: 10; display: flex; gap: 8px; }
     .gps-map-btn { background: rgba(255,255,255,0.95); border: none; border-radius: 8px; width: 44px; height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-size: 20px; color: #333; }
@@ -640,7 +650,7 @@
       .fare-amount { font-size: 44px; }
       .windshield-text { font-size: 28px; }
       .topbar-title { font-size: 16px; }
-      #leaflet-map { height: 280px; }
+      #leaflet-map { min-height: 200px; }
       /* Fix Jeepney Type + PWD overlap */
       .fare-type-pwd-row { flex-direction: column !important; }
       .fare-type-pwd-row > .col-6 { width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important; }
@@ -667,7 +677,7 @@
     .vib-option.active .vib-radio { border-color: var(--amber); background: var(--amber); }
 
     /* ── UTILITY ──────────────────────────────────────────────────── */
-    .scroll-main { flex: 1; overflow-y: auto; }
+    .scroll-main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; }
     .amber { color: var(--amber); }
     .amber-bg { background: var(--amber-bg); }
     .text-muted-sp { color: var(--text-muted); }
@@ -687,9 +697,14 @@
     .change-display p:last-child  { font-size: 40px; font-weight: 900; color: white; }
 
     /* ── SEARCH INPUT WITH ICON ───────────────────────────────────── */
-    .search-wrap { position: relative; }
-    .search-wrap .material-symbols-outlined { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--amber); font-size: 22px; pointer-events: none; }
-    .search-wrap input { padding-left: 44px; }
+    .search-wrap { position: relative; display: flex; align-items: center; }
+    .search-wrap .search-icon {
+      position: absolute; left: 14px;
+      display: flex; align-items: center; justify-content: center;
+      height: 100%; pointer-events: none; z-index: 2;
+      color: var(--amber); font-size: 22px; line-height: 1;
+    }
+    .search-wrap input { padding-left: 46px; width: 100%; flex: 1; }
 
     /* ── ROUTE LIST ───────────────────────────────────────────────── */
     .route-btn {
@@ -725,6 +740,182 @@
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--outline-var); border-radius: 2px; }
+
+    /* ── SIDE DRAWER ──────────────────────────────────────────────── */
+    #drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55);
+      z-index: 300; opacity: 0; pointer-events: none;
+      transition: opacity .25s;
+    }
+    #drawer-overlay.open { opacity: 1; pointer-events: all; }
+    #side-drawer {
+      position: fixed; top: 0; left: 0; bottom: 0; width: 280px;
+      background: var(--surface-lo); border-right: 1px solid var(--outline-var);
+      z-index: 301; transform: translateX(-100%);
+      transition: transform .25s cubic-bezier(.4,0,.2,1);
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    #side-drawer.open { transform: translateX(0); }
+    .drawer-header {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid var(--outline-var);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .drawer-logo { width: 36px; height: 36px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+    .drawer-logo img { width: 100%; height: 100%; object-fit: contain; }
+    .drawer-app-name { font-size: 16px; font-weight: 900; color: var(--amber); letter-spacing: .05em; text-transform: uppercase; }
+    .drawer-app-sub  { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; }
+    .drawer-nav { display: flex; flex-direction: column; padding: 12px 0; flex: 1; }
+    .drawer-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 20px; background: none; border: none;
+      color: var(--text-var); font-size: 14px; font-weight: 700;
+      text-align: left; text-transform: uppercase; letter-spacing: .05em;
+      transition: background .15s, color .15s;
+    }
+    .drawer-item:hover, .drawer-item:active { background: var(--surface-hi); color: var(--amber); }
+    .drawer-item .material-symbols-outlined { font-size: 22px; color: var(--text-muted); flex-shrink: 0; }
+    .drawer-item:hover .material-symbols-outlined,
+    .drawer-item:active .material-symbols-outlined { color: var(--amber); }
+    .drawer-section-label {
+      font-size: 9px; font-weight: 800; letter-spacing: .2em;
+      color: var(--text-muted); padding: 12px 20px 4px;
+      text-transform: uppercase;
+    }
+    .drawer-divider { height: 1px; background: var(--outline-var); margin: 6px 0; }
+    .drawer-footer { padding: 16px 20px; border-top: 1px solid var(--outline-var); }
+
+    /* ── TOPBAR FAMILY STATUS DOT ─────────────────────────────────── */
+    #topbar-family-btn {
+      position: relative; min-width: 48px; min-height: 48px;
+      background: none; border: none; color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+    }
+    #family-status-dot {
+      position: absolute; top: 9px; right: 9px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--outline-var); border: 1.5px solid var(--bg);
+      transition: background .3s;
+    }
+    #family-status-dot.sharing { background: var(--green); }
+
+    /* ── FLOATING SOS BUTTON ──────────────────────────────────────── */
+    #floating-sos {
+      position: fixed; bottom: 24px; right: 20px;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #d32f2f; border: 3px solid #ff5252;
+      color: white; font-size: 11px; font-weight: 900;
+      letter-spacing: .04em; text-transform: uppercase;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 1px;
+      box-shadow: 0 4px 20px rgba(211,47,47,.55);
+      z-index: 200; cursor: pointer;
+      transition: transform .1s, box-shadow .1s;
+    }
+    #floating-sos:active { transform: scale(.93); box-shadow: 0 2px 10px rgba(211,47,47,.4); }
+    #floating-sos .material-symbols-outlined { font-size: 22px; }
+    /* Hide when family screen is showing to avoid overlap */
+    #floating-sos.hidden { display: none; }
+
+    /* ── NEW SCREEN: COMMUTE DASHBOARD ───────────────────────────── */
+    #screen-commute { background: var(--bg); }
+
+    .commute-topbar {
+      background: var(--bg-alt); border-bottom: 2px solid var(--outline-var);
+      padding: 0 16px; height: 64px; display: flex;
+      align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .commute-topbar-left { display: flex; align-items: center; gap: 8px; }
+
+    /* Status pill at top of commute screen */
+    .commute-status-pill {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--green-bg); border: 1px solid rgba(34,197,94,.35);
+      border-radius: 30px; padding: 6px 14px; flex-shrink: 0;
+    }
+    .commute-status-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+      animation: pulse-dot 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { transform: scale(1); opacity: 1; }
+      50%      { transform: scale(1.4); opacity: .7; }
+    }
+
+    /* Stop counter card */
+    .stop-counter-card {
+      background: var(--surface); border: 1px solid var(--outline-var);
+      border-radius: 20px; padding: 20px 20px 16px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .stop-counter-top { display: flex; align-items: flex-start; justify-content: space-between; }
+    .stop-counter-name { font-size: 26px; font-weight: 900; color: white; text-transform: uppercase; line-height: 1.1; }
+    .stop-counter-route { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .08em; }
+    .stop-counter-badge {
+      background: var(--amber); color: #271900; border-radius: 12px;
+      padding: 4px 10px; font-size: 11px; font-weight: 900;
+      text-transform: uppercase; letter-spacing: .08em; white-space: nowrap; flex-shrink: 0; margin-left: 8px;
+    }
+    .distance-bar-wrap { width: 100%; }
+    .distance-bar-track {
+      width: 100%; height: 8px; background: var(--outline-var);
+      border-radius: 4px; overflow: hidden;
+    }
+    .distance-bar-fill {
+      height: 100%; background: var(--amber); border-radius: 4px;
+      transition: width .6s ease;
+    }
+    .distance-bar-labels { display: flex; justify-content: space-between; margin-top: 4px; }
+    .distance-bar-labels span { font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+
+    /* Quick-ask AI bubble */
+    .quick-ask-card {
+      background: var(--surface-lo); border: 1px solid rgba(255,184,0,.25);
+      border-radius: 16px; padding: 14px 16px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .quick-ask-left { display: flex; align-items: center; gap: 10px; }
+    .quick-ask-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--amber-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .quick-ask-icon .material-symbols-outlined { font-size: 20px; color: var(--amber); }
+    .quick-ask-text { font-size: 13px; font-weight: 700; color: var(--text-var); text-transform: uppercase; letter-spacing: .04em; }
+    .quick-ask-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+    .quick-ask-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .quick-ask-chip {
+      background: var(--surface-hi); border: 1px solid var(--outline-var);
+      border-radius: 20px; padding: 6px 12px;
+      font-size: 12px; font-weight: 700; color: var(--text-var);
+      text-align: left; display: inline-flex; align-items: center; gap: 5px;
+    }
+    .quick-ask-chip:active { background: var(--amber-bg); border-color: var(--amber); color: var(--amber); }
+
+    /* SOS block inside commute */
+    .commute-sos-block {
+      background: #1a0f0f; border: 1.5px solid rgba(211,47,47,.4);
+      border-radius: 16px; padding: 16px;
+    }
+    .commute-sos-label {
+      font-size: 9px; font-weight: 800; letter-spacing: .2em; color: #ff5252;
+      text-transform: uppercase; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
+    }
+    #commute-sos-btn {
+      width: 100%; height: 56px; background: #d32f2f; color: white;
+      border: none; border-radius: 12px; font-size: 16px; font-weight: 900;
+      letter-spacing: .05em; text-transform: uppercase;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: transform .1s;
+    }
+    #commute-sos-btn:active { transform: scale(.97); }
+
+    /* Para Po big button */
+    #para-po-btn {
+      width: 100%; height: 72px; background: var(--amber); color: #271900;
+      border: none; border-radius: 16px; font-size: 22px; font-weight: 900;
+      letter-spacing: .03em; text-transform: uppercase;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      box-shadow: 0 6px 24px rgba(255,184,0,.35);
+      transition: transform .1s, box-shadow .1s;
+    }
+    #para-po-btn:active { transform: scale(.97); box-shadow: 0 2px 10px rgba(255,184,0,.2); }
   </style>
 </head>
 <body>
@@ -738,13 +929,18 @@
     <!-- Topbar -->
     <header class="topbar">
       <div class="d-flex align-items-center gap-2">
+        <!-- Hamburger -->
+        <button id="drawer-open-btn" class="topbar-menu" title="Menu" style="margin-left:-8px">
+          <span class="material-symbols-outlined" style="font-size:26px">menu</span>
+        </button>
         <div class="topbar-logo"><img src="https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png" alt="SenyasPo" /></div>
         <span class="topbar-title">SENYASPO</span>
       </div>
-      <button class="topbar-menu" id="home-vib-btn" title="Vibration Settings">
-        <span class="material-symbols-outlined" style="font-size:24px">vibration</span>
+      <!-- Family status quick-access -->
+      <button id="topbar-family-btn" title="Pamilya">
+        <span class="material-symbols-outlined" style="font-size:24px">group</span>
+        <span id="family-status-dot"></span>
       </button>
-      <span id="home-tracking-badge" class="tag-mono d-none" style="margin-left:10px;color:var(--amber);font-weight:700;font-size:12px">TRACKING ACTIVE</span>
     </header>
 
     <div id="offline-banner" class="banner banner-error d-none">📵 No internet — AI Assistant disabled</div>
@@ -804,7 +1000,7 @@
       <div class="zone-prep">
         <div class="prep-grid">
 
-          <!-- Hintuan Ko -->
+          <!-- Hintuan Ko / Sakay Na -->
           <button class="card-prep" data-nav="gps">
             <div class="vib-badge"><span class="material-symbols-outlined">vibration</span></div>
             <div class="card-prep-icon">
@@ -812,7 +1008,7 @@
             </div>
             <div class="card-prep-text">
               <div class="card-prep-label">Hintuan Ko</div>
-              <div class="card-prep-sub">GPS vibration alert</div>
+              <div class="card-prep-sub">Set stop → Sakay Na</div>
             </div>
           </button>
 
@@ -878,66 +1074,115 @@
   <!-- ══════════════════════════════════════════════════════════════
        SCREEN: DEAF CARD
   ════════════════════════════════════════════════════════════════ -->
-  <div id="screen-deaf" class="screen deaf-screen">
-    <div class="deaf-top">
-      <button class="btn p-0 d-flex align-items-center gap-2" style="background:none;border:none;color:#888;font-weight:700;font-size:14px" onclick="navigate('home')">
-        <span class="material-symbols-outlined" style="font-size:20px">arrow_back</span>BACK
+  <div id="screen-deaf" class="screen deaf-screen" style="background:#0A1628; min-height:100dvh; flex-direction:column; font-family: sans-serif;">
+
+  <div class="deaf-top" style="background:#0A1628; border-bottom:1px solid rgba(255,255,255,0.1); padding: 15px 20px; display:flex; justify-content:space-between; align-items:center;">
+    <button class="btn p-0 d-flex align-items-center gap-2" style="background:none; border:none; color:#ffffff; font-weight:700; font-size:14px" onclick="navigate('home')">
+      <span class="material-symbols-outlined" style="font-size:20px">arrow_back</span>BACK
+    </button>
+    <div class="d-flex gap-2">
+      <button class="d-flex align-items-center gap-1" id="fsl-btn"
+        style="background:none; border:2px solid #FFB800; color:#FFB800; padding:7px 12px; border-radius:8px; font-weight:800; font-size:12px; text-transform:uppercase"
+        onclick="navigate('fsl')">
+        🤟 FSL
       </button>
-      <div class="d-flex gap-2">
-        <button class="d-flex align-items-center gap-1" id="fsl-btn"
-          style="background:none;border:2px solid var(--amber);color:var(--amber);padding:7px 12px;border-radius:8px;font-weight:800;font-size:12px;text-transform:uppercase">
-          🤟 FSL
-        </button>
-        <button id="lang-btn"
-          style="background:none;border:2px solid #333;color:#ccc;padding:7px 14px;border-radius:8px;font-weight:700;font-size:13px;text-transform:uppercase">
-          FIL → EN
-        </button>
-      </div>
-    </div>
-
-    <div class="flex-grow-1 d-flex flex-column justify-content-center p-4" style="gap:16px">
-
-      <!-- MAIN CARD: Big icon left, title + message right -->
-      <div style="background:#fff;border-radius:20px;padding:20px;display:flex;flex-direction:row;align-items:center;gap:16px">
-        <!-- Left: big hand icon -->
-        <div style="flex:0 0 42%;display:flex;align-items:center;justify-content:center;">
-          <img src="https://cdn-icons-png.flaticon.com/128/3546/3546766.png" alt="Deaf" style="width:100%;max-width:110px;height:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.15))" />
-        </div>
-        <!-- Right: title + message stacked -->
-        <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
-          <p id="deaf-main-msg" style="font-size:26px;font-weight:900;color:#000;line-height:1.2;text-transform:uppercase;margin:0">I AM DEAF</p>
-          <p id="deaf-instruction" style="font-size:13px;font-weight:700;color:#555;line-height:1.5;margin:0">Please tap my shoulder to get my attention.</p>
-          <div style="height:2px;background:#eee;border-radius:2px;"></div>
-          <p style="font-size:13px;font-weight:700;color:#555;line-height:1.5;margin:0">"Bingi ako. Hindi ako makarinig."</p>
-        </div>
-      </div>
-
-      <!-- STOP BLOCK: BABABA AKO SA — tap to type, save preserved -->
-      <div style="background:#111;border:3px solid var(--amber);border-radius:16px;padding:18px 20px">
-        <p id="deaf-stop-label" style="font-size:10px;color:var(--amber);font-weight:800;letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-          <span class="material-symbols-outlined" style="font-size:15px">location_on</span>BABABA AKO SA:
-        </p>
-        <button id="deaf-stop-display" style="background:transparent;border:none;width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:0">
-          <span id="deaf-stop-text" style="font-size:20px;font-weight:900;color:#444;text-transform:uppercase;line-height:1.2;text-align:left">— TAP TO SET STOP —</span>
-        </button>
-        <input id="deaf-stop-input" class="d-none" style="background:transparent;border:3px solid var(--amber);color:var(--amber);font-size:24px;font-weight:900;text-align:left;text-transform:uppercase;border-radius:8px;padding:10px 14px;width:100%;outline:none;box-sizing:border-box" placeholder="Type stop name..." />
-        <p style="font-size:10px;color:#555;margin-top:10px;margin-bottom:0;font-weight:700;letter-spacing:.1em;text-transform:uppercase">TAPIK: Pag malapit na</p>
-      </div>
-
-    </div>
-
-    <div class="p-3 pb-4">
-      <button class="btn-ghost w-100" onclick="navigate('home')">
-        <span class="material-symbols-outlined">close</span>CLOSE
+      <button id="lang-btn"
+       style="background:none;border:2px solid #333;color:#ccc;padding:7px 14px;border-radius:8px;font-weight:700;font-size:13px;text-transform:uppercase"
+       onclick="(function(){
+         const msg = document.getElementById('deaf-main-msg');
+         const stopLabel = document.getElementById('deaf-stop-label');
+         const langBtn = document.getElementById('lang-btn');
+         if(!msg) return;
+         const isEn = msg.textContent.includes('DEAF');
+         if(isEn){
+           msg.innerHTML='BINGI&lt;br&gt;AKO.';
+           if(stopLabel) stopLabel.textContent='BABABA AKO SA:';
+           langBtn.textContent='FIL → EN';
+         } else {
+           msg.innerHTML='I AM&lt;br&gt;DEAF.';
+           if(stopLabel) stopLabel.textContent='I WILL GET OFF AT:';
+           langBtn.textContent='EN → FIL';
+         }
+       })()">
+        FIL → EN
       </button>
     </div>
   </div>
+
+  <div class="flex-grow-1 d-flex flex-column justify-content-center p-4" style="gap:16px;">
+
+    <div style="
+      background:#ffffff;
+      border-radius:24px;
+      overflow:hidden;
+      box-shadow:0 15px 50px rgba(0,0,0,0.4);
+      border:none;
+      position: relative;
+    ">
+
+      <div style="background:#1a2a40; padding:10px 20px; display:flex; align-items:center; justify-content:center; gap:8px; position: relative;">
+        <div style="position: absolute; top: -5px; width: 12px; height: 12px; background: #0A1628; border-radius: 50%; border: 2px solid rgba(255,255,255,0.1);"></div>
+        
+        <img src="https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png" style="width:20px; height:20px; object-fit:contain; border-radius:4px;" />
+        <span style="font-size:10px; font-weight:800; color:#ffffff; letter-spacing:.2em; text-transform:uppercase;">SENYASPO DIGITAL ID</span>
+      </div>
+
+      <div style="display:flex; flex-direction:row; align-items:stretch; background:#ffffff;">
+
+        <div style="flex:0 0 42%; display:flex; align-items:center; justify-content:center; padding:20px 12px; background:#ffffff;">
+          <img src="https://cdn-icons-png.flaticon.com/128/3546/3546766.png" alt="Deaf"
+            style="width:100%; max-width:140px; height:auto; filter: contrast(1.1);" />
+        </div>
+
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:20px; gap:4px; background:#ffffff;">
+          <p id="deaf-main-msg" style="font-size:48px; font-weight:900; color:#000000; line-height:1; text-transform:uppercase; margin:0; letter-spacing:-.02em;">BINGI<br>AKO.</p>
+        </div>
+      </div>
+
+      <div style="border-top:2px dashed #eeeeee; margin:0 20px;"></div>
+
+      <div style="padding:20px; display:flex; flex-direction:column; gap:18px; background:#ffffff;">
+
+        <div style="background: #fcfcfc; padding: 10px; border-radius: 12px; border: 1px solid #f0f0f0;">
+          <p id="deaf-stop-label" style="font-size:9px; font-weight:800; letter-spacing:.22em; text-transform:uppercase; color:#000000; opacity:0.5; margin:0 0 6px; display:flex; align-items:center; gap:4px;">
+            BABABA AKO SA:
+          </p>
+          <button id="deaf-stop-display" style="background:transparent; border:none; border-bottom:2.5px solid #000000; width:100%; display:flex; align-items:center; padding:4px 0; text-align:left;">
+            <span id="deaf-stop-text" style="font-size:19px; font-weight:900; color:rgba(0,0,0,0.3); text-transform:uppercase; line-height:1.2;">— TAP TO SET —</span>
+          </button>
+          <input id="deaf-stop-input" class="d-none"
+              style="background:transparent; border:none; border-bottom:2.5px solid #000000; color:#000000; font-size:19px; font-weight:900; text-align:left; text-transform:uppercase; padding:4px 0; width:100%; outline:none; font-family:inherit;" placeholder="I-TYPE ANG STOP..." />
+        </div>
+
+        <div style="background: #fcfcfc; padding: 10px; border-radius: 12px; border: 1px solid #f0f0f0;">
+          <p style="font-size:9px; font-weight:800; letter-spacing:.22em; text-transform:uppercase; color:#000000; opacity:0.5; margin:0 0 6px; display:flex; align-items:center; gap:4px;">
+            ATENSYON:
+          </p>
+          <p style="font-size:17px; font-weight:900; color:#000000; text-transform:uppercase; margin:0; letter-spacing:.01em;">
+            PAKITAPIK ANG AKING BALIKAT
+          </p>
+        </div>
+
+      </div>
+
+      <div style="background:#1a2a40; padding:10px 20px; text-align:center;">
+        <span style="font-size:9px; font-weight:700; color:rgba(255,255,255,0.5); letter-spacing:.2em; text-transform:uppercase;">SENYASPO DEAF CARD</span>
+      </div>
+
+    </div></div>
+
+  <div class="p-4">
+    <button class="btn-ghost w-100" onclick="navigate('home')" style="background:rgba(255,255,255,0.05); color:#ffffff; border:1px solid rgba(255,255,255,0.2); height:55px; border-radius:15px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight: 700; font-size: 15px;">
+      <span class="material-symbols-outlined">close</span>CLOSE
+    </button>
+  </div>
+</div>
 
 
   <!-- ══════════════════════════════════════════════════════════════
        SCREEN: FSL REFERENCE
   ════════════════════════════════════════════════════════════════ -->
-  <div id="screen-fsl" class="screen fsl-screen">
+  <div id="screen-fsl" class="screen fsl-screen" style="background:#0d0d0d;flex-direction:column;">
     <div style="background:#111;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #333;flex-shrink:0">
       <button style="background:none;border:none;color:white;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700" onclick="navigate('deaf')">
         <span class="material-symbols-outlined" style="font-size:24px">arrow_back</span>BACK
@@ -945,35 +1190,44 @@
       <span style="color:var(--amber);font-weight:800;font-size:16px;text-transform:uppercase">FSL Reference</span>
       <div style="width:80px"></div>
     </div>
-    <div class="scroll-main p-3">
+    <div class="scroll-main p-3" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;">
       <p class="tag-mono mb-3" style="color:var(--amber)">COMMUTE PHRASES</p>
       <div class="d-flex flex-column gap-2 mb-4">
-        <div style="background:#1a1a1a;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a"><span style="font-size:36px">✋</span><div><div style="color:white;font-size:18px;font-weight:900">PARA</div><div style="color:#777;font-size:12px;margin-top:2px">Open palm facing out = STOP</div></div></div>
-        <div style="background:#1a1a1a;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a"><span style="font-size:36px">💰</span><div><div style="color:white;font-size:18px;font-weight:900">BAYAD</div><div style="color:#777;font-size:12px;margin-top:2px">Pinch fingers + move forward = PAY</div></div></div>
-        <div style="background:#1a1a1a;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a"><span style="font-size:36px">🙏</span><div><div style="color:white;font-size:18px;font-weight:900">SALAMAT</div><div style="color:#777;font-size:12px;margin-top:2px">Flat hand from chin forward = THANK YOU</div></div></div>
-        <div style="background:#1a1a1a;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a"><span style="font-size:36px">👍</span><div><div style="color:white;font-size:18px;font-weight:900">OO</div><div style="color:#777;font-size:12px;margin-top:2px">Thumbs up = YES</div></div></div>
-        <div style="background:#1a1a1a;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a"><span style="font-size:36px">👎</span><div><div style="color:white;font-size:18px;font-weight:900">HINDI</div><div style="color:#777;font-size:12px;margin-top:2px">Thumbs down / side wave = NO</div></div></div>
-        <div style="background:#1a1a1a;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a"><span style="font-size:36px">✋</span><div><div style="color:white;font-size:18px;font-weight:900">HINTAY</div><div style="color:#777;font-size:12px;margin-top:2px">Palm out, fingers up = WAIT</div></div></div>
-        <div style="background:#1a1a1a;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a"><span style="font-size:36px">🆘</span><div><div style="color:white;font-size:18px;font-weight:900">TULONG</div><div style="color:#777;font-size:12px;margin-top:2px">Fist thumb up, move side to side = HELP</div></div></div>
+        <div style="background:#1a1a1a;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a">
+          <img src="https://cdn-icons-png.flaticon.com/128/9125/9125142.png" alt="PARA" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;" />
+          <div><div style="color:white;font-size:18px;font-weight:900">PARA</div><div style="color:#777;font-size:12px;margin-top:2px">Open palm facing out = STOP</div></div>
+        </div>
+        <div style="background:#1a1a1a;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a">
+          <img src="https://cdn-icons-png.flaticon.com/128/18911/18911736.png" alt="Bayad" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;" />
+          <div><div style="color:white;font-size:18px;font-weight:900">BAYAD</div><div style="color:#777;font-size:12px;margin-top:2px">Pinch fingers + move forward = PAY</div></div>
+        </div>
+        <div style="background:#1a1a1a;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a">
+          <img src="https://cdn-icons-png.flaticon.com/128/5849/5849516.png" alt="SALAMAT" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;" />
+          <div><div style="color:white;font-size:18px;font-weight:900">SALAMAT</div><div style="color:#777;font-size:12px;margin-top:2px">Flat hand from chin forward = THANK YOU</div></div>
+        </div>
+        <div style="background:#1a1a1a;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a">
+          <img src="https://cdn-icons-png.flaticon.com/128/1533/1533913.png" alt="OO" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;" />
+          <div><div style="color:white;font-size:18px;font-weight:900">OO</div><div style="color:#777;font-size:12px;margin-top:2px">Thumbs up = YES</div></div>
+        </div>
+        <div style="background:#1a1a1a;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a">
+          <img src="https://cdn-icons-png.flaticon.com/128/1533/1533919.png" alt="HINDI" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;" />
+          <div><div style="color:white;font-size:18px;font-weight:900">HINDI</div><div style="color:#777;font-size:12px;margin-top:2px">Thumbs down / side wave = NO</div></div>
+        </div>
+        <div style="background:#1a1a1a;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a">
+          <img src="https://cdn-icons-png.flaticon.com/128/1571/1571772.png" alt="HINTAY" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;" />
+          <div><div style="color:white;font-size:18px;font-weight:900">HINTAY</div><div style="color:#777;font-size:12px;margin-top:2px">Palm out, fingers up = WAIT</div></div>
+        </div>
+        <div style="background:#1a1a1a;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;border:1px solid #2a2a2a">
+          <img src="https://cdn-icons-png.flaticon.com/128/7258/7258202.png" alt="TULONG" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;" />
+          <div><div style="color:white;font-size:18px;font-weight:900">TULONG</div><div style="color:#777;font-size:12px;margin-top:2px">Fist thumb up, move side to side = HELP</div></div>
+        </div>
       </div>
-      <p class="tag-mono mb-3" style="color:var(--amber)">FINGERSPELLING (COMMON)</p>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">✊</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">A</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">🖐</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">B</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">🤏</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">C</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">👆</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">D</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">🤞</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">E</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">👌</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">F</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">👉</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">G</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">🤙</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">H</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">🤟</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">L</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">👌</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">O</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">✊</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">S</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">✌️</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">V</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">🤟</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">W</div></div>
-        <div style="background:#1a1a1a;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid #2a2a2a"><div style="font-size:24px">🤙</div><div style="color:white;font-size:14px;font-weight:900;margin-top:4px">Y</div></div>
+      <p class="tag-mono mb-3" style="color:var(--amber)">FSL ALPHABET CHART</p>
+      <div style="background:#1a1a1a;border-radius:16px;border:2px solid #333;overflow:hidden;margin-bottom:8px;">
+        <img src="https://res.cloudinary.com/dg19gjwff/image/upload/v1778701121/FSL_tzbi1c.jpg"
+          alt="FSL Alphabet Chart" style="width:100%;height:auto;display:block;" />
       </div>
-      <p style="color:#444;font-size:11px;text-align:center;margin-top:20px;padding-bottom:16px">Reference only. Learn full FSL from Philippine Federation of the Deaf.</p>
+      <p style="color:#444;font-size:11px;text-align:center;margin-top:12px;padding-bottom:16px">Reference only. Learn full FSL from Philippine Federation of the Deaf.</p>
     </div>
   </div>
 
@@ -987,11 +1241,66 @@
         <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">SABIHIN MO</span>
       </div>
-      <button id="phrases-lang-btn" class="tag-mono" style="background:var(--surface-hi);border:none;color:var(--amber);padding:8px 14px;border-radius:8px">FIL</button>
+      <button id="phrases-lang-btn" class="tag-mono" style="background:none;border:2px solid #333;color:#ccc;padding:7px 14px;border-radius:8px;font-weight:700;font-size:13px;text-transform:uppercase">FIL</button>
     </header>
     <main class="scroll-main" style="padding:16px 0">
       <p class="tag-mono px-4 mb-3" style="color:var(--text-muted)">Tap a phrase to show it full-screen to the driver or passenger</p>
-      <div id="phrase-list"></div>
+
+      <!-- Static phrase rows with icons -->
+      <div id="phrase-list">
+
+        <!-- BAYAD PO -->
+        <button class="phrase-row" data-fil="Bayad po." data-en="Here is my payment." data-icon-url="https://cdn-icons-png.flaticon.com/128/5290/5290777.png">
+          <img src="https://cdn-icons-png.flaticon.com/128/5290/5290777.png" alt="" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;margin-right:14px;" />
+          <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+            <span style="font-size:17px;font-weight:800;">Bayad po.</span>
+            <span style="font-size:12px;color:var(--text-muted)">Here is my payment.</span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted);flex-shrink:0">chevron_right</span>
+        </button>
+
+        <!-- PARA PO -->
+        <button class="phrase-row" data-fil="Para po!" data-en="Please stop here!" data-icon-url="https://cdn-icons-png.flaticon.com/128/9125/9125142.png">
+          <img src="https://cdn-icons-png.flaticon.com/128/9125/9125142.png" alt="" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;margin-right:14px;" />
+          <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+            <span style="font-size:17px;font-weight:800;">Para po!</span>
+            <span style="font-size:12px;color:var(--text-muted)">Please stop here!</span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted);flex-shrink:0">chevron_right</span>
+        </button>
+
+        <!-- MAY EMERGENCY -->
+        <button class="phrase-row emergency" data-fil="May emergency po ako!" data-en="I have an emergency!" data-icon-url="https://cdn-icons-png.flaticon.com/128/2014/2014825.png">
+          <img src="https://cdn-icons-png.flaticon.com/128/2014/2014825.png" alt="" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;margin-right:14px;" />
+          <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+            <span style="font-size:17px;font-weight:800;">May emergency po ako!</span>
+            <span style="font-size:12px;opacity:0.7">I have an emergency!</span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size:18px;opacity:0.5;flex-shrink:0">chevron_right</span>
+        </button>
+
+        <!-- TAMA BA ANG JEEP -->
+        <button class="phrase-row" data-fil="Tama bang jeep ito papunta sa..." data-en="Is this the right jeep going to..." data-icon-url="https://cdn-icons-png.magnific.com/128/1927/1927825.png">
+          <img src="https://cdn-icons-png.magnific.com/128/1927/1927825.png" alt="" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;margin-right:14px;" />
+          <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+            <span style="font-size:17px;font-weight:800;">Tama bang jeep ito?</span>
+            <span style="font-size:12px;color:var(--text-muted)">Is this the right jeep?</span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted);flex-shrink:0">chevron_right</span>
+        </button>
+
+        <!-- SUKLI -->
+        <button class="phrase-row" data-fil="Sukli po." data-en="My change, please." data-icon-url="https://cdn-icons-png.flaticon.com/128/17763/17763038.png">
+          <img src="https://cdn-icons-png.flaticon.com/128/17763/17763038.png" alt="" style="width:36px;height:36px;object-fit:contain;flex-shrink:0;margin-right:14px;" />
+          <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+            <span style="font-size:17px;font-weight:800;">Sukli po.</span>
+            <span style="font-size:12px;color:var(--text-muted)">My change, please.</span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted);flex-shrink:0">chevron_right</span>
+        </button>
+
+      </div>
+
       <div id="add-phrase-section" class="px-4 pb-4 mt-2">
         <button id="add-phrase-btn" class="w-100" style="height:56px;border-radius:12px;border:2px dashed var(--outline-var);background:transparent;color:var(--outline);font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.1em">
           + Add Custom Phrase
@@ -1016,6 +1325,7 @@
         <button id="pf-lang-toggle" style="background:none;border:2px solid #333;color:#ccc;padding:6px 14px;border-radius:8px;font-weight:700;font-size:12px;text-transform:uppercase">FIL ↔ EN</button>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center">
+        <img id="pf-icon-img" src="" alt="" style="width:96px;height:96px;object-fit:contain;display:none" />
         <span id="pf-icon" style="font-size:96px;line-height:1"></span>
         <p id="pf-main" style="font-size:56px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;text-align:center;line-height:1.1;color:white;word-break:break-word"></p>
         <p id="pf-sub" style="font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#888"></p>
@@ -1135,8 +1445,8 @@
     </header>
     <main class="scroll-main" style="padding:16px 24px">
       <div class="search-wrap mb-4">
-        <span class="material-symbols-outlined">search</span>
-        <input id="route-search" class="input-sp" style="padding-left:44px;text-transform:uppercase;border-color:var(--amber-dim)" placeholder="SEARCH ROUTE OR AREA" />
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input id="route-search" class="input-sp" style="padding-left:46px;text-transform:uppercase;border-color:var(--amber-dim)" placeholder="SEARCH ROUTE OR AREA" />
       </div>
       <div id="route-list" class="d-flex flex-column gap-2 mb-4"></div>
       <p class="tag-mono mb-2" style="color:var(--amber);letter-spacing:.15em">WINDSHIELD TEXT</p>
@@ -1153,59 +1463,64 @@
        SCREEN: GPS STOP ALERT
   ════════════════════════════════════════════════════════════════ -->
   <div id="screen-gps" class="screen">
-    <header class="topbar">
+    <!-- HEADER -->
+    <header class="topbar" style="flex-shrink:0">
       <div class="d-flex align-items-center">
         <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">SET MY STOP</span>
       </div>
-      <button id="gps-help-btn" class="topbar-help-btn" type="button" aria-label="How to use Set My Stop">
+      <button id="gps-help-btn" class="topbar-help-btn" type="button" aria-label="How to use Set My Stop"
+        style="width:44px;height:44px;border-radius:50%;border:2px solid #333;background:transparent;color:#ccc;display:flex;align-items:center;justify-content:center;">
         <span class="material-symbols-outlined" style="font-size:22px">help</span>
       </button>
     </header>
-     <p class="tag-mono" style="color:var(--text-muted);font-size:13px;line-height:1.4;padding:0 4px;margin-top:4px">Tap the question mark for a quick guide before you choose a stop.</p>
-      <div id="gps-search-normal" class="search-wrap">
-        <span class="material-symbols-outlined">search</span>
-        <input id="gps-search" class="input-sp" style="padding-left:44px;text-transform:uppercase;border-color:var(--amber)" placeholder="SEARCH STOP NAME..." />
+
+    <!-- NOTIF -->
+    <p class="tag-mono" style="color:var(--text-muted);font-size:13px;line-height:1.4;padding:10px 20px 0;flex-shrink:0">
+      Tap the question mark for a quick guide before you choose a stop.
+    </p>
+
+    <!-- SEARCH BAR -->
+    <div id="gps-search-normal" class="search-wrap" style="padding:10px 16px;flex-shrink:0">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input id="gps-search" class="input-sp" style="padding-left:46px;text-transform:uppercase;border-color:var(--amber)" placeholder="SEARCH STOP NAME..." />
+    </div>
+
+    <!-- MAP stretches to fill remaining height, with overlays inside -->
+    <div id="gps-map-container" style="position:relative;flex:1;min-height:0;">
+      <div id="leaflet-map" style="height:100%;border-radius:0;"></div>
+
+      <!-- DROPDOWN overlays the map (appears below search bar, above map) -->
+      <div id="gps-dropdown" class="stop-dropdown d-none" style="position:absolute;top:0;left:16px;right:16px;z-index:30;max-height:60%;overflow-y:auto;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.5);"></div>
+
+      <button id="gps-expand-btn-map" class="gps-map-btn" type="button" onclick="toggleMapExpand()" title="Expand map" style="position:absolute;right:16px;bottom:16px;z-index:10">
+        <span class="material-symbols-outlined" style="font-size:22px">fullscreen</span>
+      </button>
+      <div class="gps-map-controls d-none" id="gps-map-controls">
+        <button class="gps-map-btn" onclick="toggleMapExpand()" title="Close fullscreen">✕</button>
       </div>
-      <p id="map-label" class="tag-mono" style="color:var(--amber);text-align:center;letter-spacing:.15em">SELECT A STOP ABOVE</p>
-      <div id="gps-dropdown" class="stop-dropdown d-none"></div>
-      <div id="gps-map-container" style="position:relative">
-        <div id="leaflet-map"></div>
-        <div id="gps-location-info" class="gps-location-info d-none">
-          <div class="gps-location-info-title">Your location</div>
-          <div id="gps-location-coords">--</div>
-          <div id="gps-location-desc">--</div>
-        </div>
-        <div id="gps-map-legend" class="gps-map-legend d-none">
-          <div class="gps-map-legend-title">Map legend</div>
-          <div class="gps-map-legend-item"><span class="gps-map-legend-dot" style="background:#feb700"></span> Selected stop</div>
-          <div class="gps-map-legend-item"><span class="gps-map-legend-dot" style="background:#34d399"></span> OSM search result</div>
-        </div>
-        <button id="gps-expand-btn-map" class="gps-map-btn" type="button" onclick="toggleMapExpand()" title="Expand map" style="position:absolute;right:16px;bottom:16px;z-index:10">
-          <span class="material-symbols-outlined" style="font-size:22px">fullscreen</span>
-        </button>
-        <div class="gps-map-controls d-none" id="gps-map-controls">
-          <button class="gps-map-btn" onclick="toggleMapExpand()" title="Close fullscreen">✕</button>
-        </div>
-      </div>
-      <p id="gps-distance" class="d-none" style="font-size:16px;font-weight:700;color:var(--amber);text-align:center"></p>
-      <p id="gps-error" class="d-none" style="color:#ef4444;font-size:14px;font-weight:700;text-align:center"></p>
-      
-      <!-- Stop Preview Card (appears before confirming selection) -->
-      <div id="gps-preview-card" class="d-none" style="background:var(--surface-hi);border:2px solid var(--amber);border-radius:12px;padding:16px">
-        <p class="tag-mono mb-1" style="color:var(--amber);letter-spacing:.15em">PREVIEW DESTINATION</p>
-        <p id="preview-stop-name" style="font-size:24px;font-weight:900;color:var(--text);text-transform:uppercase;line-height:1.2;margin-bottom:6px"></p>
-        <p id="preview-stop-route" style="font-size:12px;color:var(--text-muted);margin-bottom:8px"></p>
-        <p id="preview-stop-distance" style="font-size:13px;color:var(--amber);margin-bottom:12px;font-weight:700"></p>
+
+      <!-- Stop Preview Card overlays the bottom half of the map -->
+      <div id="gps-preview-card" class="d-none" style="position:absolute;bottom:0;left:0;right:0;z-index:25;background:var(--surface-hi);border:2px solid var(--amber);border-radius:12px 12px 0 0;padding:20px 16px 20px;">
+        <p class="tag-mono mb-1" style="color:var(--amber);letter-spacing:.15em;font-size:11px">PREVIEW DESTINATION</p>
+        <p id="preview-stop-name" style="font-size:24px;font-weight:900;color:var(--text);text-transform:uppercase;line-height:1.2;margin-bottom:4px"></p>
+        <p id="preview-stop-route" style="font-size:12px;color:var(--text-muted);margin-bottom:6px"></p>
+        <p id="preview-stop-distance" style="font-size:13px;color:var(--amber);margin-bottom:14px;font-weight:700"></p>
         <div style="display:flex;gap:8px">
-          <button id="preview-confirm-btn" class="btn-primary-sp" style="height:48px;flex:1;font-size:16px">
+          <button id="preview-confirm-btn" class="btn-primary-sp" style="height:56px;flex:1;font-size:16px">
             <span class="material-symbols-outlined" style="font-size:18px">check_circle</span> CONFIRM
           </button>
-          <button id="preview-cancel-btn" class="btn-ghost" style="height:48px;flex:1;font-size:16px;border:1px solid var(--outline-var)">
+          <button id="preview-cancel-btn" class="btn-ghost" style="height:56px;flex:1;font-size:16px;border:1px solid var(--outline-var)">
             <span class="material-symbols-outlined" style="font-size:18px">close</span> BACK
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- cards below map -->
+    <div style="padding:0 16px 16px;">
+      <p id="gps-distance" class="d-none" style="font-size:16px;font-weight:700;color:var(--amber);text-align:center;padding:8px 0 0"></p>
+      <p id="gps-error" class="d-none" style="color:#ef4444;font-size:14px;font-weight:700;text-align:center;padding:8px 0 0"></p>
       
       <div id="selected-stop-card" class="selected-stop-card d-none">
         <p class="tag-mono mb-1" style="color:var(--amber);letter-spacing:.15em">SELECTED STOP</p>
@@ -1231,10 +1546,114 @@
             <span class="material-symbols-outlined" style="font-size:22px">notifications_active</span>
             SET ALERT
           </button>
+          <button id="sakay-na-btn" class="btn-primary-sp" style="height:64px;margin-top:8px;background:var(--green);color:#fff;border:none">
+            <span class="material-symbols-outlined" style="font-size:22px">directions_bus</span>
+            SAKAY NA — SIMULAN ANG COMMUTE
+          </button>
         </div>
       </div>
-      <p id="alert-active-msg" class="d-none" style="text-align:center;color:var(--amber);font-weight:700;font-size:14px">📍 Watching your location... You'll be notified when near your stop.</p>
-    </main>
+      <p id="alert-active-msg" class="d-none" style="text-align:center;color:var(--amber);font-weight:700;font-size:14px;padding:8px 0 0">📍 Watching your location... You'll be notified when near your stop.</p>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       SCREEN: COMMUTE DASHBOARD
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="screen-commute" class="screen">
+
+    <div class="commute-topbar">
+      <div class="commute-topbar-left">
+        <button onclick="navigate('home')" style="background:none;border:none;color:var(--text);display:flex;align-items:center;gap:4px;font-weight:700;font-size:13px;padding:0">
+          <span class="material-symbols-outlined" style="font-size:22px">arrow_back</span>
+        </button>
+        <span style="font-size:14px;font-weight:900;color:var(--amber);text-transform:uppercase;letter-spacing:.04em">Commute</span>
+      </div>
+      <div class="commute-status-pill">
+        <div class="commute-status-dot"></div>
+        <span style="font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.1em">Aktibo</span>
+      </div>
+      <button onclick="navigate('family')" style="background:none;border:none;color:var(--text-muted);display:flex;align-items:center;justify-content:center;width:44px;height:44px;position:relative;">
+        <span class="material-symbols-outlined" style="font-size:22px">group</span>
+        <span id="commute-family-dot" style="position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--outline-var);border:1.5px solid var(--bg);"></span>
+      </button>
+    </div>
+
+    <div class="scroll-main" style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+
+      <!-- ① STOP TRACKER -->
+      <div class="stop-counter-card">
+        <div class="stop-counter-top">
+          <div style="flex:1;min-width:0;">
+            <p class="tag-mono" style="color:var(--text-muted);margin-bottom:4px;">BABABA SA</p>
+            <p class="stop-counter-name" id="dash-stop-name">— WALANG STOP —</p>
+            <p class="stop-counter-route" id="dash-stop-route">Piliin ang stop sa Hintuan Ko</p>
+          </div>
+          <span class="stop-counter-badge" id="dash-distance-badge">? km</span>
+        </div>
+        <div class="distance-bar-wrap">
+          <div class="distance-bar-track">
+            <div class="distance-bar-fill" id="dash-progress-bar" style="width:10%"></div>
+          </div>
+          <div class="distance-bar-labels">
+            <span>Nakasakay</span>
+            <span id="dash-bar-label">Patungong hintuan</span>
+          </div>
+        </div>
+        <button onclick="navigate('gps')" style="background:var(--surface-hi);border:1px solid var(--outline-var);border-radius:10px;color:var(--text-var);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:8px 12px;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;">
+          <span class="material-symbols-outlined" style="font-size:16px">edit_location</span>
+          Baguhin ang Stop
+        </button>
+      </div>
+
+      <!-- ② QUICK-ASK AI -->
+      <div>
+        <div class="quick-ask-card" id="quick-ask-card" style="cursor:pointer;" onclick="navigate('ai')">
+          <div class="quick-ask-left">
+            <div class="quick-ask-icon"><span class="material-symbols-outlined">psychology</span></div>
+            <div>
+              <div class="quick-ask-text">Tanong sa AI</div>
+              <div class="quick-ask-sub">Tungkol sa iyong biyahe</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--amber);opacity:.6">chevron_right</span>
+        </div>
+        <div class="quick-ask-chips" style="margin-top:8px;">
+          <button class="quick-ask-chip" data-ask="Malayo pa ba ang aking babaan?">
+            <span class="material-symbols-outlined" style="font-size:14px">place</span> Malayo pa ba?
+          </button>
+          <button class="quick-ask-chip" data-ask="Saan ako dapat bumaba para makarating sa aking destinasyon?">
+            <span class="material-symbols-outlined" style="font-size:14px">help</span> Saan bababa?
+          </button>
+          <button class="quick-ask-chip" data-ask="Magkano ang pamasahe ko?">
+            <span class="material-symbols-outlined" style="font-size:14px">payments</span> Magkano pamasahe?
+          </button>
+        </div>
+      </div>
+
+      <!-- ③ PARA PO -->
+      <button id="para-po-btn">
+        <span class="material-symbols-outlined" style="font-size:28px">back_hand</span>
+        PARA PO!
+      </button>
+
+      <!-- ④ SOS BLOCK -->
+      <div class="commute-sos-block">
+        <div class="commute-sos-label">
+          <span class="material-symbols-outlined" style="font-size:14px">campaign</span>
+          EMERGENCY
+        </div>
+        <button id="commute-sos-btn">
+          <span class="material-symbols-outlined" style="font-size:20px">warning</span>
+          SEND SOS TO FAMILY
+        </button>
+        <p style="font-size:11px;color:#888;margin:8px 0 0;text-align:center;">
+          Aabisuhan lahat ng kamag-anak na bukas ang tracking link.
+        </p>
+      </div>
+
+      <div style="height:72px"></div>
+    </div>
   </div>
 
 
@@ -1305,7 +1724,7 @@
       <div style="width:72px"></div>
     </header>
 
-    <main style="padding:16px;display:flex;flex-direction:column;gap:14px;max-width:480px;margin:0 auto">
+    <main class="scroll-main" style="padding:16px;display:flex;flex-direction:column;gap:14px">
 
       <!-- Explainer -->
       <div style="background:#1a1a0f;border:1px solid #3a2d00;border-radius:14px;padding:16px">
@@ -1378,45 +1797,51 @@
         <span class="topbar-title">VIBRATION SETTINGS</span>
       </div>
     </header>
-    <main class="scroll-main" style="padding:20px 24px;display:flex;flex-direction:column;gap:24px">
-      <div style="background:var(--amber-bg);border:1px solid var(--amber-dim);border-radius:10px;padding:12px 16px;display:flex;gap:10px;align-items:flex-start">
+    <main class="scroll-main" style="padding:16px;display:flex;flex-direction:column;gap:20px">
+
+      <!-- Info tip -->
+      <div style="background:var(--amber-bg);border:1px solid var(--amber-dim);border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start">
         <span class="material-symbols-outlined" style="color:var(--amber);font-size:18px;flex-shrink:0;margin-top:1px">vibration</span>
-        <p style="font-size:13px;color:var(--text-var);line-height:1.5">Tap any option to preview the vibration pattern on your device. These settings affect all GPS alerts and button feedback.</p>
+        <p style="font-size:13px;color:var(--text-var);line-height:1.5;margin:0">Tap any option to preview the vibration pattern on your device. These settings affect all GPS alerts and button feedback.</p>
+      </div>
+
+      <!-- App Language -->
+      <div>
         <p class="tag-mono mb-3" style="color:var(--text-var);letter-spacing:.12em">App Language</p>
         <div class="d-flex flex-column gap-2" id="app-language-options">
           <button class="vib-option active" data-app-lang="fil" type="button">
             <div class="vib-radio"></div>
             <div>
-              <p style="font-size:16px;font-weight:800;text-transform:uppercase;color:var(--amber)">Filipino</p>
-              <p style="font-size:12px;color:var(--text-muted);margin-top:2px">AI replies and app guidance stay in Filipino</p>
+              <p style="font-size:15px;font-weight:800;text-transform:uppercase;color:var(--amber);margin:0">Filipino</p>
+              <p style="font-size:12px;color:var(--text-muted);margin-top:2px;margin-bottom:0">AI replies and app guidance stay in Filipino</p>
             </div>
           </button>
           <button class="vib-option" data-app-lang="en" type="button">
             <div class="vib-radio"></div>
             <div>
-              <p style="font-size:16px;font-weight:800;text-transform:uppercase;color:var(--text)">English</p>
-              <p style="font-size:12px;color:var(--text-muted);margin-top:2px">AI replies and app guidance use English</p>
+              <p style="font-size:15px;font-weight:800;text-transform:uppercase;color:var(--text);margin:0">English</p>
+              <p style="font-size:12px;color:var(--text-muted);margin-top:2px;margin-bottom:0">AI replies and app guidance use English</p>
             </div>
           </button>
         </div>
-        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.5">This does not change the <strong>Sabihin Mo</strong> phrase language switch. That screen keeps its own language control.</p>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.5">This does not change the <strong>Sabihin Mo</strong> phrase language switch.</p>
       </div>
 
       <div>
         <p class="tag-mono mb-3" style="color:var(--text-var);letter-spacing:.12em">Intensity</p>
         <div class="d-flex flex-column gap-2" id="intensity-options">
-          <button class="vib-option active" data-intensity="soft"><div class="vib-radio"></div><div><p style="font-size:16px;font-weight:800;text-transform:uppercase;color:var(--amber)">Soft</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px">Gentle taps — less noticeable to others</p></div></button>
-          <button class="vib-option" data-intensity="medium"><div class="vib-radio"></div><div><p style="font-size:16px;font-weight:800;text-transform:uppercase;color:var(--text)">Medium</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px">Default — works for most phone models</p></div></button>
-          <button class="vib-option" data-intensity="strong"><div class="vib-radio"></div><div><p style="font-size:16px;font-weight:800;text-transform:uppercase;color:var(--text)">Strong</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px">Maximum buzz — for high-sensitivity needs</p></div></button>
+          <button class="vib-option active" data-intensity="soft"><div class="vib-radio"></div><div><p style="font-size:15px;font-weight:800;text-transform:uppercase;color:var(--amber);margin:0">Soft</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px;margin-bottom:0">Gentle taps — less noticeable to others</p></div></button>
+          <button class="vib-option" data-intensity="medium"><div class="vib-radio"></div><div><p style="font-size:15px;font-weight:800;text-transform:uppercase;color:var(--text);margin:0">Medium</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px;margin-bottom:0">Default — works for most phone models</p></div></button>
+          <button class="vib-option" data-intensity="strong"><div class="vib-radio"></div><div><p style="font-size:15px;font-weight:800;text-transform:uppercase;color:var(--text);margin:0">Strong</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px;margin-bottom:0">Maximum buzz — for high-sensitivity needs</p></div></button>
         </div>
       </div>
 
       <div>
         <p class="tag-mono mb-3" style="color:var(--text-var);letter-spacing:.12em">Pulse Timing</p>
         <div class="d-flex flex-column gap-2" id="timing-options">
-          <button class="vib-option" data-timing="fast"><div class="vib-radio"></div><div><p style="font-size:16px;font-weight:800;text-transform:uppercase;color:var(--text)">Fast</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px">Quick sharp pulses</p></div></button>
-          <button class="vib-option active" data-timing="normal"><div class="vib-radio"></div><div><p style="font-size:16px;font-weight:800;text-transform:uppercase;color:var(--amber)">Normal</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px">Default rhythm</p></div></button>
-          <button class="vib-option" data-timing="slow"><div class="vib-radio"></div><div><p style="font-size:16px;font-weight:800;text-transform:uppercase;color:var(--text)">Slow</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px">Longer pulses — easier to feel</p></div></button>
+          <button class="vib-option" data-timing="fast"><div class="vib-radio"></div><div><p style="font-size:15px;font-weight:800;text-transform:uppercase;color:var(--text);margin:0">Fast</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px;margin-bottom:0">Quick sharp pulses</p></div></button>
+          <button class="vib-option active" data-timing="normal"><div class="vib-radio"></div><div><p style="font-size:15px;font-weight:800;text-transform:uppercase;color:var(--amber);margin:0">Normal</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px;margin-bottom:0">Default rhythm</p></div></button>
+          <button class="vib-option" data-timing="slow"><div class="vib-radio"></div><div><p style="font-size:15px;font-weight:800;text-transform:uppercase;color:var(--text);margin:0">Slow</p><p style="font-size:12px;color:var(--text-muted);margin-top:2px;margin-bottom:0">Longer pulses — easier to feel</p></div></button>
         </div>
       </div>
 
@@ -1456,6 +1881,66 @@
 
 </div><!-- #app -->
 
+<!-- ══ SIDE DRAWER ═══════════════════════════════════════════════ -->
+<div id="drawer-overlay"></div>
+<div id="side-drawer">
+  <div class="drawer-header">
+    <div class="drawer-logo"><img src="https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png" alt="SenyasPo" /></div>
+    <div>
+      <div class="drawer-app-name">SenyasPo</div>
+      <div class="drawer-app-sub">PWD · Deaf-Friendly Commute</div>
+    </div>
+  </div>
+
+  <nav class="drawer-nav">
+    <div class="drawer-section-label">Sa Sakay</div>
+    <button class="drawer-item" data-drawer-nav="deaf">
+      <span class="material-symbols-outlined">hearing_disabled</span> I Am Deaf Card
+    </button>
+    <button class="drawer-item" data-drawer-nav="phrases">
+      <span class="material-symbols-outlined">chat_bubble</span> Sabihin Mo
+    </button>
+    <button class="drawer-item" data-drawer-nav="commute">
+      <span class="material-symbols-outlined">directions_bus</span> Commute Dashboard
+    </button>
+
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-label">Bago Sumakay</div>
+    <button class="drawer-item" data-drawer-nav="gps">
+      <span class="material-symbols-outlined">location_on</span> Hintuan Ko
+    </button>
+    <button class="drawer-item" data-drawer-nav="family">
+      <span class="material-symbols-outlined">group</span> Pamilya
+      <span id="drawer-family-dot" style="width:8px;height:8px;border-radius:50%;background:var(--outline-var);margin-left:auto;flex-shrink:0;"></span>
+    </button>
+    <button class="drawer-item" data-drawer-nav="fare">
+      <span class="material-symbols-outlined">payments</span> Bayad / Fare
+    </button>
+    <button class="drawer-item" data-drawer-nav="route">
+      <span class="material-symbols-outlined">route</span> Ruta / Routes
+    </button>
+    <button class="drawer-item" data-drawer-nav="ai">
+      <span class="material-symbols-outlined">smart_toy</span> AI Assistant
+    </button>
+
+    <div class="drawer-divider"></div>
+    <div class="drawer-section-label">Settings</div>
+    <button class="drawer-item" data-drawer-nav="vib">
+      <span class="material-symbols-outlined">vibration</span> Vibration Settings
+    </button>
+  </nav>
+
+  <div class="drawer-footer">
+    <p style="font-size:10px;color:var(--text-muted);text-align:center;letter-spacing:.1em;text-transform:uppercase;">SenyasPo v1.0 · PWD Deaf App</p>
+  </div>
+</div>
+
+<!-- ══ FLOATING SOS ═══════════════════════════════════════════════ -->
+<button id="floating-sos" title="SOS Emergency">
+  <span class="material-symbols-outlined">warning</span>
+  <span style="font-size:9px;font-weight:900;letter-spacing:.04em;">SOS</span>
+</button>
+
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/data.js"></script>
@@ -1465,6 +1950,206 @@
 <script src="js/ai.js"></script>
 <script src="js/family.js"></script>
 <script src="js/app.js"></script>
+
+<script>
+/* ── DRAWER ────────────────────────────────────────────────────── */
+(function() {
+  const overlay = document.getElementById('drawer-overlay');
+  const drawer  = document.getElementById('side-drawer');
+
+  function openDrawer() {
+    overlay.classList.add('open');
+    drawer.classList.add('open');
+  }
+  function closeDrawer() {
+    overlay.classList.remove('open');
+    drawer.classList.remove('open');
+  }
+
+  document.getElementById('drawer-open-btn').addEventListener('click', openDrawer);
+  overlay.addEventListener('click', closeDrawer);
+
+  // Drawer nav items
+  drawer.querySelectorAll('[data-drawer-nav]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      closeDrawer();
+      const target = this.dataset.drawerNav;
+      if (typeof navigate === 'function') navigate(target);
+    });
+  });
+})();
+
+/* ── TOPBAR FAMILY BTN ──────────────────────────────────────────── */
+document.getElementById('topbar-family-btn').addEventListener('click', function() {
+  if (typeof navigate === 'function') navigate('family');
+});
+
+/* ── FLOATING SOS ───────────────────────────────────────────────── */
+(function() {
+  const btn = document.getElementById('floating-sos');
+
+  // Hide on family and alert screens to avoid overlap
+  const hiddenOn = ['screen-family', 'screen-alert'];
+  function updateSOSVisibility() {
+    const active = document.querySelector('.screen.active');
+    if (active && hiddenOn.includes(active.id)) {
+      btn.classList.add('hidden');
+    } else {
+      btn.classList.remove('hidden');
+    }
+  }
+
+  // Watch for screen changes via MutationObserver
+  const observer = new MutationObserver(updateSOSVisibility);
+  document.querySelectorAll('.screen').forEach(s => {
+    observer.observe(s, { attributes: true, attributeFilter: ['class'] });
+  });
+  updateSOSVisibility();
+
+  btn.addEventListener('click', function() {
+    // Trigger SOS — call family SOS if available, else navigate
+    if (typeof familySendSOS === 'function') {
+      familySendSOS();
+    } else {
+      if (typeof navigate === 'function') navigate('family');
+    }
+  });
+})();
+
+/* ── SAKAY NA BUTTON ────────────────────────────────────────────── */
+(function() {
+  const btn = document.getElementById('sakay-na-btn');
+  if (!btn) return;
+  btn.addEventListener('click', function() {
+    syncCommuteDashboard();
+    if (typeof navigate === 'function') navigate('commute');
+  });
+})();
+
+/* ── COMMUTE DASHBOARD SYNC ─────────────────────────────────────── */
+function syncCommuteDashboard() {
+  // Pull stop info from GPS module globals (set by gps.js)
+  const stopName = (typeof gpsSelectedStop !== 'undefined' && gpsSelectedStop)
+    ? (gpsSelectedStop.name || gpsSelectedStop) : null;
+  const stopRoute = (typeof gpsSelectedStop !== 'undefined' && gpsSelectedStop && gpsSelectedStop.route)
+    ? gpsSelectedStop.route : '';
+  const dist = (typeof gpsDistanceKm !== 'undefined') ? gpsDistanceKm : null;
+
+  const nameEl   = document.getElementById('dash-stop-name');
+  const routeEl  = document.getElementById('dash-stop-route');
+  const badgeEl  = document.getElementById('dash-distance-badge');
+  const barEl    = document.getElementById('dash-progress-bar');
+  const barLabel = document.getElementById('dash-bar-label');
+
+  if (stopName) {
+    nameEl.textContent  = stopName;
+    routeEl.textContent = stopRoute || '';
+  }
+  if (dist !== null && dist !== undefined) {
+    const d = parseFloat(dist);
+    badgeEl.textContent = isNaN(d) ? '? km' : d.toFixed(2) + ' km';
+    // Rough progress: assume avg 10 km total trip → clamp 0–100%
+    const pct = Math.min(100, Math.max(0, Math.round((1 - d / 10) * 100)));
+    barEl.style.width = pct + '%';
+    barLabel.textContent = d < 0.5 ? 'Malapit na!' : d.toFixed(1) + ' km pa';
+  }
+
+  // Sync family dot
+  const isSharingFamily = (typeof familySharingActive !== 'undefined' && familySharingActive);
+  const dots = ['family-status-dot','commute-family-dot','drawer-family-dot'];
+  dots.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (isSharingFamily) {
+      el.style.background = 'var(--green)';
+    } else {
+      el.style.background = 'var(--outline-var)';
+    }
+  });
+  // Also topbar dot class
+  const topDot = document.getElementById('family-status-dot');
+  if (topDot) topDot.classList.toggle('sharing', !!isSharingFamily);
+}
+
+// Re-sync whenever user navigates to commute screen
+document.addEventListener('DOMContentLoaded', function() {
+  const orig = typeof navigate === 'function' ? navigate : null;
+  // Patch navigate to sync dashboard when landing on commute
+  const _origNav = window.navigate;
+  window.navigate = function(screen) {
+    if (screen === 'commute') syncCommuteDashboard();
+    if (typeof _origNav === 'function') _origNav(screen);
+  };
+});
+
+/* ── QUICK-ASK CHIPS ────────────────────────────────────────────── */
+document.querySelectorAll('.quick-ask-chip').forEach(chip => {
+  chip.addEventListener('click', function() {
+    const question = this.dataset.ask;
+    if (!question) return;
+    // Pre-fill AI input and navigate
+    const aiInput = document.getElementById('ai-input');
+    if (aiInput) aiInput.value = question;
+    if (typeof navigate === 'function') navigate('ai');
+    // Auto-send after a short delay so the screen renders first
+    setTimeout(function() {
+      const sendBtn = document.getElementById('ai-send');
+      if (sendBtn) sendBtn.click();
+    }, 300);
+  });
+});
+
+/* ── PARA PO BUTTON ─────────────────────────────────────────────── */
+(function() {
+  const btn = document.getElementById('para-po-btn');
+  if (!btn) return;
+  btn.addEventListener('click', function() {
+    // Vibrate if available
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+    // Navigate to alert screen (same as GPS alert)
+    const alertStop = document.getElementById('alert-stop-name');
+    const dashStop  = document.getElementById('dash-stop-name');
+    if (alertStop && dashStop && dashStop.textContent !== '— WALANG STOP —') {
+      alertStop.textContent = dashStop.textContent;
+    }
+    if (typeof navigate === 'function') navigate('alert');
+    // Notify family if sharing
+    if (typeof familySendParaPo === 'function') familySendParaPo();
+  });
+})();
+
+/* ── COMMUTE SOS ────────────────────────────────────────────────── */
+(function() {
+  const btn = document.getElementById('commute-sos-btn');
+  if (!btn) return;
+  btn.addEventListener('click', function() {
+    if (typeof familySendSOS === 'function') familySendSOS();
+    else if (typeof navigate === 'function') navigate('family');
+  });
+})();
+
+/* ── FAMILY.JS EXTENSION: push destination when stop is set ────── */
+// Wraps familyStartSharing (defined in family.js) so it also pushes destination
+// This is additive — it won't break if family.js defines it differently.
+(function() {
+  function extendFamilyPush() {
+    if (typeof familyPushStatus !== 'function') return;
+    const stopName = (typeof gpsSelectedStop !== 'undefined' && gpsSelectedStop)
+      ? (gpsSelectedStop.name || gpsSelectedStop) : null;
+    const update = stopName
+      ? { destination: stopName, status: 'heading_to_stop' }
+      : { destination: null, status: 'gps_only' };
+    try { familyPushStatus(update); } catch(e) { /* silent */ }
+  }
+  // Run when stop is selected (GPS module fires custom event or we poll)
+  document.addEventListener('gpsStopSelected', extendFamilyPush);
+  // Also sync when commute screen is opened
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('sakay-na-btn') &&
+      document.getElementById('sakay-na-btn').addEventListener('click', extendFamilyPush);
+  });
+})();
+</script>
 <script>
 (function() {
   const scriptFallbacks = [

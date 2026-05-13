@@ -10,6 +10,15 @@ let phraseVibrationTimer = null;
 const TTS_VIBRATION_PATTERN = [70, 40];
 const TTS_VIBRATION_REPEAT_MS = 120;
 
+/* ── PHRASE ICON IMAGES (keyed by phrase id) ───────────────────── */
+const PHRASE_ICON_URLS = {
+  'bayad':     'https://cdn-icons-png.flaticon.com/128/5290/5290777.png',
+  'para':      'https://cdn-icons-png.flaticon.com/128/9125/9125142.png',
+  'emergency': 'https://cdn-icons-png.flaticon.com/128/2014/2014825.png',
+  'tama':      'https://cdn-icons-png.flaticon.com/128/2021/2021551.png',
+  'sukli':     'https://cdn-icons-png.flaticon.com/128/17763/17763038.png',
+};
+
 const PROFANITY_PATTERNS = [
   /\bfuck(?:ing|er|ers|ed|s)?\b/i,
   /\bshit(?:ty|head|heads|hole|holes)?\b/i,
@@ -224,24 +233,31 @@ function renderPhraseList() {
     }
 
     const phraseText = getPhraseTextOrder(filText, enText, phraseLang);
-    const blocked = isBlockedPhrase(filText, enText);
+    const blocked    = isBlockedPhrase(filText, enText);
+    const iconUrl    = p.iconUrl || PHRASE_ICON_URLS[p.id] || null;
+
+    /* ── icon: big image if available, else emoji ── */
+    const iconHtml = iconUrl
+      ? `<img src="${iconUrl}" alt="" style="width:56px;height:56px;object-fit:contain;flex-shrink:0;border-radius:10px;" />`
+      : `<span style="font-size:48px;line-height:1;flex-shrink:0">${p.icon || '💬'}</span>`;
 
     const btn = document.createElement('button');
     btn.className = 'phrase-row' + (p.type === 'emergency' ? ' emergency' : '');
-    btn.style.cssText = `width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:transparent;border:none;border-bottom:1px solid var(--outline-var);text-align:left;cursor:pointer`;
+    btn.style.cssText = `width:100%;display:flex;align-items:center;justify-content:space-between;padding:18px 20px;background:transparent;border:none;border-bottom:1px solid var(--outline-var);text-align:left;cursor:pointer;gap:14px`;
     if (blocked) {
       btn.style.opacity = '0.65';
-      btn.style.cursor = 'not-allowed';
+      btn.style.cursor  = 'not-allowed';
     }
     btn.innerHTML = `
-      <div style="display:flex;align-items:center;gap:14px">
-        <span style="font-size:36px;line-height:1;flex-shrink:0">${p.icon || '💬'}</span>
-        <div>
-          <div style="font-size:18px;font-weight:800;${p.type==='emergency'?'color:#ff6b6b':'color:var(--text)'}">${blocked ? 'BLOCKED PHRASE' : phraseText.mainText}</div>
-          <div style="font-size:13px;color:var(--text-muted);margin-top:2px">${blocked ? 'Contains prohibited words' : phraseText.subText}</div>
+      <div style="display:flex;align-items:center;gap:16px;flex:1;min-width:0">
+        ${iconHtml}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:18px;font-weight:800;${p.type === 'emergency' ? 'color:#ff6b6b' : 'color:var(--text)'};line-height:1.2">${blocked ? 'BLOCKED PHRASE' : phraseText.mainText}</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:3px">${blocked ? 'Contains prohibited words' : phraseText.subText}</div>
         </div>
       </div>
-      <span class="material-symbols-outlined" style="font-size:22px;color:var(--outline-var)">chevron_right</span>`;
+      <span class="material-symbols-outlined" style="font-size:22px;color:var(--outline-var);flex-shrink:0">chevron_right</span>`;
+
     btn.addEventListener('click', () => {
       if (blocked) {
         alert('This phrase contains prohibited words and cannot be used.');
@@ -254,7 +270,7 @@ function renderPhraseList() {
       btn.addEventListener('contextmenu', e => {
         e.preventDefault();
         if (confirm('Delete this phrase?')) {
-          const all = getStoredPhrases();
+          const all     = getStoredPhrases();
           const updated = all.filter((_, i) => i !== idx);
           saveStorage('custom_phrases', updated);
           renderPhraseList();
@@ -282,7 +298,20 @@ function openPhraseFullscreen(phrase, filText, enText) {
 
 function renderPhraseFullscreen() {
   const phraseText = getPhraseTextOrder(pfPhrase.filText, pfPhrase.enText, pfActiveLang);
-  document.getElementById('pf-icon').textContent = pfPhrase.icon || '💬';
+  const iconUrl    = pfPhrase.iconUrl || PHRASE_ICON_URLS[pfPhrase.id] || null;
+
+  const iconEmoji = document.getElementById('pf-icon');
+  const iconImg   = document.getElementById('pf-icon-img');
+
+  if (iconUrl && iconImg) {
+    iconImg.src           = iconUrl;
+    iconImg.style.display = 'block';
+    if (iconEmoji) iconEmoji.textContent = '';
+  } else {
+    if (iconImg) iconImg.style.display = 'none';
+    if (iconEmoji) iconEmoji.textContent = pfPhrase.icon || '💬';
+  }
+
   document.getElementById('pf-main').textContent = phraseText.mainText;
   document.getElementById('pf-sub').textContent  = phraseText.subText;
   document.getElementById('pf-lang').textContent = getPhraseDirectionLabel(pfActiveLang);
