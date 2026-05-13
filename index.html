@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="SenyasPo" />
   <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dg19gjwff/image/upload/v1778665534/SenyasPo2_hjadaz.png" />
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png" />
   <title>SenyasPo</title>
 
   <!-- Bootstrap 5 -->
@@ -62,6 +62,74 @@
     button { font-family: var(--font); cursor: pointer; }
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
 
+    /* ── DESKTOP PHONE FRAME ─────────────────────────────────────── 
+    @media (min-width: 520px) {
+      body {
+        background: #030d1a;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        min-height: 100dvh;
+        padding: 24px 0 40px;
+      }
+      #app {
+        border-radius: 50px !important;
+        box-shadow:
+          0 0 0 2px #2a3548,
+          0 0 0 12px #111c2d,
+          0 0 0 14px #1f2a3c,
+          0 0 0 15px #0a0f1a,
+          0 0 70px rgba(254,183,0,.15),
+          0 50px 100px rgba(0,0,0,.8) !important;
+        overflow: hidden;
+        min-height: unset !important;
+        width: 390px !important;
+        height: 844px;
+        max-height: calc(100dvh - 48px);
+        display: flex;
+        flex-direction: column;
+      }
+      #app::before {
+        content: '';
+        position: absolute;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 72px; height: 5px;
+        background: #1f2a3c;
+        border-radius: 3px;
+        z-index: 9999;
+        pointer-events: none;
+      }
+      #app::after {
+        content: 'PWD · DEAF-FRIENDLY APP';
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .18em;
+        color: #2a3548;
+        white-space: nowrap;
+        z-index: 9999;
+        pointer-events: none;
+        font-family: 'Atkinson Hyperlegible', sans-serif;
+      }
+      .screen {
+        min-height: unset;
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .home-scroll {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }*/
+
     /* ── APP WRAPPER ──────────────────────────────────────────────── */
     #app {
       max-width: 480px;
@@ -78,6 +146,33 @@
       min-height: 100dvh;
     }
     .screen.active { display: flex; }
+
+    /* 
+    @media (min-width: 520px) {
+      #app {
+        min-height: unset;
+      }
+      .screen {
+        min-height: unset;
+        flex: 1;
+        overflow: hidden;
+        display: none;
+        flex-direction: column;
+      }
+      .screen.active {
+        display: flex;
+      }
+      .home-scroll {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .scroll-main {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    } */
 
     /* ── TOPBAR ───────────────────────────────────────────────────── */
     .topbar {
@@ -191,8 +286,126 @@
     .fare-label  { font-size: 12px; color: #6b4b00; text-transform: uppercase; }
     .fare-sub    { font-size: 13px; font-weight: 800; color: #412d00; letter-spacing: .1em; text-transform: uppercase; }
 
-    /* ── HOME CARDS ───────────────────────────────────────────────── */
-    .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
+    /* ── HOME REDESIGN ────────────────────────────────────────────── */
+    .home-scroll { flex: 1; overflow-y: auto; }
+
+    /* Phase header strip */
+    .phase-label {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px 8px;
+    }
+    .phase-label-badge {
+      font-size: 10px; font-weight: 800; letter-spacing: .16em;
+      text-transform: uppercase; padding: 4px 10px; border-radius: 20px;
+      white-space: nowrap;
+    }
+    .phase-label-badge.urgent {
+      background: rgba(254,183,0,.18); color: var(--amber);
+      border: 1px solid rgba(254,183,0,.35);
+    }
+    .phase-label-badge.prep {
+      background: rgba(255,255,255,.05); color: var(--text-muted);
+      border: 1px solid var(--outline-var);
+    }
+    .phase-label-line { flex: 1; height: 1px; background: var(--outline-var); }
+
+    /* Zone: SA SAKAY */
+    .zone-sakay { padding: 0 16px 4px; display: flex; flex-direction: column; gap: 10px; }
+
+    /* Hero — I AM DEAF */
+    .hero-deaf {
+      border-radius: 18px; padding: 22px 24px;
+      background: var(--amber);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; border: none; width: 100%; text-align: left;
+      transition: transform .12s, box-shadow .12s;
+      box-shadow: 0 8px 32px rgba(254,183,0,.25);
+      position: relative; overflow: hidden;
+    }
+    .hero-deaf::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-deaf:active { transform: scale(.97); box-shadow: 0 2px 12px rgba(254,183,0,.2); }
+    .hero-deaf-text .hero-tag {
+      font-size: 10px; font-weight: 800; letter-spacing: .2em;
+      color: rgba(65,45,0,.6); text-transform: uppercase; margin-bottom: 6px;
+    }
+    .hero-deaf-text .hero-label {
+      font-size: 30px; font-weight: 900; color: #271900;
+      line-height: 1; text-transform: uppercase; letter-spacing: -.02em;
+    }
+    .hero-deaf-text .hero-sub {
+      font-size: 13px; font-weight: 700; color: rgba(65,45,0,.75);
+      margin-top: 6px; line-height: 1.3;
+    }
+
+    /* Sabihin Mo — large row card */
+    .card-sabihin {
+      border-radius: 14px; padding: 18px 20px;
+      background: var(--surface-hi); border: 2px solid var(--outline-var);
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      width: 100%; text-align: left;
+      transition: transform .1s, border-color .1s;
+    }
+    .card-sabihin:active { transform: scale(.97); }
+    .card-sabihin:hover { border-color: rgba(254,183,0,.4); }
+    .card-sabihin-left { display: flex; align-items: center; gap: 14px; }
+    .card-sabihin-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--amber-bg); border: 2px solid rgba(254,183,0,.3);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .card-sabihin-label { font-size: 19px; font-weight: 800; color: var(--text); text-transform: uppercase; letter-spacing: -.01em; }
+    .card-sabihin-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* GPS alert row */
+    .card-gps {
+      border-radius: 14px; padding: 16px 20px;
+      background: var(--surface); border: 2px solid var(--outline-var);
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      width: 100%; text-align: left;
+      transition: transform .1s;
+    }
+    .card-gps:active { transform: scale(.97); }
+    .card-gps-left { display: flex; align-items: center; gap: 12px; }
+    .card-gps-label { font-size: 16px; font-weight: 800; color: var(--text); text-transform: uppercase; }
+    .card-gps-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+    /* Zone: BAGO SUMAKAY */
+    .zone-prep { padding: 0 16px 24px; }
+    .prep-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* Prep cards — compact */
+    .card-prep {
+      border-radius: 14px; padding: 16px 14px;
+      background: var(--surface-lo); border: 2px solid var(--outline-var);
+      display: flex; flex-direction: column; align-items: flex-start;
+      justify-content: space-between; min-height: 108px;
+      color: var(--text); text-align: left;
+      transition: transform .1s;
+    }
+    .card-prep:active { transform: scale(.97); }
+    .card-prep:disabled { opacity: .45; cursor: not-allowed; }
+    .card-prep-icon { font-size: 26px; margin-bottom: 6px; color: var(--text-muted); }
+    .card-prep-label { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: -.01em; color: var(--text-var); }
+    .card-prep-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* AI card full-width prep */
+    .card-ai {
+      grid-column: span 2; border-radius: 14px; padding: 16px 20px;
+      background: var(--bg-alt); border: 2px dashed rgba(254,183,0,.4);
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      width: 100%; text-align: left; transition: transform .1s;
+    }
+    .card-ai:active { transform: scale(.97); }
+    .card-ai:disabled { opacity: .45; cursor: not-allowed; }
+    .card-ai-label { font-size: 15px; font-weight: 800; text-transform: uppercase; color: var(--text-var); }
+    .card-ai-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Legacy classes kept for other screens that use them */
     .home-card {
       border-radius: 14px; padding: 18px 16px;
       display: flex; flex-direction: column; align-items: flex-start;
@@ -202,9 +415,6 @@
       transition: transform .1s; position: relative; overflow: hidden;
     }
     .home-card.span-2 { grid-column: span 2; flex-direction: row; align-items: center; min-height: 96px; padding: 20px 24px; gap: 16px; }
-    .home-card.span-2.accent { min-height: 140px; padding: 24px 28px; }
-    .home-card.span-2.accent .home-card-label { font-size: 26px; letter-spacing: -.02em; }
-    .home-card.span-2.accent .home-card-sub { font-size: 14px; opacity: .85; margin-top: 4px; }
     .home-card.accent { background: var(--amber); border: none; color: #271900; }
     .home-card.dashed { background: var(--bg-alt); border: 2px dashed var(--amber); }
     .home-card:disabled { opacity: .45; cursor: not-allowed; }
@@ -287,10 +497,16 @@
 
     /* ── RESPONSIVE: small phones ─────────────────────────────────── */
     @media (max-width: 360px) {
-      .home-grid { gap: 8px; padding: 12px; }
-      .home-card { min-height: 110px; padding: 14px 12px; }
-      .home-card-label { font-size: 14px; }
-      .home-card-sub { font-size: 11px; }
+      .hero-deaf { padding: 18px 18px; }
+      .hero-deaf-text .hero-label { font-size: 24px; }
+      .hero-deaf-text .hero-sub { font-size: 12px; }
+      .hero-deaf .material-symbols-outlined { font-size: 54px !important; }
+      .card-sabihin-label { font-size: 16px; }
+      .zone-sakay { padding: 0 12px 4px; gap: 8px; }
+      .zone-prep { padding: 0 12px 20px; }
+      .prep-grid { gap: 8px; }
+      .card-prep { min-height: 96px; padding: 13px 12px; }
+      .card-prep-label { font-size: 13px; }
       .fare-amount { font-size: 44px; }
       .windshield-text { font-size: 28px; }
       .topbar-title { font-size: 16px; }
@@ -392,7 +608,7 @@
     <!-- Topbar -->
     <header class="topbar">
       <div class="d-flex align-items-center gap-2">
-        <div class="topbar-logo"><img src="https://res.cloudinary.com/dg19gjwff/image/upload/v1778665534/SenyasPo2_hjadaz.png" alt="SenyasPo" /></div>
+        <div class="topbar-logo"><img src="https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png" alt="SenyasPo" /></div>
         <span class="topbar-title">SENYASPO</span>
       </div>
       <button class="topbar-menu" id="home-vib-btn" title="Vibration Settings">
@@ -402,58 +618,92 @@
 
     <div id="offline-banner" class="banner banner-error d-none">📵 No internet — AI Assistant disabled</div>
 
-    <!-- Grid -->
-    <main class="home-grid">
-      <button class="home-card span-2 accent" data-nav="deaf">
-        <div>
-          <div class="home-card-label">I Am Deaf</div>
-          <div class="home-card-sub">"Bingi ako. Hindi ako makarinig."</div>
-        </div>
-        <span class="material-symbols-outlined" style="font-size:64px;color:#412d00">front_hand</span>
-      </button>
+    <!-- Redesigned Home: Two-zone layout -->
+    <main class="home-scroll">
 
-      <button class="home-card" data-nav="phrases">
-        <span class="material-symbols-outlined home-card-icon" style="color:var(--amber)">chat_bubble</span>
-        <div>
-          <div class="home-card-label">Sabihin Mo</div>
-          <div class="home-card-sub">Quick phrases</div>
-        </div>
-      </button>
+      <!-- ── ZONE 1: SA SAKAY (On the Jeepney) ── -->
+      <div class="phase-label">
+        <span class="phase-label-badge urgent">🚌 Sa Sakay — Use On The Jeepney</span>
+        <span class="phase-label-line"></span>
+      </div>
 
-      <button class="home-card" data-nav="fare">
-        <span class="material-symbols-outlined home-card-icon" style="color:var(--amber)">payments</span>
-        <div>
-          <div class="home-card-label">Bayad</div>
-          <div class="home-card-sub">Fare calculator</div>
-        </div>
-      </button>
+      <div class="zone-sakay">
 
-      <button class="home-card" data-nav="route">
-        <span class="material-symbols-outlined home-card-icon" style="color:var(--amber)">directions_bus</span>
-        <div>
-          <div class="home-card-label">Ruta</div>
-          <div class="home-card-sub">Windshield text</div>
-        </div>
-      </button>
+        <!-- HERO: I Am Deaf -->
+        <button class="hero-deaf" data-nav="deaf">
+          <div class="hero-deaf-text">
+            <div class="hero-tag">🤟 Tap to show driver</div>
+            <div class="hero-label">I Am Deaf</div>
+            <div class="hero-sub">"Bingi ako. Hindi ako makarinig."</div>
+          </div>
+          <span class="material-symbols-outlined" style="font-size:72px;color:#412d00;flex-shrink:0">front_hand</span>
+        </button>
 
-      <button class="home-card" data-nav="gps">
-        <span class="material-symbols-outlined home-card-icon" style="color:var(--amber)">location_on</span>
-        <div>
-          <div class="home-card-label">Hintuan Ko</div>
-          <div class="home-card-sub">GPS stop alert</div>
-        </div>
-      </button>
+        <!-- Sabihin Mo — large row -->
+        <button class="card-sabihin" data-nav="phrases">
+          <div class="card-sabihin-left">
+            <div class="card-sabihin-icon">
+              <span class="material-symbols-outlined" style="font-size:26px;color:var(--amber)">chat_bubble</span>
+            </div>
+            <div>
+              <div class="card-sabihin-label">Sabihin Mo</div>
+              <div class="card-sabihin-sub">Quick phrases · Tap to show driver or passenger</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--outline-var)">chevron_right</span>
+        </button>
 
-      <button class="home-card span-2 dashed" id="ai-card" data-nav="ai">
-        <div>
-          <div class="home-card-label">AI Assistant</div>
-          <div class="home-card-sub">Ask in Filipino, English, o Taglish</div>
+        <!-- GPS Alert — row -->
+        <button class="card-gps" data-nav="gps">
+          <div class="card-gps-left">
+            <span class="material-symbols-outlined" style="font-size:24px;color:var(--text-muted)">location_on</span>
+            <div>
+              <div class="card-gps-label">Hintuan Ko</div>
+              <div class="card-gps-sub">GPS vibration alert · Get notified when near your stop</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--outline-var)">chevron_right</span>
+        </button>
+
+      </div>
+
+      <!-- ── ZONE 2: BAGO SUMAKAY (Before You Board) ── -->
+      <div class="phase-label" style="margin-top:8px">
+        <span class="phase-label-badge prep">📋 Bago Sumakay — Plan Ahead</span>
+        <span class="phase-label-line"></span>
+      </div>
+
+      <div class="zone-prep">
+        <div class="prep-grid">
+
+          <button class="card-prep" data-nav="fare">
+            <span class="material-symbols-outlined card-prep-icon">payments</span>
+            <div>
+              <div class="card-prep-label">Bayad</div>
+              <div class="card-prep-sub">Fare calculator</div>
+            </div>
+          </button>
+
+          <button class="card-prep" data-nav="route">
+            <span class="material-symbols-outlined card-prep-icon">directions_bus</span>
+            <div>
+              <div class="card-prep-label">Ruta</div>
+              <div class="card-prep-sub">Windshield text</div>
+            </div>
+          </button>
+
+          <button class="card-ai" id="ai-card" data-nav="ai">
+            <div>
+              <div class="card-ai-label">AI Assistant</div>
+              <div class="card-ai-sub">Ask in Filipino, English, o Taglish</div>
+            </div>
+            <span class="material-symbols-outlined" style="font-size:28px;color:var(--amber);opacity:.7;flex-shrink:0">smart_toy</span>
+          </button>
+
         </div>
-        <span class="material-symbols-outlined" style="font-size:32px;color:var(--amber)">smart_toy</span>
-      </button>
+      </div>
+
     </main>
-
-    <!-- Legend -->
     <!-- BUG FIX — do not revert: legend-strip removed -->
   </div>
 
