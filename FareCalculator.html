@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#6b4b00",
+                        "surface-container-highest": "#2a3548",
+                        "outline-variant": "#45474c",
+                        "inverse-primary": "#535f74",
+                        "error": "#ffb4ab",
+                        "surface-container-low": "#111c2d",
+                        "on-error-container": "#ffdad6",
+                        "background": "#081425",
+                        "on-secondary-fixed-variant": "#5e4200",
+                        "on-tertiary": "#2f3131",
+                        "secondary-fixed-dim": "#ffba20",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "outline": "#8f9097",
+                        "on-surface": "#d8e3fb",
+                        "tertiary": "#c6c6c7",
+                        "surface-dim": "#081425",
+                        "surface-variant": "#2a3548",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-container-lowest": "#040e1f",
+                        "primary-fixed": "#d7e3fc",
+                        "primary-container": "#0a1628",
+                        "inverse-surface": "#d8e3fb",
+                        "on-primary-container": "#758096",
+                        "surface-container-high": "#1f2a3c",
+                        "on-surface-variant": "#c5c6cd",
+                        "inverse-on-surface": "#263143",
+                        "secondary-container": "#feb700",
+                        "primary-fixed-dim": "#bbc7df",
+                        "on-error": "#690005",
+                        "on-secondary-fixed": "#271900",
+                        "secondary-fixed": "#ffdea8",
+                        "on-primary": "#253144",
+                        "tertiary-fixed": "#e2e2e2",
+                        "surface-container": "#152031",
+                        "on-background": "#d8e3fb",
+                        "surface": "#081425",
+                        "on-tertiary-container": "#7e8080",
+                        "tertiary-container": "#141616",
+                        "surface-bright": "#2f3a4c",
+                        "error-container": "#93000a",
+                        "secondary": "#ffdb9d",
+                        "on-primary-fixed-variant": "#3c475b",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-secondary": "#412d00",
+                        "surface-tint": "#bbc7df",
+                        "primary": "#bbc7df",
+                        "on-primary-fixed": "#101c2e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "touch-target-min": "56px",
+                        "stack-gap": "24px",
+                        "gutter-mobile": "16px",
+                        "margin-mobile": "24px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Atkinson Hyperlegible Next"],
+                        "card-title": ["Atkinson Hyperlegible Next"],
+                        "button-label": ["Atkinson Hyperlegible Next"],
+                        "body-lg": ["Atkinson Hyperlegible Next"],
+                        "alert-xl": ["Atkinson Hyperlegible Next"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["16px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "card-title": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "button-label": ["20px", {"lineHeight": "24px", "fontWeight": "700"}],
+                        "body-lg": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                        "alert-xl": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #081425;
+            width: 390px;
+            height: 844px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="antialiased text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-[#0A1628] text-primary font-button-label text-button-label uppercase tracking-widest border-b-2 border-outline-variant flex justify-between items-center w-full px-margin-mobile h-[72px] sticky top-0 z-50">
+<div class="flex items-center gap-2 h-full">
+<div class="bg-white p-1 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-black" style="font-size: 24px;">broken_image</span>
+</div>
+<span class="font-alert-xl text-button-label font-extrabold text-secondary-container uppercase tracking-tight">SENYASPO</span>
+</div>
+<div class="flex items-center">
+<button class="active-haptic flex items-center justify-center min-w-[56px] min-h-[56px] text-on-surface hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<main class="flex-1 px-margin-mobile flex flex-col justify-between py-6 pt-6">
+<!-- Heading -->
+<h1 class="text-center font-button-label text-button-label text-secondary-container tracking-widest uppercase">
+            FARE CALCULATOR
+        </h1>
+<!-- Dropdowns Section -->
+<div class="space-y-stack-gap">
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase">START POINT (ORIGIN)</label>
+<div class="relative flex items-center h-touch-target-min w-full bg-surface-container-low border-2 border-outline px-4 rounded-xl active:border-secondary-container">
+<span class="flex-1 font-body-lg text-[18px] text-on-surface">PITX Terminal 1</span>
+<span class="material-symbols-outlined text-secondary-container" data-icon="arrow_drop_down">arrow_drop_down</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase">END POINT (DESTINATION)</label>
+<div class="relative flex items-center h-touch-target-min w-full bg-surface-container-low border-2 border-outline px-4 rounded-xl active:border-secondary-container">
+<span class="flex-1 font-body-lg text-[18px] text-on-surface">Baclaran Church</span>
+<span class="material-symbols-outlined text-secondary-container" data-icon="arrow_drop_down">arrow_drop_down</span>
+</div>
+</div><p class="text-[10px] text-outline mt-1 font-label-sm">Fares based on LTFRB Matrix 2022</p>
+</div>
+<!-- Result Box -->
+<div class="bg-secondary-container w-full py-6 px-4 rounded-xl border-4 border-on-secondary-container flex flex-col items-center justify-center space-y-1">
+<span class="font-label-sm text-label-sm text-on-secondary-container font-extrabold uppercase">TOTAL FARE</span>
+<span class="font-card-title text-card-title text-on-secondary-container">₱13.00</span>
+</div>
+<!-- Bill Selection -->
+<div class="space-y-4">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase text-center block w-full">SELECT YOUR BILL</label>
+<div class="flex justify-between gap-4">
+<button class="flex-1 h-touch-target-min border-2 border-outline text-on-surface font-button-label rounded-full hover:bg-surface-container-high transition-colors active:scale-95">₱20</button>
+<button class="flex-1 h-touch-target-min border-2 border-outline text-on-surface font-button-label rounded-full hover:bg-surface-container-high transition-colors active:scale-95">₱50</button>
+<button class="flex-1 h-touch-target-min border-2 border-outline text-on-surface font-button-label rounded-full hover:bg-surface-container-high transition-colors active:scale-95">₱100</button>
+</div>
+</div>
+<!-- CTA Button -->
+<button class="w-full h-[72px] bg-secondary-container text-on-secondary-container font-alert-xl text-[24px] font-extrabold rounded-xl border-b-4 border-on-secondary-container active:translate-y-1 active:border-b-0 transition-all uppercase">
+            EXACT CHANGE
+        </button><div class="flex flex-col items-center justify-center py-2"><span class="text-outline text-[12px] uppercase font-label-sm">Your Change</span><span class="text-white font-alert-xl text-[32px] font-bold">₱7.00</span></div>
+<!-- Footer -->
+<footer class="text-center">
+<p class="font-label-sm text-[12px] text-outline opacity-70 uppercase tracking-tighter">
+                Official LTFRB fare data source
+            </p>
+</footer>
+</main>
+<div class="fixed bottom-8 right-8 z-[70]" id="ai-chat-fab"><button class="w-16 h-16 rounded-full bg-[#0A1628] flex items-center justify-center shadow-2xl active-haptic border-2 border-[#D4980A]/20 transition-all hover:scale-110"><span class="material-symbols-outlined" style="color: #E6A800; font-size: 32px;">chat_bubble</span><div class="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0A1628]"></div></button></div><div class="fixed inset-0 z-[80] hidden" id="ai-bottom-sheet"><div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div><div class="absolute bottom-0 left-0 right-0 bg-[#081425] rounded-t-[32px] border-t-2 border-[#D4980A]/30 flex flex-col max-h-[70vh] shadow-[0_-8px_30px_rgb(0,0,0,0.5)]"><div class="w-12 h-1.5 bg-surface-variant rounded-full mx-auto my-4"></div><div class="px-6 pb-4 flex items-center justify-between border-b border-surface-variant"><div class="flex items-center gap-2"><h3 class="font-alert-xl text-[20px] text-white tracking-tight uppercase">AI ROUTE ASSISTANT</h3><span class="bg-error-container text-on-error-container text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">NEEDS INTERNET</span></div><button class="p-2 text-on-surface-variant"><span class="material-symbols-outlined">close</span></button></div><div class="flex-1 overflow-y-auto p-6 flex flex-col gap-4"><div class="flex flex-col items-start max-w-[80%]"><div class="bg-surface-container-high text-on-surface p-4 rounded-2xl rounded-tl-none text-[16px]">Hello! How can I help you with your commute today?</div><span class="text-[12px] text-on-surface-variant mt-1 ml-2">10:00 AM</span></div><div class="flex flex-col items-end max-w-[80%] self-end"><div class="bg-[#D4980A] text-on-secondary p-4 rounded-2xl rounded-tr-none text-[16px] font-medium">How do I get to Cubao from here?</div><span class="text-[12px] text-on-surface-variant mt-1 mr-2">10:02 AM</span></div></div><div class="p-4 bg-surface-container-low border-t border-surface-variant"><div class="flex items-center gap-2 bg-[#0A1628] rounded-full px-4 py-1 border border-outline-variant"><input class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface text-[16px] py-3" placeholder="Type a message..." type="text"/><button class="text-[#D4980A]"><span class="material-symbols-outlined">send</span></button></div></div></div></div></body></html>

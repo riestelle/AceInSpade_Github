@@ -1,0 +1,188 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#271900",
+                    "surface-container-high": "#1f2a3c",
+                    "primary-fixed": "#d7e3fc",
+                    "on-tertiary": "#2f3131",
+                    "on-primary-fixed": "#101c2e",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "inverse-surface": "#d8e3fb",
+                    "tertiary": "#c6c6c7",
+                    "on-surface": "#d8e3fb",
+                    "secondary-fixed": "#ffdea8",
+                    "error-container": "#93000a",
+                    "on-secondary-fixed-variant": "#5e4200",
+                    "surface-bright": "#2f3a4c",
+                    "secondary": "#ffdb9d",
+                    "on-tertiary-container": "#7e8080",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "tertiary-fixed": "#e2e2e2",
+                    "secondary-fixed-dim": "#ffba20",
+                    "on-background": "#d8e3fb",
+                    "inverse-primary": "#535f74",
+                    "background": "#081425",
+                    "surface-container-lowest": "#040e1f",
+                    "primary": "#bbc7df",
+                    "surface": "#081425",
+                    "secondary-container": "#feb700",
+                    "surface-container-highest": "#2a3548",
+                    "tertiary-container": "#141616",
+                    "primary-container": "#0a1628",
+                    "surface-variant": "#2a3548",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "inverse-on-surface": "#263143",
+                    "surface-dim": "#081425",
+                    "on-error": "#690005",
+                    "surface-tint": "#bbc7df",
+                    "outline": "#8f9097",
+                    "surface-container": "#152031",
+                    "on-secondary": "#412d00",
+                    "on-error-container": "#ffdad6",
+                    "error": "#ffb4ab",
+                    "on-primary-fixed-variant": "#3c475b",
+                    "on-primary": "#253144",
+                    "surface-container-low": "#111c2d",
+                    "on-primary-container": "#758096",
+                    "on-surface-variant": "#c5c6cd",
+                    "primary-fixed-dim": "#bbc7df",
+                    "outline-variant": "#45474c",
+                    "on-secondary-container": "#6b4b00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "touch-target-min": "56px",
+                    "stack-gap": "24px",
+                    "margin-mobile": "24px",
+                    "gutter-mobile": "16px"
+            },
+            "fontFamily": {
+                    "card-title": ["Atkinson Hyperlegible Next"],
+                    "alert-xl": ["Atkinson Hyperlegible Next"],
+                    "button-label": ["Atkinson Hyperlegible Next"],
+                    "label-sm": ["Atkinson Hyperlegible Next"],
+                    "body-lg": ["Atkinson Hyperlegible Next"]
+            },
+            "fontSize": {
+                    "card-title": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "alert-xl": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "button-label": ["20px", {"lineHeight": "24px", "fontWeight": "700"}],
+                    "label-sm": ["16px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["24px", {"lineHeight": "32px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            font-family: 'Atkinson Hyperlegible Next', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-[844px] w-[390px] mx-auto overflow-hidden relative">
+<!-- TopAppBar -->
+<header class="bg-[#0A1628] text-primary font-button-label text-button-label uppercase tracking-widest border-b-2 border-outline-variant flex justify-between items-center w-full px-margin-mobile h-[72px] fixed top-0 z-50">
+<div class="flex items-center gap-2 h-full">
+<div class="bg-white p-1 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-black" style="font-size: 24px;">broken_image</span>
+</div>
+<span class="font-alert-xl text-button-label font-extrabold text-secondary-container uppercase tracking-tight">SENYASPO</span>
+</div>
+<button class="active-haptic flex items-center justify-center min-w-[56px] min-h-[56px] text-on-surface hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</header>
+<main class="pt-[64px] h-full flex flex-col">
+<!-- Search Bar -->
+<div class="px-margin-mobile py-4 bg-background shrink-0">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-secondary-container" data-icon="search">search</span>
+</div>
+<input class="block w-full h-[56px] pl-12 bg-surface-container-low border-2 border-secondary-container text-on-surface font-label-sm rounded-lg focus:ring-4 focus:ring-secondary-container/20 transition-all placeholder:text-outline" placeholder="SEARCH STOP NAME..." type="text">
+</div>
+</div>
+<!-- Map Section - Now edge-to-edge -->
+<div class="relative flex-1 w-full overflow-hidden bg-white">
+<!-- Map Placeholder Image: Light Grey/White Minimal Style -->
+<div class="absolute inset-0 bg-[#f8f9fa]">
+<img alt="Light grey and white transit map" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfJb1-Ovz1852h3jMlvHIvUPBX12TINyO6gPXapz9McoKGzgZRgFdWqU0XiKNvFzXODO3JukKf-e4D9pl-M6oTaGHpK0GQ_et1aBB13nlHJevycqEVU5jzhOHXRxDlTCzdCPUIUsyCzXWCbPW5R-sHR0YHlrctR8dVP_7rOQXJa9X_C8iYUeDVvzzGJwT3MaEF-gXqHi_fhpXNKSh4oblgoGuShvTLuqvPWfeAk7JDVPhd_kuDQzGaAcaqmQmilbyNw9hD4cymnes">
+<!-- Custom Pin Marker -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+<div class="bg-secondary-container text-on-secondary-fixed px-2 py-0.5 rounded-sm font-bold text-[12px] mb-1 shadow-sm border border-background uppercase tracking-tight">
+                        QUEZON AVE STOP
+                    </div>
+<span class="material-symbols-outlined text-secondary-container text-4xl filled-icon drop-shadow-sm" data-icon="location_on" style="font-variation-settings: &quot;FILL&quot; 1;">location_on</span>
+</div>
+<!-- Map Zoom Controls -->
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+<button class="w-10 h-10 bg-white text-background border border-outline-variant flex items-center justify-center rounded-sm active:bg-slate-100 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px] font-bold" data-icon="add">add</span>
+</button>
+<button class="w-10 h-10 bg-white text-background border border-outline-variant flex items-center justify-center rounded-sm active:bg-slate-100 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px] font-bold" data-icon="remove">remove</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Spacer for the fixed bottom card -->
+<div class="h-[180px] shrink-0"></div>
+</main>
+<!-- FAB Chat Bubble -->
+<div class="fixed bottom-[196px] right-margin-mobile z-40">
+<div class="relative">
+<button class="w-14 h-14 rounded-full flex items-center justify-center border-4 border-background shadow-lg active:scale-90 transition-transform" style="background-color: rgb(10, 22, 40); color: rgb(230, 168, 0);">
+<span class="material-symbols-outlined filled-icon" data-icon="chat" style="color: rgb(230, 168, 0); font-variation-settings: &quot;FILL&quot; 1;">chat</span>
+</button>
+<div class="absolute top-0 right-0 w-4 h-4 bg-green-500 border-2 border-background rounded-full"></div>
+</div>
+</div>
+<!-- Confirmation Card -->
+<div class="fixed bottom-0 left-0 w-full z-50 bg-primary-container border-t-4 border-secondary-container p-6 shadow-2xl">
+<div class="flex justify-between items-start mb-6">
+<div class="flex flex-col gap-1">
+<span class="text-secondary-container font-label-sm text-[12px] tracking-widest font-bold">SELECTED STOP</span>
+<h2 class="text-on-background font-card-title text-[32px] leading-none uppercase">QUEZON AVE</h2>
+<span class="text-on-tertiary-container font-label-sm text-[14px]">MRT-3 NORTHBOUND</span>
+</div>
+<div class="flex flex-col items-end gap-1 text-right">
+<span class="text-secondary-container font-card-title text-[28px] leading-none">0.4 KM</span>
+<span class="text-on-tertiary-container font-label-sm text-[12px] tracking-widest">DISTANCE</span>
+</div>
+</div>
+<button class="w-full h-[56px] bg-secondary-container text-on-secondary-fixed flex items-center justify-center gap-3 rounded-lg active:invert duration-75 transition-all">
+<span class="material-symbols-outlined filled-icon" data-icon="notifications_active" style="font-variation-settings: &quot;FILL&quot; 1;">notifications_active</span>
+<span class="font-button-label uppercase tracking-wider">SET ALERT</span>
+</button>
+</div>
+
+
+</body></html>

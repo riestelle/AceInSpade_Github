@@ -1,0 +1,196 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "surface-variant": "#2a3548",
+                  "surface-container": "#152031",
+                  "error": "#ffb4ab",
+                  "surface-container-high": "#1f2a3c",
+                  "tertiary-container": "#141616",
+                  "on-tertiary-fixed": "#1a1c1c",
+                  "on-secondary-fixed": "#271900",
+                  "background": "#081425",
+                  "on-background": "#d8e3fb",
+                  "inverse-primary": "#535f74",
+                  "surface-container-lowest": "#040e1f",
+                  "surface-bright": "#2f3a4c",
+                  "on-error": "#690005",
+                  "primary": "#bbc7df",
+                  "primary-fixed": "#d7e3fc",
+                  "tertiary-fixed-dim": "#c6c6c7",
+                  "on-tertiary-fixed-variant": "#454747",
+                  "inverse-on-surface": "#263143",
+                  "primary-fixed-dim": "#bbc7df",
+                  "on-surface": "#d8e3fb",
+                  "on-tertiary-container": "#7e8080",
+                  "secondary": "#ffdb9d",
+                  "surface-container-low": "#111c2d",
+                  "on-secondary-fixed-variant": "#5e4200",
+                  "on-primary-container": "#758096",
+                  "surface-dim": "#081425",
+                  "tertiary-fixed": "#e2e2e2",
+                  "outline": "#8f9097",
+                  "on-surface-variant": "#c5c6cd",
+                  "on-secondary": "#412d00",
+                  "on-primary": "#253144",
+                  "surface": "#081425",
+                  "secondary-fixed": "#ffdea8",
+                  "secondary-fixed-dim": "#ffba20",
+                  "secondary-container": "#feb700",
+                  "on-tertiary": "#2f3131",
+                  "on-error-container": "#ffdad6",
+                  "inverse-surface": "#d8e3fb",
+                  "on-primary-fixed-variant": "#3c475b",
+                  "tertiary": "#c6c6c7",
+                  "error-container": "#93000a",
+                  "surface-tint": "#bbc7df",
+                  "on-primary-fixed": "#101c2e",
+                  "outline-variant": "#45474c",
+                  "surface-container-highest": "#2a3548",
+                  "primary-container": "#0a1628",
+                  "on-secondary-container": "#6b4b00"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.125rem",
+                  "lg": "0.25rem",
+                  "xl": "0.5rem",
+                  "full": "0.75rem"
+          },
+          "spacing": {
+                  "stack-gap": "24px",
+                  "gutter-mobile": "16px",
+                  "margin-mobile": "24px",
+                  "unit": "8px",
+                  "touch-target-min": "56px"
+          },
+          "fontFamily": {
+                  "card-title": ["Atkinson Hyperlegible Next"],
+                  "button-label": ["Atkinson Hyperlegible Next"],
+                  "body-lg": ["Atkinson Hyperlegible Next"],
+                  "label-sm": ["Atkinson Hyperlegible Next"],
+                  "alert-xl": ["Atkinson Hyperlegible Next"]
+          },
+          "fontSize": {
+                  "card-title": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                  "button-label": ["20px", {"lineHeight": "24px", "fontWeight": "700"}],
+                  "body-lg": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                  "label-sm": ["16px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                  "alert-xl": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #0A1628;
+      font-family: 'Atkinson Hyperlegible Next', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #081425;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #2a3548;
+      border-radius: 10px;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="text-on-surface h-[844px] w-[390px] mx-auto overflow-hidden flex flex-col border-x border-outline-variant">
+<!-- Header: TopAppBar Implementation -->
+<header class="bg-surface-container-lowest flex justify-between items-center w-full px-margin-mobile h-touch-target-min border-b-2 border-outline-variant shrink-0">
+<div class="flex items-center gap-3">
+<!-- White Square Logo Area -->
+<div class="bg-white p-1 rounded-lg flex items-center justify-center w-10 h-10">
+<span class="material-symbols-outlined text-black" style="font-size: 24px;">broken_image</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-alert-xl text-button-label font-extrabold text-secondary-container uppercase tracking-tight" style="color: rgb(254, 183, 0);">SENYASPO</span>
+<!-- Internet Badge -->
+</div>
+</div>
+</div>
+<button class="text-on-surface active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-on-surface">menu</span>
+</button>
+</header><div class="bg-error-container w-full py-2 flex items-center justify-center gap-1.5 border-b border-error shrink-0">
+<span class="material-symbols-outlined text-[16px] text-on-error-container" style="font-variation-settings: 'FILL' 1;">wifi_off</span>
+<span class="text-[12px] font-bold text-on-error-container leading-none uppercase tracking-widest">INTERNET REQUIRED</span>
+</div>
+<!-- Sub-header Section -->
+<!-- Chat Interface -->
+<main class="flex-1 overflow-y-auto custom-scrollbar p-margin-mobile flex flex-col gap-stack-gap">
+<!-- Assistant Message -->
+<div class="flex flex-col items-start max-w-[85%]">
+<span class="text-on-tertiary-container text-label-sm font-label-sm mb-2 uppercase tracking-tighter">ASSISTANT</span>
+<div class="bg-surface-container-highest text-on-surface p-4 rounded-xl rounded-tl-none border-2 border-outline-variant shadow-sm">
+<p class="text-label-sm font-medium leading-relaxed">Hello! I am your SenyasPo assistant. Where are you heading today? I can help you find the best jeepney route.</p>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex flex-col items-end max-w-[85%] self-end">
+<span class="text-on-tertiary-container text-label-sm font-label-sm mb-2 uppercase tracking-tighter">YOU</span>
+<div class="bg-surface-variant text-on-surface p-4 rounded-xl rounded-tr-none border-2 border-secondary shadow-sm">
+<p class="text-label-sm font-medium leading-relaxed">How do I get from Cubao to SM Fairview using a jeepney?</p>
+</div>
+</div>
+<!-- Assistant Message -->
+<div class="flex flex-col items-start max-w-[85%]">
+<span class="text-on-tertiary-container text-label-sm font-label-sm mb-2 uppercase tracking-tighter">ASSISTANT</span>
+<div class="bg-surface-container-highest text-on-surface p-4 rounded-xl rounded-tl-none border-2 border-outline-variant shadow-sm">
+<p class="text-label-sm font-medium leading-relaxed">Take the jeepney along Aurora Blvd bound for SM Fairview. Look for the sign "SM Fairview via Commonwealth". The fare is approximately 35 pesos.</p>
+</div>
+</div>
+<!-- Assistant Message with Route Visual -->
+<div class="flex flex-col items-start max-w-[85%]">
+<div class="bg-surface-container-highest text-on-surface p-4 rounded-xl rounded-tl-none border-2 border-outline-variant shadow-sm w-full">
+<p class="text-label-sm font-medium leading-relaxed mb-3">Key stops on this route:</p>
+<div class="space-y-3 border-l-2 border-secondary ml-2 pl-4 py-1">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-sm font-bold">CUBAO TERMINAL</span>
+</div>
+<div class="flex items-center gap-2 opacity-60">
+<div class="w-2 h-2 rounded-full bg-outline"></div>
+<span class="text-sm">COMMONWEALTH AVE</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-sm font-bold">SM FAIRVIEW</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Input Bar -->
+<footer class="p-margin-mobile bg-primary-container border-t-2 border-outline-variant shrink-0">
+<div class="relative flex items-center">
+<input class="w-full bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant border-2 border-secondary-container rounded-xl py-4 pl-6 pr-16 focus:ring-4 focus:ring-secondary-container focus:outline-none font-medium text-label-sm" placeholder="Type your message..." type="text">
+<button class="absolute right-3 w-10 h-10 bg-secondary-container rounded-lg flex items-center justify-center active:scale-95 transition-all text-on-secondary-container border-2 border-on-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</footer>
+
+
+</body></html>

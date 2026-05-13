@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#bbc7df",
+                    "error": "#ffb4ab",
+                    "surface-tint": "#bbc7df",
+                    "on-surface-variant": "#c5c6cd",
+                    "on-primary": "#253144",
+                    "tertiary-container": "#141616",
+                    "surface-container-high": "#1f2a3c",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "tertiary-fixed": "#e2e2e2",
+                    "surface-dim": "#081425",
+                    "on-error-container": "#ffdad6",
+                    "error-container": "#93000a",
+                    "background": "#000000",
+                    "on-secondary-container": "#6b4b00",
+                    "outline": "#8f9097",
+                    "secondary-container": "#feb700",
+                    "primary-fixed-dim": "#bbc7df",
+                    "inverse-primary": "#535f74",
+                    "on-tertiary-container": "#7e8080",
+                    "on-surface": "#ffffff",
+                    "surface": "#000000",
+                    "secondary-fixed-dim": "#ffba20",
+                    "on-tertiary": "#2f3131",
+                    "on-primary-fixed-variant": "#3c475b",
+                    "secondary": "#ffdb9d",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "tertiary": "#c6c6c7",
+                    "surface-container-highest": "#2a3548",
+                    "surface-container": "#152031",
+                    "on-primary-fixed": "#101c2e",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "surface-container-lowest": "#040e1f",
+                    "outline-variant": "#45474c",
+                    "on-error": "#690005",
+                    "primary-container": "#0a1628",
+                    "surface-container-low": "#111c2d",
+                    "primary-fixed": "#d7e3fc",
+                    "inverse-on-surface": "#263143",
+                    "on-secondary": "#412d00",
+                    "on-primary-container": "#758096",
+                    "secondary-fixed": "#ffdea8",
+                    "on-secondary-fixed": "#271900",
+                    "inverse-surface": "#d8e3fb",
+                    "surface-variant": "#2a3548",
+                    "surface-bright": "#2f3a4c",
+                    "on-background": "#ffffff",
+                    "on-secondary-fixed-variant": "#5e4200"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-gap": "24px",
+                    "margin-mobile": "24px",
+                    "gutter-mobile": "16px",
+                    "touch-target-min": "56px",
+                    "unit": "8px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Atkinson Hyperlegible Next"],
+                    "label-sm": ["Atkinson Hyperlegible Next"],
+                    "card-title": ["Atkinson Hyperlegible Next"],
+                    "button-label": ["Atkinson Hyperlegible Next"],
+                    "alert-xl": ["Atkinson Hyperlegible Next"]
+            },
+            "fontSize": {
+                    "body-lg": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "label-sm": ["16px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "card-title": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "button-label": ["20px", {"lineHeight": "24px", "fontWeight": "700"}],
+                    "alert-xl": ["64px", {"lineHeight": "68px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        background-color: #000000;
+        color: #ffffff;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background selection:bg-secondary selection:text-on-secondary">
+<!-- TASK-FOCUSED PAGE: NAVIGATION SHELLS SUPPRESSED PER SEMANTIC SHELL MANDATE -->
+<main class="relative h-screen w-full flex flex-col justify-between px-margin-mobile pt-32 pb-margin-mobile">
+<!-- Center-aligned content -->
+<section class="flex flex-col items-center justify-center flex-grow text-center gap-12">
+<!-- Main Alert Text -->
+<h1 class="font-alert-xl text-alert-xl text-on-surface uppercase tracking-tight max-w-[340px]">
+                MALAPIT NA ANG IYONG HINTUAN!
+            </h1>
+<div class="flex flex-col items-center gap-4">
+<!-- Label: STOP NAME -->
+<span class="font-label-sm text-label-sm text-secondary-container uppercase tracking-[0.2em]">
+                    STOP NAME
+                </span>
+<!-- Stop Name -->
+<h2 class="font-card-title text-card-title text-on-surface uppercase border-b-4 border-secondary-container pb-2">
+                    SM NORTH EDSA
+                </h2>
+</div>
+</section>
+<!-- Bottom-aligned content -->
+<footer class="w-full flex justify-center pb-safe">
+<!-- Dismiss Button: Full Width with standard side margins -->
+<button class="w-full h-touch-target-min bg-on-surface text-background font-button-label text-button-label uppercase rounded-none border-4 border-on-surface active:bg-secondary-container active:scale-95 transition-all duration-100 flex items-center justify-center px-8">
+                NAIINTINDIHAN KO
+            </button>
+</footer>
+</main>
+<!-- Visual Texture Overlay for Brutalist Aesthetic (Subtle Noise) -->
+<div class="fixed inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuASRyNyQRaFzQOijNouCoH0N3vPSoW-QddrLsJgqoi-Aw-bOAZkSqAwMq3NKi8_4O2h7a7gMH7nV17vMJLsUvMweajtoFtuPvcoATBmNxsjkT4zW9kJqQ8M6mtkN_g3O1GdYdZJ1GYYDU0wtQFnzn3np3utrex59VssgKyW_FRfcT4jQRV8cW5nYKf-IZrl7AUaWsVK3wcpMU0a-u4J3JT6rSr3xhc92_gAXSJbZExZxp9GNikyFqp56JF36IHnfcZoQ2nT16Zvp7A');"></div>
+</body></html>

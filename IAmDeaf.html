@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#758096",
+                    "on-background": "#d8e3fb",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary-container": "#7e8080",
+                    "outline": "#8f9097",
+                    "surface-container-high": "#1f2a3c",
+                    "surface-bright": "#2f3a4c",
+                    "secondary-fixed-dim": "#ffba20",
+                    "secondary-container": "#feb700",
+                    "on-primary-fixed-variant": "#3c475b",
+                    "surface-variant": "#2a3548",
+                    "on-secondary-fixed-variant": "#5e4200",
+                    "on-secondary-fixed": "#271900",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "surface-container-lowest": "#040e1f",
+                    "surface-container-highest": "#2a3548",
+                    "primary": "#bbc7df",
+                    "on-secondary": "#412d00",
+                    "primary-fixed": "#d7e3fc",
+                    "on-secondary-container": "#6b4b00",
+                    "error-container": "#93000a",
+                    "on-surface-variant": "#c5c6cd",
+                    "outline-variant": "#45474c",
+                    "primary-container": "#0a1628",
+                    "inverse-on-surface": "#263143",
+                    "inverse-surface": "#d8e3fb",
+                    "secondary": "#ffdb9d",
+                    "background": "#081425",
+                    "on-tertiary": "#2f3131",
+                    "surface": "#081425",
+                    "on-error": "#690005",
+                    "surface-tint": "#bbc7df",
+                    "tertiary-fixed": "#e2e2e2",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "on-primary-fixed": "#101c2e",
+                    "tertiary-container": "#141616",
+                    "error": "#ffb4ab",
+                    "on-surface": "#d8e3fb",
+                    "on-primary": "#253144",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "primary-fixed-dim": "#bbc7df",
+                    "secondary-fixed": "#ffdea8",
+                    "surface-container": "#152031",
+                    "surface-dim": "#081425",
+                    "surface-container-low": "#111c2d",
+                    "inverse-primary": "#535f74",
+                    "tertiary": "#c6c6c7"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "touch-target-min": "56px",
+                    "gutter-mobile": "16px",
+                    "unit": "8px",
+                    "stack-gap": "24px",
+                    "margin-mobile": "24px"
+            },
+            "fontFamily": {
+                    "alert-xl": ["Atkinson Hyperlegible Next"],
+                    "card-title": ["Atkinson Hyperlegible Next"],
+                    "button-label": ["Atkinson Hyperlegible Next"],
+                    "body-lg": ["Atkinson Hyperlegible Next"],
+                    "label-sm": ["Atkinson Hyperlegible Next"]
+            },
+            "fontSize": {
+                    "alert-xl": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "card-title": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "button-label": ["20px", {"lineHeight": "24px", "fontWeight": "700"}],
+                    "body-lg": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "label-sm": ["16px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-primary-container text-on-surface font-body-lg min-h-screen overflow-hidden">
+<!-- Mobile Takeover Screen -->
+<main class="relative flex flex-col items-center justify-between min-h-screen p-margin-mobile">
+<!-- Top Action Area -->
+<div class="w-full flex justify-end">
+<button class="text-on-surface font-label-sm uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity p-2">
+                FIL/EN
+            </button>
+</div>
+<!-- Center Content: The High-Contrast Message -->
+<div class="flex-1 flex flex-col items-center justify-center text-center max-w-lg">
+<h1 class="font-alert-xl text-alert-xl text-on-background mb-stack-gap">
+                Bingi ako. Hindi ako makarinig. Pakitapik ang aking balikat para makuha ang aking atensyon. Bababa ako sa:
+            </h1>
+<!-- Stop Name: Large Bold Amber -->
+<div class="inline-block py-4 px-8 border-4 border-secondary-container rounded-xl">
+<span class="font-alert-xl text-alert-xl text-secondary-container">
+                    LUGAR
+                </span>
+</div>
+</div>
+<!-- Bottom Action Area: Dismiss Button -->
+<div class="w-full flex justify-center pb-8">
+<button aria-label="Close" class="flex items-center justify-center w-touch-target-min h-touch-target-min bg-surface-container-high rounded-xl border-2 border-outline-variant hover:bg-surface-container-highest active:scale-95 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant text-4xl" data-icon="close">close</span>
+</button>
+</div>
+</main>
+<!-- Background Subtle Texture (Non-DataStore) -->
+<div class="fixed inset-0 pointer-events-none z-[-1] opacity-10">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-surface-bright via-primary-container to-primary-container"></div>
+</div>
+</body></html>

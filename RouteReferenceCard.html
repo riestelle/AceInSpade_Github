@@ -1,0 +1,210 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#d7e3fc",
+                    "on-primary-fixed-variant": "#3c475b",
+                    "surface-tint": "#bbc7df",
+                    "surface-container-lowest": "#040e1f",
+                    "error-container": "#93000a",
+                    "background": "#081425",
+                    "surface-bright": "#2f3a4c",
+                    "on-surface-variant": "#c5c6cd",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "on-secondary": "#412d00",
+                    "on-background": "#d8e3fb",
+                    "tertiary-fixed": "#e2e2e2",
+                    "inverse-on-surface": "#263143",
+                    "surface-variant": "#2a3548",
+                    "error": "#ffb4ab",
+                    "on-error": "#690005",
+                    "on-primary-container": "#758096",
+                    "primary-fixed-dim": "#bbc7df",
+                    "on-surface": "#d8e3fb",
+                    "on-tertiary-container": "#7e8080",
+                    "on-secondary-container": "#6b4b00",
+                    "secondary-fixed-dim": "#ffba20",
+                    "secondary-container": "#feb700",
+                    "inverse-surface": "#d8e3fb",
+                    "outline-variant": "#45474c",
+                    "inverse-primary": "#535f74",
+                    "surface-container-high": "#1f2a3c",
+                    "surface-container-highest": "#2a3548",
+                    "on-error-container": "#ffdad6",
+                    "outline": "#8f9097",
+                    "primary": "#bbc7df",
+                    "on-secondary-fixed-variant": "#5e4200",
+                    "on-primary-fixed": "#101c2e",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "surface": "#081425",
+                    "surface-container-low": "#111c2d",
+                    "on-tertiary": "#2f3131",
+                    "tertiary-container": "#141616",
+                    "tertiary": "#c6c6c7",
+                    "primary-container": "#0a1628",
+                    "on-secondary-fixed": "#271900",
+                    "secondary": "#ffdb9d",
+                    "secondary-fixed": "#ffdea8",
+                    "on-primary": "#253144",
+                    "surface-dim": "#081425",
+                    "surface-container": "#152031"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "24px",
+                    "unit": "8px",
+                    "touch-target-min": "56px",
+                    "gutter-mobile": "16px",
+                    "stack-gap": "24px"
+            },
+            "fontFamily": {
+                    "button-label": ["Atkinson Hyperlegible Next"],
+                    "body-lg": ["Atkinson Hyperlegible Next"],
+                    "alert-xl": ["Atkinson Hyperlegible Next"],
+                    "card-title": ["Atkinson Hyperlegible Next"],
+                    "label-sm": ["Atkinson Hyperlegible Next"]
+            },
+            "fontSize": {
+                    "button-label": ["20px", {"lineHeight": "24px", "fontWeight": "700"}],
+                    "body-lg": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "alert-xl": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "card-title": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-sm": ["16px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #081425;
+            color: #d8e3fb;
+            font-family: 'Atkinson Hyperlegible Next', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .jeepney-signage {
+            font-family: 'Atkinson Hyperlegible Next', sans-serif;
+            font-stretch: condensed;
+            font-weight: 800;
+            text-transform: uppercase;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background flex justify-center items-start min-h-screen">
+<!-- Mobile Frame 390x844 -->
+<div class="w-[390px] min-h-[844px] bg-background relative overflow-hidden flex flex-col">
+<!-- TopAppBar (Based on Shared Components JSON) -->
+<header class="bg-[#0A1628] text-primary font-button-label text-button-label uppercase tracking-widest border-b-2 border-outline-variant flex justify-between items-center w-full px-margin-mobile h-[72px] sticky top-0 z-50"><div class="flex items-center gap-2 h-full"><div class="bg-white p-1 rounded-lg flex items-center justify-center"><span class="material-symbols-outlined text-black" style="font-size: 24px;">broken_image</span></div><span class="font-alert-xl text-button-label font-extrabold text-secondary-container uppercase tracking-tight">SENYASPO</span></div><div class="flex items-center"><button class="active-haptic flex items-center justify-center min-w-[56px] min-h-[56px] text-on-surface hover:bg-surface-container-highest rounded-full transition-colors"><span class="material-symbols-outlined">menu</span></button></div></header>
+<!-- Main Content Scroll Area -->
+<main class="flex-1 px-margin-mobile pt-stack-gap pb-32 mt-2">
+<!-- Search Bar Section -->
+<section class="mb-stack-gap"><div class="relative w-full"><span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary-container">search</span><input class="w-full bg-surface-container-low border-2 border-[#D4980A] pl-12 pr-4 py-4 text-on-surface placeholder:text-outline font-button-label text-button-label focus:outline-none focus:border-4 focus:border-secondary-container rounded-none" placeholder="SEARCH ROUTE OR AREA" type="text"></div></section>
+<!-- Selected Route Section -->
+<section class="mb-stack-gap">
+<p class="font-label-sm text-label-sm text-secondary-container uppercase mb-2">CURRENT SELECTED ROUTE</p>
+<div class="bg-black p-6 border-2 border-white flex flex-col items-center justify-center text-center bg-[#000000]">
+<h2 class="jeepney-signage text-white text-[48px]" style="font-size: 48px; font-weight: 800; font-stretch: condensed; text-transform: uppercase;">
+                        CUBAO — VITO CRUZ VIA MABINI
+                    </h2>
+</div>
+</section>
+<!-- Landmark Stops Section -->
+<section class="mb-stack-gap">
+<p class="font-label-sm text-label-sm text-secondary-container uppercase mb-4">LANDMARK STOPS</p>
+<div class="flex flex-col space-y-6">
+<!-- Stop 1 -->
+<div class="flex items-start">
+<div class="mt-2 mr-4">
+<div class="w-3 h-3 bg-secondary-container rounded-full"></div>
+</div>
+<div>
+<h3 class="font-bold text-white text-xl uppercase tracking-tight">CUBAO EXPO / GATEWAY</h3>
+<p class="text-on-surface-variant mt-0.5 text-[16px]">Transfer point for LRT-2 and MRT-3</p>
+</div>
+</div>
+<!-- Stop 2 -->
+<div class="flex items-start">
+<div class="mt-2 mr-4">
+<div class="w-3 h-3 bg-secondary-container rounded-full"></div>
+</div>
+<div>
+<h3 class="font-bold text-white text-xl uppercase tracking-tight">EDSA CORNER AURORA BLVD</h3>
+<p class="text-on-surface-variant mt-0.5 text-[16px]">Main intersection for provincial buses</p>
+</div>
+</div>
+<!-- Stop 3 -->
+<div class="flex items-start">
+<div class="mt-2 mr-4">
+<div class="w-3 h-3 bg-secondary-container rounded-full"></div>
+</div>
+<div>
+<h3 class="font-bold text-white text-xl uppercase tracking-tight">STA. MESA / SM CENTERPOINT</h3>
+<p class="text-on-surface-variant mt-0.5 text-[16px]">V. Mapa and Polytechnic University access</p>
+</div>
+</div>
+<!-- Stop 4 -->
+<div class="flex items-start">
+<div class="mt-2 mr-4">
+<div class="w-3 h-3 bg-secondary-container rounded-full"></div>
+</div>
+<div>
+<h3 class="font-bold text-white text-xl uppercase tracking-tight">QUIAPO CHURCH</h3>
+<p class="text-on-surface-variant mt-0.5 text-[16px]">Plaza Miranda and heavy pedestrian crossing</p>
+</div>
+</div>
+<!-- Stop 5 -->
+<div class="flex items-start">
+<div class="mt-2 mr-4">
+<div class="w-3 h-3 bg-secondary-container rounded-full"></div>
+</div>
+<div>
+<h3 class="font-bold text-white text-xl uppercase tracking-tight">VITO CRUZ / DLSU</h3>
+<p class="text-on-surface-variant mt-0.5 text-[16px]">University area and LRT-1 terminal destination</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating AI Assistant Button -->
+<div class="fixed bottom-8 right-8 z-[70]" id="ai-chat-fab"><button class="w-16 h-16 rounded-full bg-[#0A1628] flex items-center justify-center shadow-2xl active-haptic border-2 border-[#D4980A]/20 transition-all hover:scale-110"><span class="material-symbols-outlined" style="color: #E6A800; font-size: 32px;">chat_bubble</span><div class="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0A1628]"></div></button></div>
+</div>
+<!-- Background Content Prompt for context -->
+<!-- The overall UI reflects a utilitarian, authoritative tool for the deaf community. 
+         A high-contrast navy and amber color palette ensures maximum legibility. 
+         Large bold typography inspired by Manila's jeepney signage provides immediate visual recognition. -->
+
+
+</body></html>
