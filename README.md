@@ -3,6 +3,7 @@
 SenyasPo is a lightweight, mobile-first Progressive Web Application (PWA) designed to reduce communication barriers faced by Deaf and Hard-of-Hearing (HoH) Filipino commuters who use jeepneys.
 
 Jeepney commuting in many areas relies heavily on verbal interaction—asking about routes, calling out stops, confirming fares, and coordinating payment. SenyasPo provides quick, accessible, low-friction tools that replace or reduce spoken exchanges **without requiring changes to existing transport infrastructure**.
+
 ---
 #### Why this exists
 
