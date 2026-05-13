@@ -3,10 +3,11 @@
 
 const FIREBASE_URL = 'https://unique-senyaspo-default-rtdb.firebaseio.com';
 
-let familyWatchId    = null;   // ID stored in localStorage
-let familyGpsWatch   = null;   // geolocation watchPosition handle
+let familyWatchId    = null;
+let familyGpsWatch   = null;
 let familyIsWatching = false;
-let familyLastPush   = 0;      // throttle pushes to every 8s
+let familyLastPush   = 0;
+let familyBgInterval = null;   // fallback interval for background GPS
 
 // ── Generate or load the watch ID ────────────────────────────────────────────
 function getFamilyId() {
@@ -27,10 +28,8 @@ function getFamilyShareURL() {
 
 // ── Write status to Firebase ──────────────────────────────────────────────────
 async function pushFamilyStatus(payload, force = false) {
-  // Throttle location pushes to avoid hammering Firebase (except forced pushes)
   if (!force && Date.now() - familyLastPush < 8000) return;
   familyLastPush = Date.now();
-
   const id = getFamilyId();
   try {
     await fetch(`${FIREBASE_URL}/watch/${id}.json`, {
@@ -45,33 +44,16 @@ async function pushFamilyStatus(payload, force = false) {
 
 // ── Called from gps.js when the GPS alert fires (arrived at stop) ─────────────
 function notifyFamilyAlert(stopName) {
-  // Save the arrived stop for reference
   saveStorage('family_arrived_stop', stopName);
-  pushFamilyStatus({
-    status: 'arrived',
-    stop: stopName,
-    ts: Date.now(),
-  }, true); // force push
+  pushFamilyStatus({ status: 'arrived', stop: stopName, ts: Date.now() }, true);
 }
 
-// ── Start streaming live GPS location to Firebase ─────────────────────────────
-function startFamilyGpsStream() {
-  if (familyGpsWatch !== null) return;
-  if (!navigator.geolocation) return;
-
-  // Push "riding" immediately so watcher doesn't see stale "offline"
+// ── One-shot GPS fetch for background fallback ────────────────────────────────
+function fetchAndPushLocation() {
+  if (!navigator.geolocation || !familyIsWatching) return;
   const savedStop = loadStorage('family_selected_stop', '');
-  pushFamilyStatus({
-    status: 'riding',
-    lat: null,
-    lon: null,
-    ts: Date.now(),
-    stop: savedStop,
-  }, true);
-
-  familyGpsWatch = navigator.geolocation.watchPosition(
+  navigator.geolocation.getCurrentPosition(
     pos => {
-      const savedStop = loadStorage('family_selected_stop', '');
       pushFamilyStatus({
         status: 'riding',
         lat: pos.coords.latitude,
@@ -81,8 +63,57 @@ function startFamilyGpsStream() {
       });
     },
     () => {},
+    { enableHighAccuracy: true, maximumAge: 15000, timeout: 20000 }
+  );
+}
+
+// ── Start streaming live GPS location to Firebase ─────────────────────────────
+function startFamilyGpsStream() {
+  if (familyGpsWatch !== null) return;
+  if (!navigator.geolocation) return;
+
+  const savedStop = loadStorage('family_selected_stop', '');
+
+  // Push real coords immediately using getCurrentPosition (not null)
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      pushFamilyStatus({
+        status: 'riding',
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+        ts: Date.now(),
+        stop: savedStop,
+      }, true);
+    },
+    () => {
+      // GPS unavailable — still push riding so watcher doesn't stay "Naghihintay"
+      pushFamilyStatus({ status: 'riding', lat: null, lon: null, ts: Date.now(), stop: savedStop }, true);
+    },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+  );
+
+  // Continuous watch (works best when tab is visible)
+  familyGpsWatch = navigator.geolocation.watchPosition(
+    pos => {
+      const stop = loadStorage('family_selected_stop', '');
+      pushFamilyStatus({
+        status: 'riding',
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+        ts: Date.now(),
+        stop,
+      });
+    },
+    () => {},
     { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
   );
+
+  // Background interval fallback: push every 30s even if watchPosition is throttled
+  if (!familyBgInterval) {
+    familyBgInterval = setInterval(() => {
+      if (familyIsWatching) fetchAndPushLocation();
+    }, 30000);
+  }
 }
 
 function stopFamilyGpsStream() {
@@ -90,7 +121,10 @@ function stopFamilyGpsStream() {
     navigator.geolocation.clearWatch(familyGpsWatch);
     familyGpsWatch = null;
   }
-  // Only push offline if we were actively sharing
+  if (familyBgInterval !== null) {
+    clearInterval(familyBgInterval);
+    familyBgInterval = null;
+  }
   if (familyIsWatching) {
     pushFamilyStatus({ status: 'offline', ts: Date.now() }, true);
   }
@@ -105,18 +139,20 @@ function restoreFamilySharingState() {
   }
 }
 
-// ── Stop sharing when page closes/hides ──────────────────────────────────────
+// ── Handle tab visibility changes ─────────────────────────────────────────────
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden' && familyIsWatching) {
-    // Don't mark offline on tab hide — user is still riding
-    // Just stop the GPS watch to save battery
+  if (!familyIsWatching) return;
+  if (document.visibilityState === 'hidden') {
+    // Stop watchPosition — browser throttles/kills it in background anyway
     if (familyGpsWatch !== null) {
       navigator.geolocation.clearWatch(familyGpsWatch);
       familyGpsWatch = null;
     }
-  } else if (document.visibilityState === 'visible' && familyIsWatching) {
-    // Resume location stream when tab is visible again
-    startFamilyGpsStream();
+    // Push one update so Firebase timestamp stays fresh
+    fetchAndPushLocation();
+    // interval fallback keeps running in the background
+  } else if (document.visibilityState === 'visible') {
+    startFamilyGpsStream(); // re-start watchPosition when tab returns
   }
 });
 
@@ -128,7 +164,6 @@ function initFamily() {
   document.getElementById('family-link').value = url;
   document.getElementById('family-id-badge').textContent = `ID: ${id}`;
 
-  // Restore state in case user navigated away and came back
   const wasSharingBefore = loadStorage('family_is_watching', false);
   if (wasSharingBefore && !familyIsWatching) {
     familyIsWatching = true;
@@ -211,6 +246,7 @@ function renderWatcherPage(watchId) {
     position:fixed;inset:0;background:#0d0d0d;color:#fff;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     font-family:'Inter',sans-serif;padding:24px;z-index:99999;text-align:center;
+    overflow-y:auto;
   `;
   overlay.innerHTML = `
     <div style="font-size:48px;margin-bottom:8px">🚌</div>
@@ -226,8 +262,20 @@ function renderWatcherPage(watchId) {
       <div id="watcher-status-text" style="font-size:20px;font-weight:800;margin-bottom:4px">Naghihintay...</div>
       <div id="watcher-stop-text" style="font-size:14px;color:#feb700;min-height:20px"></div>
       <div id="watcher-time-text" style="font-size:12px;color:#555;margin-top:8px"></div>
+
       <div id="watcher-map-wrap" style="margin-top:16px;display:none">
         <div id="watcher-map" style="height:220px;border-radius:12px;overflow:hidden;"></div>
+        <div style="font-size:11px;color:#555;margin-top:6px">📍 Live na lokasyon</div>
+      </div>
+
+      <div id="watcher-map-placeholder" style="
+        display:none;margin-top:16px;height:80px;border-radius:12px;
+        background:#111;border:1px dashed #333;
+        align-items:center;justify-content:center;
+        flex-direction:column;gap:4px;color:#555;font-size:12px;
+      ">
+        <span>📡</span>
+        <span>Hinihintay ang GPS signal...</span>
       </div>
     </div>
 
@@ -246,7 +294,7 @@ function renderWatcherPage(watchId) {
   `;
   document.body.appendChild(overlay);
 
-  // Load Leaflet for watcher map
+  // Load Leaflet CSS + JS
   if (!window.L) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -254,38 +302,41 @@ function renderWatcherPage(watchId) {
     document.head.appendChild(link);
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.onload = () => initWatcherMap();
     document.head.appendChild(script);
-  } else {
-    initWatcherMap();
   }
 
-  let watcherMap = null;
-  let watcherMarker = null;
-  let lastStatus = null;
+  let watcherMap      = null;
+  let watcherMarker   = null;
   let notifiedArrival = false;
+  let mapInitialized  = false;
 
-  function initWatcherMap() {
-    // Map is initialized when we first get lat/lon
+  function ensureMapInit(lat, lon) {
+    if (mapInitialized || !window.L) return;
+    mapInitialized = true;
+    watcherMap = L.map('watcher-map', { zoomControl: true, attributionControl: false })
+      .setView([lat, lon], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(watcherMap);
   }
 
   function showWatcherMap(lat, lon, stopName) {
-    const wrap = document.getElementById('watcher-map-wrap');
-    wrap.style.display = 'block';
-    if (!watcherMap && window.L) {
-      watcherMap = L.map('watcher-map', { zoomControl: false, attributionControl: false })
-        .setView([lat, lon], 15);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(watcherMap);
-    }
+    if (!window.L) return; // will show on next poll once Leaflet finishes loading
+
+    document.getElementById('watcher-map-wrap').style.display = 'block';
+    document.getElementById('watcher-map-placeholder').style.display = 'none';
+
+    ensureMapInit(lat, lon);
+
     if (watcherMap) {
       if (!watcherMarker) {
         watcherMarker = L.circleMarker([lat, lon], {
           radius: 10, color: '#feb700', fillColor: '#feb700', fillOpacity: 1, weight: 3
-        }).addTo(watcherMap).bindPopup(stopName || 'Rider');
+        }).addTo(watcherMap).bindPopup(stopName || 'Rider').openPopup();
       } else {
         watcherMarker.setLatLng([lat, lon]);
       }
       watcherMap.setView([lat, lon], 15);
+      // Fix tiles when container was hidden during Leaflet init
+      setTimeout(() => watcherMap.invalidateSize(), 100);
     }
   }
 
@@ -293,34 +344,20 @@ function renderWatcherPage(watchId) {
     if (notifiedArrival) return;
     notifiedArrival = true;
 
-    // Show arrived banner
-    const banner = document.getElementById('watcher-arrived-banner');
-    banner.style.display = 'block';
+    document.getElementById('watcher-arrived-banner').style.display = 'block';
     document.getElementById('watcher-arrived-stop').textContent = `Hintuan: ${stopName || '—'}`;
-
-    // Update card border
     document.getElementById('watcher-card').style.borderColor = '#4ade80';
 
-    // Browser notification if permitted
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('🎉 Nakarating na!', {
-        body: `Nakarating na sila sa: ${stopName || 'hintuan'}`,
-        icon: '🚌',
-      });
+      new Notification('🎉 Nakarating na!', { body: `Nakarating na sila sa: ${stopName || 'hintuan'}` });
     } else if ('Notification' in window && Notification.permission !== 'denied') {
       Notification.requestPermission().then(p => {
-        if (p === 'granted') {
-          new Notification('🎉 Nakarating na!', {
-            body: `Nakarating na sila sa: ${stopName || 'hintuan'}`,
-          });
-        }
+        if (p === 'granted')
+          new Notification('🎉 Nakarating na!', { body: `Nakarating na sila sa: ${stopName || 'hintuan'}` });
       });
     }
 
-    // Vibrate watcher device
-    if (navigator.vibrate) {
-      navigator.vibrate([200, 100, 200, 100, 400]);
-    }
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
   }
 
   function poll() {
@@ -335,19 +372,20 @@ function renderWatcherPage(watchId) {
         if (!data) {
           icon.textContent  = '⏳';
           label.textContent = 'Naghihintay pa...';
-          stop.textContent  = 'Hindi pa nagsisimula';
+          label.style.color = '#fff';
+          stop.textContent  = 'Hindi pa nagsisimula ang pagbabahagi';
+          stop.style.color  = '#888';
           time.textContent  = '';
           return;
         }
 
-        const ago = data.ts ? Math.round((Date.now() - data.ts) / 1000) : null;
-        // If last update was more than 3 minutes ago, data may be stale
+        const ago     = data.ts ? Math.round((Date.now() - data.ts) / 1000) : null;
         const isStale = ago !== null && ago > 180;
 
         if (ago !== null) {
           time.textContent = ago < 60
             ? `Na-update ${ago}s na ang nakakaraan`
-            : `Na-update ${Math.round(ago/60)}min na ang nakakaraan`;
+            : `Na-update ${Math.round(ago / 60)}min na ang nakakaraan`;
         }
 
         if (data.status === 'arrived') {
@@ -356,9 +394,9 @@ function renderWatcherPage(watchId) {
           label.style.color = '#4ade80';
           stop.textContent  = `Hintuan: ${data.stop || '—'}`;
           stop.style.color  = '#4ade80';
-          notifyArrival(data.stop);
-          // Hide map when arrived
           document.getElementById('watcher-map-wrap').style.display = 'none';
+          document.getElementById('watcher-map-placeholder').style.display = 'none';
+          notifyArrival(data.stop);
 
         } else if (data.status === 'riding' && !isStale) {
           icon.textContent  = '🚌';
@@ -367,9 +405,12 @@ function renderWatcherPage(watchId) {
           stop.textContent  = data.stop ? `Papunta: ${data.stop}` : 'Nagsasabay...';
           stop.style.color  = '#feb700';
 
-          // Show live location on map
           if (data.lat && data.lon) {
             showWatcherMap(data.lat, data.lon, data.stop);
+          } else {
+            // Riding but GPS still acquiring — show placeholder
+            document.getElementById('watcher-map-wrap').style.display = 'none';
+            document.getElementById('watcher-map-placeholder').style.display = 'flex';
           }
 
         } else if (data.status === 'offline' || isStale) {
@@ -378,9 +419,9 @@ function renderWatcherPage(watchId) {
           label.style.color = '#888';
           stop.textContent  = '';
           document.getElementById('watcher-map-wrap').style.display = 'none';
+          document.getElementById('watcher-map-placeholder').style.display = 'none';
 
         } else {
-          // Unknown / initial state
           icon.textContent  = '⏳';
           label.textContent = 'Naghihintay...';
           label.style.color = '#fff';
@@ -388,8 +429,7 @@ function renderWatcherPage(watchId) {
         }
       })
       .catch(() => {
-        const label = document.getElementById('watcher-status-text');
-        label.textContent = 'Hindi ma-konekta...';
+        document.getElementById('watcher-status-text').textContent = 'Hindi ma-konekta...';
       });
   }
 
