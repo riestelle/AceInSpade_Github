@@ -1,15 +1,13 @@
 // PAMILYA — Relative Notification via Firebase Realtime Database
 // No login needed. Works with a shareable link.
 
-const FIREBASE_URL = 'https://console.firebase.google.com/u/0/project/unique-senyaspo/database/unique-senyaspo-default-rtdb/data/';
+const FIREBASE_URL = 'https://unique-senyaspo-default-rtdb.firebaseio.com';
 
-let familyWatchId    = null;
-let familyGpsWatch   = null;
+let familyGpsWatch = null;
 let familyIsWatching = false;
-let familyLastPush   = 0;
-let familyBgInterval = null;   // fallback interval for background GPS
+let familyLastPush = 0;
+let familyBgInterval = null;
 
-// ── Generate or load the watch ID ────────────────────────────────────────────
 function getFamilyId() {
   let id = loadStorage('family_watch_id', null);
   if (!id) {
@@ -19,39 +17,42 @@ function getFamilyId() {
   return id;
 }
 
-// ── Build the shareable URL ───────────────────────────────────────────────────
 function getFamilyShareURL() {
-  const id = getFamilyId();
-  const base = window.location.origin + window.location.pathname;
-  return `${base}?watch=${id}`;
+  const url = new URL(window.location.href);
+  url.searchParams.set('watch', getFamilyId());
+  return url.toString();
 }
 
-// ── Write status to Firebase ──────────────────────────────────────────────────
 async function pushFamilyStatus(payload, force = false) {
   if (!force && Date.now() - familyLastPush < 8000) return;
   familyLastPush = Date.now();
   const id = getFamilyId();
+  const firebaseUrl = `${FIREBASE_URL}/watch/${encodeURIComponent(id)}.json`;
+
   try {
-    await fetch(`${FIREBASE_URL}/watch/${id}.json`, {
+    const response = await fetch(firebaseUrl, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-  } catch (e) {
-    console.warn('Firebase write failed:', e);
+    if (!response.ok) {
+      const text = await response.text();
+      console.warn('Firebase write failed:', response.status, text);
+    }
+  } catch (error) {
+    console.warn('Firebase write failed:', error);
   }
 }
 
-// ── Called from gps.js when the GPS alert fires (arrived at stop) ─────────────
 function notifyFamilyAlert(stopName) {
   saveStorage('family_arrived_stop', stopName);
   pushFamilyStatus({ status: 'arrived', stop: stopName, ts: Date.now() }, true);
 }
 
-// ── One-shot GPS fetch for background fallback ────────────────────────────────
 function fetchAndPushLocation() {
   if (!navigator.geolocation || !familyIsWatching) return;
   const savedStop = loadStorage('family_selected_stop', '');
+
   navigator.geolocation.getCurrentPosition(
     pos => {
       pushFamilyStatus({
@@ -62,19 +63,22 @@ function fetchAndPushLocation() {
         stop: savedStop,
       });
     },
-    () => {},
+    err => {
+      console.warn('Background location fetch failed:', err);
+    },
     { enableHighAccuracy: true, maximumAge: 15000, timeout: 20000 }
   );
 }
 
-// ── Start streaming live GPS location to Firebase ─────────────────────────────
 function startFamilyGpsStream() {
   if (familyGpsWatch !== null) return;
-  if (!navigator.geolocation) return;
+  if (!navigator.geolocation) {
+    console.warn('Geolocation unavailable.');
+    return;
+  }
 
   const savedStop = loadStorage('family_selected_stop', '');
 
-  // Push real coords immediately using getCurrentPosition (not null)
   navigator.geolocation.getCurrentPosition(
     pos => {
       pushFamilyStatus({
@@ -85,14 +89,13 @@ function startFamilyGpsStream() {
         stop: savedStop,
       }, true);
     },
-    () => {
-      // GPS unavailable — still push riding so watcher doesn't stay "Naghihintay"
+    err => {
+      console.warn('Initial GPS position error:', err);
       pushFamilyStatus({ status: 'riding', lat: null, lon: null, ts: Date.now(), stop: savedStop }, true);
     },
     { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
   );
 
-  // Continuous watch (works best when tab is visible)
   familyGpsWatch = navigator.geolocation.watchPosition(
     pos => {
       const stop = loadStorage('family_selected_stop', '');
@@ -104,11 +107,12 @@ function startFamilyGpsStream() {
         stop,
       });
     },
-    () => {},
+    err => {
+      console.warn('GPS watch error:', err);
+    },
     { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
   );
 
-  // Background interval fallback: push every 30s even if watchPosition is throttled
   if (!familyBgInterval) {
     familyBgInterval = setInterval(() => {
       if (familyIsWatching) fetchAndPushLocation();
@@ -121,16 +125,17 @@ function stopFamilyGpsStream() {
     navigator.geolocation.clearWatch(familyGpsWatch);
     familyGpsWatch = null;
   }
+
   if (familyBgInterval !== null) {
     clearInterval(familyBgInterval);
     familyBgInterval = null;
   }
+
   if (familyIsWatching) {
     pushFamilyStatus({ status: 'offline', ts: Date.now() }, true);
   }
 }
 
-// ── Restore sharing state on app load ────────────────────────────────────────
 function restoreFamilySharingState() {
   const wasSharingBefore = loadStorage('family_is_watching', false);
   if (wasSharingBefore) {
@@ -139,107 +144,112 @@ function restoreFamilySharingState() {
   }
 }
 
-// ── Handle tab visibility changes ─────────────────────────────────────────────
-document.addEventListener('visibilitychange', () => {
-  if (!familyIsWatching) return;
-  if (document.visibilityState === 'hidden') {
-    // Stop watchPosition — browser throttles/kills it in background anyway
-    if (familyGpsWatch !== null) {
-      navigator.geolocation.clearWatch(familyGpsWatch);
-      familyGpsWatch = null;
-    }
-    // Push one update so Firebase timestamp stays fresh
-    fetchAndPushLocation();
-    // interval fallback keeps running in the background
-  } else if (document.visibilityState === 'visible') {
-    startFamilyGpsStream(); // re-start watchPosition when tab returns
-  }
-});
-
-// ── Screen init ───────────────────────────────────────────────────────────────
-function initFamily() {
-  const id  = getFamilyId();
-  const url = getFamilyShareURL();
-
-  document.getElementById('family-link').value = url;
-  document.getElementById('family-id-badge').textContent = `ID: ${id}`;
-
-  const wasSharingBefore = loadStorage('family_is_watching', false);
-  if (wasSharingBefore && !familyIsWatching) {
-    familyIsWatching = true;
-    startFamilyGpsStream();
-  }
-
-  renderFamilyStatus();
-}
+let familyUIBooted = false;
 
 function renderFamilyStatus() {
-  const btn   = document.getElementById('family-toggle-btn');
+  const button = document.getElementById('family-toggle-btn');
   const label = document.getElementById('family-status-label');
+  if (!button || !label) return;
+
   if (familyIsWatching) {
-    btn.innerHTML   = '<span class="material-symbols-outlined" style="font-size:20px">stop_circle</span> Itigil ang Pagbabahagi';
-    btn.style.background = '#b91c1c';
-    label.textContent   = '🔴 Live — nababahaginan ang iyong lokasyon';
-    label.style.color   = '#f87171';
+    button.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px">stop_circle</span> Itigil ang Pagbabahagi';
+    button.style.background = '#b91c1c';
+    label.textContent = '🔴 Live — nababahaginan ang iyong lokasyon';
+    label.style.color = '#f87171';
   } else {
-    btn.innerHTML   = '<span class="material-symbols-outlined" style="font-size:20px">share_location</span> Simulan ang Pagbabahagi';
-    btn.style.background = '';
-    label.textContent   = '⬜ Hindi pa aktibo';
-    label.style.color   = 'var(--text-muted)';
+    button.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px">share_location</span> Simulan ang Pagbabahagi';
+    button.style.background = '';
+    label.textContent = '⬜ Hindi pa aktibo';
+    label.style.color = 'var(--text-muted)';
   }
 }
 
-document.getElementById('family-toggle-btn').addEventListener('click', () => {
-  familyIsWatching = !familyIsWatching;
-  if (familyIsWatching) {
-    startFamilyGpsStream();
-  } else {
-    stopFamilyGpsStream();
+function initFamilyUI() {
+  if (familyUIBooted) return;
+  familyUIBooted = true;
+
+  const shareInput = document.getElementById('family-link');
+  const idBadge = document.getElementById('family-id-badge');
+  const toggleBtn = document.getElementById('family-toggle-btn');
+  const copyBtn = document.getElementById('family-copy-btn');
+  const shareBtn = document.getElementById('family-share-btn');
+
+  const id = getFamilyId();
+  const url = getFamilyShareURL();
+
+  if (shareInput) shareInput.value = url;
+  if (idBadge) idBadge.textContent = `ID: ${id}`;
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      familyIsWatching = !familyIsWatching;
+      if (familyIsWatching) {
+        startFamilyGpsStream();
+      } else {
+        stopFamilyGpsStream();
+      }
+      saveStorage('family_is_watching', familyIsWatching);
+      renderFamilyStatus();
+      vibrate(40);
+    });
   }
-  saveStorage('family_is_watching', familyIsWatching);
+
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(url).then(() => {
+        copyBtn.textContent = 'Nakopya! ✓';
+        setTimeout(() => { copyBtn.textContent = 'Kopyahin ang Link'; }, 2000);
+      }).catch(() => {
+        if (shareInput) {
+          shareInput.select();
+          document.execCommand('copy');
+        }
+      });
+      vibrate(30);
+    });
+  }
+
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+      if (navigator.share) {
+        navigator.share({
+          title: 'SenyasPo — Subaybayan ako',
+          text: 'I-click ang link para makita kung nasaan ako sa jeep.',
+          url,
+        }).catch(e => console.warn('Share failed:', e));
+      } else {
+        navigator.clipboard.writeText(url).catch(e => console.warn('Clipboard write failed:', e));
+        alert('Link nakopya! I-paste sa Viber o SMS.');
+      }
+      vibrate(30);
+    });
+  }
+
   renderFamilyStatus();
-  vibrate(40);
-});
+  restoreFamilySharingState();
+}
 
-document.getElementById('family-copy-btn').addEventListener('click', () => {
-  const url = getFamilyShareURL();
-  navigator.clipboard.writeText(url).then(() => {
-    const btn = document.getElementById('family-copy-btn');
-    btn.textContent = 'Nakopya! ✓';
-    setTimeout(() => { btn.textContent = 'Kopyahin ang Link'; }, 2000);
-  }).catch(() => {
-    document.getElementById('family-link').select();
-    document.execCommand('copy');
-  });
-  vibrate(30);
-});
+document.addEventListener('DOMContentLoaded', initFamilyUI);
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+  initFamilyUI();
+}
 
-document.getElementById('family-share-btn').addEventListener('click', () => {
-  const url = getFamilyShareURL();
-  if (navigator.share) {
-    navigator.share({
-      title: 'SenyasPo — Subaybayan ako',
-      text: 'I-click ang link para makita kung nasaan ako sa jeep.',
-      url,
-    }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(url).catch(() => {});
-    alert('Link nakopya! I-paste sa Viber o SMS.');
-  }
-  vibrate(30);
-});
-
-// ── Relative/Watcher page ─────────────────────────────────────────────────────
 (function checkWatchMode() {
-  const params  = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(window.location.search);
   const watchId = params.get('watch');
   if (!watchId) return;
 
-  document.addEventListener('DOMContentLoaded', () => renderWatcherPage(watchId));
-  if (document.readyState !== 'loading') renderWatcherPage(watchId);
+  const launchWatcher = () => renderWatcherPage(watchId);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', launchWatcher);
+  } else {
+    launchWatcher();
+  }
 })();
 
 function renderWatcherPage(watchId) {
+  if (document.getElementById('watcher-overlay')) return;
+
   const overlay = document.createElement('div');
   overlay.id = 'watcher-overlay';
   overlay.style.cssText = `
@@ -248,6 +258,7 @@ function renderWatcherPage(watchId) {
     font-family:'Inter',sans-serif;padding:24px;z-index:99999;text-align:center;
     overflow-y:auto;
   `;
+
   overlay.innerHTML = `
     <div style="font-size:48px;margin-bottom:8px">🚌</div>
     <div style="font-size:22px;font-weight:900;letter-spacing:1px;color:#feb700">SENYASPO</div>
@@ -292,151 +303,216 @@ function renderWatcherPage(watchId) {
       Awtomatikong nag-a-update · ID: ${watchId}
     </div>
   `;
+
   document.body.appendChild(overlay);
-  
 
-  // Load Leaflet CSS + JS
-  if (!window.L) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-    document.head.appendChild(link);
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    document.head.appendChild(script);
-  }
-
-  let watcherMap      = null;
-  let watcherMarker   = null;
+  let watcherMap = null;
+  let watcherMarker = null;
   let notifiedArrival = false;
-  let mapInitialized  = false;
+  let mapInitialized = false;
+  let pollIntervalId = null;
+  let leafletLoadPromise = null;
+
+  function loadLeaflet() {
+    if (window.L) return Promise.resolve();
+    if (leafletLoadPromise) return leafletLoadPromise;
+
+    leafletLoadPromise = new Promise((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = () => resolve();
+      script.onerror = err => reject(new Error('Failed to load Leaflet: ' + err));
+      document.head.appendChild(script);
+    }).catch(err => {
+      console.warn('Leaflet load failed:', err);
+    });
+
+    return leafletLoadPromise;
+  }
 
   function ensureMapInit(lat, lon) {
     if (mapInitialized || !window.L) return;
+    const mapEl = document.getElementById('watcher-map');
+    if (!mapEl) return;
+
     mapInitialized = true;
-    watcherMap = L.map('watcher-map', { zoomControl: true, attributionControl: false })
-      .setView([lat, lon], 15);
+    watcherMap = L.map(mapEl, { zoomControl: true, attributionControl: false }).setView([lat, lon], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(watcherMap);
+    setTimeout(() => {
+      if (watcherMap) watcherMap.invalidateSize();
+    }, 100);
   }
 
   function showWatcherMap(lat, lon, stopName) {
-    if (!window.L) return; // will show on next poll once Leaflet finishes loading
+    const mapWrap = document.getElementById('watcher-map-wrap');
+    const placeholder = document.getElementById('watcher-map-placeholder');
 
-    document.getElementById('watcher-map-wrap').style.display = 'block';
-    document.getElementById('watcher-map-placeholder').style.display = 'none';
+    if (mapWrap) mapWrap.style.display = 'block';
+    if (placeholder) placeholder.style.display = 'none';
 
+    if (!window.L) return;
     ensureMapInit(lat, lon);
+    if (!watcherMap) return;
 
-    if (watcherMap) {
-      if (!watcherMarker) {
-        watcherMarker = L.circleMarker([lat, lon], {
-          radius: 10, color: '#feb700', fillColor: '#feb700', fillOpacity: 1, weight: 3
-        }).addTo(watcherMap).bindPopup(stopName || 'Rider').openPopup();
-      } else {
-        watcherMarker.setLatLng([lat, lon]);
-      }
-      watcherMap.setView([lat, lon], 15);
-      // Fix tiles when container was hidden during Leaflet init
-      setTimeout(() => watcherMap.invalidateSize(), 100);
+    if (!watcherMarker) {
+      watcherMarker = L.circleMarker([lat, lon], {
+        radius: 10,
+        color: '#feb700',
+        fillColor: '#feb700',
+        fillOpacity: 1,
+        weight: 3,
+      }).addTo(watcherMap).bindPopup(stopName || 'Rider').openPopup();
+    } else {
+      watcherMarker.setLatLng([lat, lon]);
+      if (watcherMarker.getPopup()) watcherMarker.getPopup().setContent(stopName || 'Rider');
     }
+
+    watcherMap.setView([lat, lon], 15);
+    setTimeout(() => watcherMap.invalidateSize(), 100);
   }
 
   function notifyArrival(stopName) {
     if (notifiedArrival) return;
     notifiedArrival = true;
 
-    document.getElementById('watcher-arrived-banner').style.display = 'block';
-    document.getElementById('watcher-arrived-stop').textContent = `Hintuan: ${stopName || '—'}`;
-    document.getElementById('watcher-card').style.borderColor = '#4ade80';
+    const arrivedBanner = document.getElementById('watcher-arrived-banner');
+    const arrivedStop = document.getElementById('watcher-arrived-stop');
+    const card = document.getElementById('watcher-card');
+
+    if (arrivedBanner) arrivedBanner.style.display = 'block';
+    if (arrivedStop) arrivedStop.textContent = `Hintuan: ${stopName || '—'}`;
+    if (card) card.style.borderColor = '#4ade80';
 
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('🎉 Nakarating na!', { body: `Nakarating na sila sa: ${stopName || 'hintuan'}` });
     } else if ('Notification' in window && Notification.permission !== 'denied') {
-      Notification.requestPermission().then(p => {
-        if (p === 'granted')
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
           new Notification('🎉 Nakarating na!', { body: `Nakarating na sila sa: ${stopName || 'hintuan'}` });
+        }
       });
     }
 
-    if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+    if (navigator.vibrate) {
+      try {
+        navigator.vibrate([200, 100, 200, 100, 400]);
+      } catch (e) {
+        console.warn('Vibrate failed:', e);
+      }
+    }
   }
 
-  function poll() {
-    fetch(`${FIREBASE_URL}/watch/${watchId}.json`)
-      .then(r => r.json())
-      .then(data => {
-        const icon  = document.getElementById('watcher-status-icon');
-        const label = document.getElementById('watcher-status-text');
-        const stop  = document.getElementById('watcher-stop-text');
-        const time  = document.getElementById('watcher-time-text');
+  function updateWatcherUI(data) {
+    const icon = document.getElementById('watcher-status-icon');
+    const label = document.getElementById('watcher-status-text');
+    const stop = document.getElementById('watcher-stop-text');
+    const time = document.getElementById('watcher-time-text');
+    const mapWrap = document.getElementById('watcher-map-wrap');
+    const placeholder = document.getElementById('watcher-map-placeholder');
 
-        if (!data) {
-          icon.textContent  = '⏳';
-          label.textContent = 'Naghihintay pa...';
-          label.style.color = '#fff';
-          stop.textContent  = 'Hindi pa nagsisimula ang pagbabahagi';
-          stop.style.color  = '#888';
-          time.textContent  = '';
-          return;
+    if (!icon || !label || !stop || !time) return;
+
+    if (!data) {
+      icon.textContent = '⏳';
+      label.textContent = 'Naghihintay pa...';
+      label.style.color = '#fff';
+      stop.textContent = 'Hindi pa nagsisimula ang pagbabahagi';
+      stop.style.color = '#888';
+      time.textContent = '';
+      if (mapWrap) mapWrap.style.display = 'none';
+      if (placeholder) placeholder.style.display = 'flex';
+      return;
+    }
+
+    const ago = data.ts ? Math.round((Date.now() - data.ts) / 1000) : null;
+    const isStale = ago !== null && ago > 180;
+
+    if (ago !== null) {
+      time.textContent = ago < 60
+        ? `Na-update ${ago}s na ang nakakaraan`
+        : `Na-update ${Math.round(ago / 60)}min na ang nakakaraan`;
+    } else {
+      time.textContent = '';
+    }
+
+    if (data.status === 'arrived') {
+      icon.textContent = '🎉';
+      label.textContent = 'NAKARATING NA!';
+      label.style.color = '#4ade80';
+      stop.textContent = `Hintuan: ${data.stop || '—'}`;
+      stop.style.color = '#4ade80';
+      if (mapWrap) mapWrap.style.display = 'none';
+      if (placeholder) placeholder.style.display = 'none';
+      notifyArrival(data.stop);
+
+    } else if (data.status === 'riding' && !isStale) {
+      icon.textContent = '🚌';
+      label.textContent = 'Nakasakay sa jeep';
+      label.style.color = '#fff';
+      stop.textContent = data.stop ? `Papunta: ${data.stop}` : 'Nagsasabay...';
+      stop.style.color = '#feb700';
+
+      if (data.lat && data.lon) {
+        showWatcherMap(data.lat, data.lon, data.stop);
+      } else {
+        if (mapWrap) mapWrap.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'flex';
+      }
+
+    } else if (data.status === 'offline' || isStale) {
+      icon.textContent = '📵';
+      label.textContent = isStale && data.status !== 'offline' ? 'Pahinga (walang update)' : 'Offline';
+      label.style.color = '#888';
+      stop.textContent = '';
+      if (mapWrap) mapWrap.style.display = 'none';
+      if (placeholder) placeholder.style.display = 'none';
+
+    } else {
+      icon.textContent = '⏳';
+      label.textContent = 'Naghihintay...';
+      label.style.color = '#fff';
+      stop.textContent = '';
+      if (mapWrap) mapWrap.style.display = 'none';
+      if (placeholder) placeholder.style.display = 'flex';
+    }
+  }
+
+  function pollWatcher() {
+    const firebaseUrl = `${FIREBASE_URL}/watch/${encodeURIComponent(watchId)}.json`;
+
+    fetch(firebaseUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Firebase poll failed: ${response.status}`);
         }
-
-        const ago     = data.ts ? Math.round((Date.now() - data.ts) / 1000) : null;
-        const isStale = ago !== null && ago > 180;
-
-        if (ago !== null) {
-          time.textContent = ago < 60
-            ? `Na-update ${ago}s na ang nakakaraan`
-            : `Na-update ${Math.round(ago / 60)}min na ang nakakaraan`;
-        }
-
-        if (data.status === 'arrived') {
-          icon.textContent  = '🎉';
-          label.textContent = 'NAKARATING NA!';
-          label.style.color = '#4ade80';
-          stop.textContent  = `Hintuan: ${data.stop || '—'}`;
-          stop.style.color  = '#4ade80';
-          document.getElementById('watcher-map-wrap').style.display = 'none';
-          document.getElementById('watcher-map-placeholder').style.display = 'none';
-          notifyArrival(data.stop);
-
-        } else if (data.status === 'riding' && !isStale) {
-          icon.textContent  = '🚌';
-          label.textContent = 'Nakasakay sa jeep';
-          label.style.color = '#fff';
-          stop.textContent  = data.stop ? `Papunta: ${data.stop}` : 'Nagsasabay...';
-          stop.style.color  = '#feb700';
-
-          if (data.lat && data.lon) {
-            showWatcherMap(data.lat, data.lon, data.stop);
-          } else {
-            // Riding but GPS still acquiring — show placeholder
-            document.getElementById('watcher-map-wrap').style.display = 'none';
-            document.getElementById('watcher-map-placeholder').style.display = 'flex';
-          }
-
-        } else if (data.status === 'offline' || isStale) {
-          icon.textContent  = '📵';
-          label.textContent = isStale && data.status !== 'offline' ? 'Pahinga (walang update)' : 'Offline';
-          label.style.color = '#888';
-          stop.textContent  = '';
-          document.getElementById('watcher-map-wrap').style.display = 'none';
-          document.getElementById('watcher-map-placeholder').style.display = 'none';
-
-        } else {
-          icon.textContent  = '⏳';
-          label.textContent = 'Naghihintay...';
-          label.style.color = '#fff';
-          stop.textContent  = '';
-        }
+        return response.json();
       })
-      .catch(() => {
-        document.getElementById('watcher-status-text').textContent = 'Hindi ma-konekta...';
+      .then(data => {
+        updateWatcherUI(data);
+      })
+      .catch(err => {
+        console.warn('Watcher poll error:', err);
+        const label = document.getElementById('watcher-status-text');
+        if (label) {
+          label.textContent = 'Hindi ma-konekta...';
+          label.style.color = '#888';
+        }
       });
   }
 
-  poll();
-  setInterval(poll, 5000);
-}
+  loadLeaflet().catch(() => {});
+  pollWatcher();
+  pollIntervalId = setInterval(pollWatcher, 5000);
 
-// Auto-restore sharing state on app start
-restoreFamilySharingState();
+  window.addEventListener('beforeunload', () => {
+    if (pollIntervalId !== null) {
+      clearInterval(pollIntervalId);
+      pollIntervalId = null;
+    }
+  });
+}
