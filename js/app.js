@@ -16,6 +16,15 @@ let deafStop    = '';
 let vibIntensity = 'medium';
 let vibTiming    = 'normal';
 
+function loadStorage(key, fallback) {
+  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
+}
+
+function saveStorage(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
 const VIBRATION_TEST_PATTERNS = {
   single: [200],
   pulse:  [100, 50, 100],
@@ -99,8 +108,8 @@ function navigate(screenId, params = {}) {
   if (screenId === 'alert')   initAlert(params.stopName || '');
   if (screenId === 'ai')      initAI();
   if (screenId === 'vib')     initVib();
-  if (screenId === 'fsl')     {}
   if (screenId === 'family')  initFamily();
+  if (screenId === 'fsl')     {}
 }
 
 function initHome() {
