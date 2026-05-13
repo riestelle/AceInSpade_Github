@@ -947,10 +947,10 @@
     <div id="offline-banner" class="banner banner-error d-none">📵 No internet — AI Assistant disabled</div>
 
     <main class="home-scroll">
-      <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
 
         <!-- I AM DEAF — full-width dominant hero -->
-        <button class="hero-deaf" data-nav="deaf" style="width:100%;min-height:160px;">
+        <button class="hero-deaf" data-nav="deaf" onclick="navigate('deaf')" style="width:100%;min-height:150px;">
           <div class="vib-badge"><span class="material-symbols-outlined">vibration</span></div>
           <div class="hero-deaf-icon">
             <img src="https://cdn-icons-png.flaticon.com/128/3546/3546766.png" alt="I Am Deaf" />
@@ -962,24 +962,24 @@
         </button>
 
         <!-- SABIHIN MO — full-width secondary, horizontal layout -->
-        <button class="card-sabihin" data-nav="phrases"
-          style="width:100%;min-height:72px;flex-direction:row;justify-content:flex-start;gap:16px;padding:16px 20px;position:relative;">
-          <div class="vib-badge" style="background:rgba(0,0,0,.1);">
-            <span class="material-symbols-outlined" style="color:rgba(10,22,40,.3)">vibration</span>
+        <button class="card-sabihin" data-nav="phrases" onclick="navigate('phrases')"
+          style="width:100%;min-height:64px;flex-direction:row;justify-content:flex-start;gap:16px;padding:14px 20px;position:relative;">
+          <div class="vib-badge" style="background:rgba(255,184,0,.08);">
+            <span class="material-symbols-outlined" style="color:var(--amber);opacity:.5">vibration</span>
           </div>
           <div class="card-sabihin-icon" style="margin-bottom:0;line-height:0;">
-            <img src="https://cdn-icons-png.flaticon.com/128/589/589708.png" alt="Sabihin Mo" style="height:40px;width:auto;" />
+            <img src="https://cdn-icons-png.flaticon.com/128/589/589708.png" alt="Sabihin Mo" style="height:36px;width:auto;filter:brightness(0) saturate(100%) invert(73%) sepia(93%) saturate(1200%) hue-rotate(2deg) brightness(103%) contrast(103%);" />
           </div>
           <div style="text-align:left;flex:1;">
             <div class="card-sabihin-label">Sabihin Mo</div>
             <div class="card-sabihin-sub">Quick common phrases</div>
           </div>
-          <span class="material-symbols-outlined" style="font-size:20px;color:rgba(10,22,40,0.4);flex-shrink:0;">chevron_right</span>
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted);flex-shrink:0;">chevron_right</span>
         </button>
 
         <!-- SIMULAN ANG BIYAHE — primary CTA -->
-        <button id="start-commute-btn" class="btn-primary-sp" style="height:76px;font-size:20px;border-radius:18px;box-shadow:0 8px 32px rgba(255,184,0,.25);margin-top:4px;">
-          <span class="material-symbols-outlined" style="font-size:28px">directions_bus</span>
+        <button id="start-commute-btn" class="btn-primary-sp" style="height:72px;font-size:20px;border-radius:18px;box-shadow:0 8px 32px rgba(255,184,0,.25);margin-top:2px;">
+          <span class="material-symbols-outlined" style="font-size:26px">directions_bus</span>
           Simulan ang Biyahe
         </button>
         <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:-2px;letter-spacing:.03em;">I-set ang stop mo at pamilya bago sumakay</p>
@@ -1329,8 +1329,8 @@
         <span class="topbar-title">FARE CALCULATOR</span>
       </div>
     </header>
-    <main class="scroll-main" style="padding:20px 24px">
-      <div class="mb-4">
+    <main class="scroll-main" style="padding:16px 20px">
+      <div class="mb-3">
         <label class="label-sp">Route</label>
         <select id="fare-route" class="select-sp"></select>
       </div>
@@ -1618,7 +1618,7 @@
         </div>
       </div>
 
-      <div style="height:88px"></div><!-- space for floating SOS -->
+      <div style="height:72px"></div><!-- space for floating AI -->
     </div>
   </div>
 
@@ -1659,12 +1659,12 @@
     <div id="ai-offline-banner" class="banner banner-error d-none">📵 Internet required for AI assistant</div>
 
     <!-- Chat -->
-    <div id="chat-messages" class="scroll-main d-flex flex-column gap-3" style="padding:16px 24px">
+    <div id="chat-messages" class="scroll-main d-flex flex-column gap-3" style="padding:14px 16px">
       <!-- messages rendered by JS -->
     </div>
 
     <!-- Input -->
-    <div style="padding:12px 24px;background:var(--bg-alt);border-top:2px solid var(--outline-var);flex-shrink:0">
+    <div style="padding:10px 16px;background:var(--bg-alt);border-top:1px solid var(--outline-var);flex-shrink:0">
       <div class="d-flex gap-2 align-items-center">
         <input id="ai-input" class="input-sp flex-grow-1" style="border-color:var(--amber)" placeholder="Tanong mo dito..." />
         <button id="ai-send" style="width:48px;height:48px;border-radius:12px;background:var(--amber);border:none;color:#412d00;display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -1746,7 +1746,7 @@
         <span class="topbar-title">VIBRATION SETTINGS</span>
       </div>
     </header>
-    <main class="scroll-main" style="padding:16px;display:flex;flex-direction:column;gap:20px">
+    <main class="scroll-main" style="padding:16px;display:flex;flex-direction:column;gap:16px">
 
       <!-- Info tip -->
       <div style="background:var(--amber-bg);border:1px solid var(--amber-dim);border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start">
@@ -1881,7 +1881,7 @@
 </div>
 
 <!-- ══ FLOATING AI ═══════════════════════════════════════════════ -->
-<button id="floating-sos" title="AI Assistant" onclick="if(typeof navigate==='function') navigate('ai')">
+<button id="floating-sos" title="AI Assistant">
   <span class="material-symbols-outlined">psychology</span>
   <span style="font-size:9px;font-weight:900;letter-spacing:.04em;">AI</span>
 </button>
