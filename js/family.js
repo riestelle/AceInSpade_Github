@@ -1,7 +1,6 @@
 // PAMILYA — Relative Notification via Firebase Realtime Database
 // No login needed. Works with a shareable link.
-
-const FIREBASE_URL = 'https://unique-senyaspo-default-rtdb.firebaseio.com';
+const FIREBASE_URL = 'https://aceinspace-senyaspo-default-rtdb.asia-southeast1.firebasedatabase.app';
 
 let familyGpsWatch = null;
 let familyIsWatching = false;
