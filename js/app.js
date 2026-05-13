@@ -15,12 +15,14 @@ let alertStopName   = '';
 let deafLang    = 'fil';
 let deafStop    = '';
 
+let appLang     = 'fil';
 let vibIntensity = 'medium';
 let vibTiming    = 'normal';
 
 const STORAGE_VERSION = 1;
 const VALID_VIB_INTENSITIES = ['soft', 'medium', 'strong'];
 const VALID_VIB_TIMINGS = ['fast', 'normal', 'slow'];
+const VALID_APP_LANGS = ['fil', 'en'];
 const VALID_PHRASE_LANGS = ['fil', 'en'];
 const VALID_DEAF_LANGS = ['fil', 'en'];
 const APP_CACHE_PREFIX = 'senyaspo-';
@@ -30,6 +32,7 @@ function getAppStorageKeys() {
     'app_storage_version',
     'vib_intensity',
     'vib_timing',
+    'app_lang',
     'phrase_lang',
     'custom_phrases',
     'last_fare',
@@ -103,7 +106,28 @@ function validateStorageValue(key, value, allowed, fallback) {
   return fallback;
 }
 
+function getAppLanguageLabel(lang = appLang) {
+  return lang === 'en' ? 'English' : 'Filipino';
+}
+
+function applyAppLanguage(lang) {
+  appLang = validateStorageValue('app_lang', lang, VALID_APP_LANGS, 'fil');
+  saveStorage('app_lang', appLang);
+
+  const btn = document.getElementById('app-lang-btn');
+  if (btn) btn.textContent = getAppLanguageLabel(appLang);
+
+  if (currentScreen === 'ai' && typeof renderAIStatus === 'function') {
+    renderAIStatus();
+  }
+  if (currentScreen === 'ai' && typeof renderMessages === 'function') {
+    initAI();
+  }
+}
+
 resetStaleStorage();
+
+appLang = validateStorageValue('app_lang', loadStorage('app_lang', 'fil'), VALID_APP_LANGS, 'fil');
 
 const VIBRATION_TEST_PATTERNS = {
   single: [200],
@@ -408,6 +432,10 @@ document.getElementById('alert-dismiss').addEventListener('click', () => {
 });
 
 function initVib() {
+  appLang = validateStorageValue('app_lang', loadStorage('app_lang', 'fil'), VALID_APP_LANGS, 'fil');
+  const appLangBtn = document.getElementById('app-lang-btn');
+  if (appLangBtn) appLangBtn.textContent = getAppLanguageLabel(appLang);
+
   vibIntensity = validateStorageValue('vib_intensity', loadStorage('vib_intensity', 'medium'), VALID_VIB_INTENSITIES, 'medium');
   vibTiming    = validateStorageValue('vib_timing', loadStorage('vib_timing', 'normal'), VALID_VIB_TIMINGS, 'normal');
   renderVibOptions();
@@ -465,6 +493,24 @@ document.querySelectorAll('[data-vib-pattern]').forEach(btn => {
     vibrateDemo(key);
   });
 });
+
+document.querySelectorAll('[data-app-lang]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    applyAppLanguage(btn.dataset.appLang);
+    document.querySelectorAll('[data-app-lang]').forEach(option => {
+      option.classList.toggle('active', option.dataset.appLang === appLang);
+    });
+    vibrate('approach');
+  });
+});
+
+function renderAppLanguageOptions() {
+  document.querySelectorAll('[data-app-lang]').forEach(option => {
+    option.classList.toggle('active', option.dataset.appLang === appLang);
+  });
+}
+
+renderAppLanguageOptions();
 
 const clearWebsiteDataBtn = document.getElementById('clear-website-data-btn');
 if (clearWebsiteDataBtn) {

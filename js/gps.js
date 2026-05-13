@@ -25,53 +25,56 @@ function toggleMapExpand() {
   const expandBtn = document.getElementById('gps-expand-btn-map');
   const locationInfo = document.getElementById('gps-location-info');
   const legend = document.getElementById('gps-map-legend');
+  if (!map || !container || !controls || !screen || !main) return;
   
   gpsMapExpanded = !gpsMapExpanded;
   
   if (gpsMapExpanded) {
     map.classList.add('fullscreen');
     controls.classList.remove('d-none');
-    expandBtn.classList.add('d-none');
+    if (expandBtn) expandBtn.classList.add('d-none');
     main.style.padding = '0';
     main.style.gap = '0';
     screen.style.overflow = 'hidden';
-    searchNormal.classList.add('d-none');
+    if (searchNormal) searchNormal.classList.add('d-none');
     
     // Move search bar inside map
-    const searchClone = searchNormal.cloneNode(true);
-    searchClone.id = 'gps-search-expanded';
-    searchClone.className = 'search-wrap gps-search-expanded';
-    container.appendChild(searchClone);
-    
-    // Sync input values
-    const expandedInput = searchClone.querySelector('input');
-    if (expandedInput) {
-      expandedInput.value = document.getElementById('gps-search').value;
-      expandedInput.addEventListener('input', function() {
-        document.getElementById('gps-search').value = this.value;
-        document.getElementById('gps-search').dispatchEvent(new Event('input'));
-      });
+    if (searchNormal) {
+      const searchClone = searchNormal.cloneNode(true);
+      searchClone.id = 'gps-search-expanded';
+      searchClone.className = 'search-wrap gps-search-expanded';
+      container.appendChild(searchClone);
+      
+      // Sync input values
+      const expandedInput = searchClone.querySelector('input');
+      if (expandedInput) {
+        expandedInput.value = document.getElementById('gps-search').value;
+        expandedInput.addEventListener('input', function() {
+          document.getElementById('gps-search').value = this.value;
+          document.getElementById('gps-search').dispatchEvent(new Event('input'));
+        });
+      }
     }
     
     // Show legend and location info
-    locationInfo.classList.remove('d-none');
-    legend.classList.remove('d-none');
+    if (locationInfo) locationInfo.classList.remove('d-none');
+    if (legend) legend.classList.remove('d-none');
   } else {
     map.classList.remove('fullscreen');
     controls.classList.add('d-none');
-    expandBtn.classList.remove('d-none');
+    if (expandBtn) expandBtn.classList.remove('d-none');
     main.style.padding = '16px 24px';
     main.style.gap = '16px';
     screen.style.overflow = 'auto';
-    searchNormal.classList.remove('d-none');
+    if (searchNormal) searchNormal.classList.remove('d-none');
     
     // Remove expanded search bar
     const expandedSearch = container.querySelector('#gps-search-expanded');
     if (expandedSearch) expandedSearch.remove();
     
     // Hide legend and location info
-    locationInfo.classList.add('d-none');
-    legend.classList.add('d-none');
+    if (locationInfo) locationInfo.classList.add('d-none');
+    if (legend) legend.classList.add('d-none');
   }
   
   requestAnimationFrame(() => {

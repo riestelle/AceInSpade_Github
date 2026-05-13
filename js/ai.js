@@ -1,11 +1,37 @@
 //  AI ASSISTANT
 
-let aiMessages = [
-  { role:'assistant', text:'Hoy! SenyasPo AI dito 👋 Tanong mo sa akin tungkol sa jeepney routes — sa Filipino, English, o Taglish.' }
-];
+let aiMessages = [];
 let aiLoading = false;
 
+function getAIWelcomeMessage() {
+  return appLang === 'en'
+    ? 'Hi! SenyasPo AI here 👋 Ask me about jeepney routes in English, Filipino, or Taglish.'
+    : 'Hoy! SenyasPo AI dito 👋 Tanong mo sa akin tungkol sa jeepney routes — sa Filipino, English, o Taglish.';
+}
+
+function getAIInputPlaceholder() {
+  return appLang === 'en' ? 'Type your question here...' : 'Tanong mo dito...';
+}
+
+function getAIStatusOnlineText() {
+  return appLang === 'en' ? 'Groq · llama-3.3-70b · Online' : 'Groq · llama-3.3-70b · Online';
+}
+
+function getAIStatusOfflineText() {
+  return appLang === 'en' ? 'Groq · llama-3.3-70b · Offline' : 'Groq · llama-3.3-70b · Offline';
+}
+
+function getAIRoleLabel(role) {
+  if (role === 'assistant') return 'AI';
+  return appLang === 'en' ? 'YOU' : 'IKAW';
+}
+
 function initAI() {
+  if (aiMessages.length === 0) {
+    aiMessages = [{ role: 'assistant', text: getAIWelcomeMessage() }];
+  } else if (aiMessages.length === 1 && aiMessages[0].role === 'assistant') {
+    aiMessages[0].text = getAIWelcomeMessage();
+  }
   renderAIStatus();
   renderMessages();
 }
@@ -16,16 +42,16 @@ function renderAIStatus() {
   const offBanner = document.getElementById('ai-offline-banner');
   if (isOnline) {
     dot.style.background = 'var(--green)';
-    txt.textContent = 'Groq · llama-3.3-70b · Online';
+    txt.textContent = getAIStatusOnlineText();
     offBanner.classList.add('d-none');
   } else {
     dot.style.background = '#ef4444';
-    txt.textContent = 'Groq · llama-3.3-70b · Offline';
+    txt.textContent = getAIStatusOfflineText();
     offBanner.classList.remove('d-none');
   }
   const input = document.getElementById('ai-input');
   input.disabled = !isOnline || aiLoading;
-  input.placeholder = isOnline ? 'Tanong mo dito...' : 'No internet connection';
+  input.placeholder = isOnline ? getAIInputPlaceholder() : (appLang === 'en' ? 'No internet connection' : 'Walang internet connection');
   document.getElementById('ai-send').disabled = !isOnline || aiLoading;
 }
 
@@ -33,7 +59,7 @@ function renderMessages() {
   const container = document.getElementById('chat-messages');
   container.innerHTML = aiMessages.map(m => `
     <div class="d-flex flex-column" style="align-items:${m.role==='user'?'flex-end':'flex-start'}">
-      <span class="tag-mono mb-1" style="color:var(--text-muted)">${m.role==='user'?'IKAW':'AI'}</span>
+      <span class="tag-mono mb-1" style="color:var(--text-muted)">${getAIRoleLabel(m.role)}</span>
       <div class="chat-bubble ${m.role==='user'?'user':'assist'}" style="color:var(--text)">${escHtml(m.text)}</div>
     </div>`).join('');
 
@@ -73,17 +99,17 @@ async function sendAI() {
         max_tokens: 512,
         temperature: 0.4,
         messages: [
-          { role:'system', content: AI_SYSTEM_PROMPT },
+          { role:'system', content: getAISystemPrompt(appLang) },
           ...aiMessages.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.text })),
         ]
       })
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
-    const reply = data.choices?.[0]?.message?.content || 'Walang response. Try ulit.';
+    const reply = data.choices?.[0]?.message?.content || (appLang === 'en' ? 'No response. Try again.' : 'Walang response. Try ulit.');
     aiMessages.push({ role:'assistant', text: reply });
   } catch (err) {
-    aiMessages.push({ role:'assistant', text: `Connection error: ${err.message}` });
+    aiMessages.push({ role:'assistant', text: appLang === 'en' ? `Connection error: ${err.message}` : `Connection error: ${err.message}` });
   } finally {
     aiLoading = false;
     renderMessages();
