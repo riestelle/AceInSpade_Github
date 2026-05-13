@@ -5,10 +5,20 @@ let pfActiveLang    = 'fil';
 let pfPhrase        = null;
 let pfAudioPlaying  = false;
 let pfAudioElement  = null;
+let cachedVoices    = [];
 
 // Audio file support: set to true when audio files are available
 const AUDIO_ENABLED = false;
 const AUDIO_BASE_URL = '/audio'; // e.g., /audio/greeting-fil.mp3
+
+// Preload voices when they become available
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = () => {
+    cachedVoices = window.speechSynthesis.getVoices();
+  };
+  // Initial load attempt
+  cachedVoices = window.speechSynthesis.getVoices();
+}
 
 function initPhrases() {
   phraseLang = loadStorage('phrase_lang', 'fil');
@@ -159,20 +169,60 @@ function speakPhraseWithTTS(text) {
   if (!window.speechSynthesis) return;
   
   window.speechSynthesis.cancel();
-  const utt  = new SpeechSynthesisUtterance(text);
-  utt.lang   = pfActiveLang === 'fil' ? 'fil-PH' : 'en-PH';
-  utt.rate   = 0.85;
-  utt.pitch  = 1;
-  const voices = window.speechSynthesis.getVoices();
-  const prefix = pfActiveLang === 'fil' ? 'fil' : 'en';
-  const match  = voices.find(v => v.lang.toLowerCase().startsWith(prefix));
-  if (match) utt.voice = match;
+  const utt = new SpeechSynthesisUtterance(text);
+  
+  // Set language tag
+  const langTag = pfActiveLang === 'fil' ? 'fil-PH' : 'en-PH';
+  utt.lang = langTag;
+  utt.rate = 0.85;
+  utt.pitch = 1;
+
+  // Find matching voice with multiple fallback strategies
+  let selectedVoice = null;
+  
+  // Ensure voices are loaded
+  let voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
+  
+  if (voices && voices.length > 0) {
+    // Strategy 1: Exact lang match (fil-PH, en-PH, etc.)
+    selectedVoice = voices.find(v => v.lang === langTag);
+    
+    // Strategy 2: Country-specific match (fil-*, en-*, etc.)
+    if (!selectedVoice) {
+      const prefix = pfActiveLang === 'fil' ? 'fil' : 'en';
+      selectedVoice = voices.find(v => v.lang && v.lang.startsWith(prefix));
+    }
+    
+    // Strategy 3: Language code match (just 'fil' or 'en')
+    if (!selectedVoice) {
+      const langCode = pfActiveLang === 'fil' ? 'fil' : 'en';
+      selectedVoice = voices.find(v => v.lang && v.lang.split('-')[0] === langCode);
+    }
+    
+    // Strategy 4: Try Philippine voices specifically
+    if (!selectedVoice && pfActiveLang === 'fil') {
+      selectedVoice = voices.find(v => v.lang && v.lang.includes('PH'));
+    }
+    
+    // Strategy 5: Any voice that mentions the language
+    if (!selectedVoice) {
+      const searchLang = pfActiveLang === 'fil' ? 'Filipino' : 'English';
+      selectedVoice = voices.find(v => v.name && v.name.includes(searchLang));
+    }
+    
+    // Use selected voice if found
+    if (selectedVoice) {
+      utt.voice = selectedVoice;
+    }
+  }
+
   const btn = document.getElementById('pf-speak');
   if (btn) {
     btn.style.opacity = '0.5';
-    utt.onend   = () => { btn.style.opacity = '1'; };
+    utt.onend = () => { btn.style.opacity = '1'; };
     utt.onerror = () => { btn.style.opacity = '1'; };
   }
+
   window.speechSynthesis.speak(utt);
   vibrate(30);
 }
