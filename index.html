@@ -849,9 +849,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-// ══════════════════════════════════════════════════════════════════
 //  DATA
-// ══════════════════════════════════════════════════════════════════
 
 const FARE_MATRIX = {
   traditional: { base: 14, baseKm: 4, perKm: 2.00 },
@@ -965,9 +963,7 @@ Always mention: the windshield text to look for, key landmark stops, and estimat
 Do not discuss anything unrelated to Philippine jeepney commuting.
 Keep responses under 5 sentences or use a short list. No markdown headers.`;
 
-// ══════════════════════════════════════════════════════════════════
 //  STATE
-// ══════════════════════════════════════════════════════════════════
 
 let currentScreen = 'home';
 let isOnline = navigator.onLine;
@@ -1013,9 +1009,7 @@ let aiMessages = [
 ];
 let aiLoading = false;
 
-// ══════════════════════════════════════════════════════════════════
 //  UTILS
-// ══════════════════════════════════════════════════════════════════
 
 function loadStorage(key, fallback) {
   try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : fallback; }
@@ -1060,9 +1054,7 @@ function getRouteShortCode(routeId) {
   return (ROUTES.find(r => r.id === routeId) || {}).shortCode || routeId;
 }
 
-// ══════════════════════════════════════════════════════════════════
 //  NAVIGATION
-// ══════════════════════════════════════════════════════════════════
 
 function navigate(screenId, params = {}) {
   vibrate(30);
@@ -1091,9 +1083,7 @@ function navigate(screenId, params = {}) {
   if (screenId === 'fsl')     {} // static
 }
 
-// ══════════════════════════════════════════════════════════════════
 //  HOME
-// ══════════════════════════════════════════════════════════════════
 
 function initHome() {
   const aiCard = document.getElementById('ai-card');
@@ -1117,9 +1107,7 @@ document.querySelectorAll('[data-nav]').forEach(btn => {
 });
 document.getElementById('home-vib-btn').addEventListener('click', () => navigate('vib'));
 
-// ══════════════════════════════════════════════════════════════════
 //  DEAF CARD
-// ══════════════════════════════════════════════════════════════════
 
 const deafMessages = {
   fil: {
@@ -1193,9 +1181,7 @@ function saveDeafStop() {
   vibrate(50);
 }
 
-// ══════════════════════════════════════════════════════════════════
 //  SABIHIN MO
-// ══════════════════════════════════════════════════════════════════
 
 function initPhrases() {
   phraseLang = loadStorage('phrase_lang', 'fil');
@@ -1315,9 +1301,7 @@ saveNewBtn.addEventListener('click', () => {
   vibrate(50);
 });
 
-// ══════════════════════════════════════════════════════════════════
 //  FARE CALCULATOR
-// ══════════════════════════════════════════════════════════════════
 
 function initFare() {
   farePWD = loadStorage('is_pwd', false);
@@ -1447,9 +1431,7 @@ document.getElementById('fare-to').addEventListener('change', function() {
 
 document.getElementById('use-in-sabihin-btn').addEventListener('click', () => navigate('phrases'));
 
-// ══════════════════════════════════════════════════════════════════
 //  ROUTE REFERENCE
-// ══════════════════════════════════════════════════════════════════
 
 function initRoute() {
   routeSearchQuery = '';
@@ -1497,9 +1479,7 @@ document.getElementById('route-search').addEventListener('input', function() {
   renderRouteList();
 });
 
-// ══════════════════════════════════════════════════════════════════
 //  GPS STOP ALERT
-// ══════════════════════════════════════════════════════════════════
 
 function initGPS() {
   gpsSelectedStop = null;
@@ -1586,9 +1566,7 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
   );
 });
 
-// ══════════════════════════════════════════════════════════════════
 //  ALERT SCREEN
-// ══════════════════════════════════════════════════════════════════
 
 function initAlert(stopName) {
   alertStopName = stopName;
@@ -1614,9 +1592,7 @@ document.getElementById('alert-dismiss').addEventListener('click', () => {
   navigate('home');
 });
 
-// ══════════════════════════════════════════════════════════════════
 //  AI ASSISTANT
-// ══════════════════════════════════════════════════════════════════
 
 function initAI() {
   renderAIStatus();
@@ -1729,9 +1705,7 @@ function initAIKeyDisplay() {
   if (key) document.getElementById('key-display').textContent = key.slice(0,8) + '...';
 }
 
-// ══════════════════════════════════════════════════════════════════
 //  VIBRATION SETTINGS
-// ══════════════════════════════════════════════════════════════════
 
 function initVib() {
   vibIntensity = loadStorage('vib_intensity', 'medium');
@@ -1770,16 +1744,12 @@ document.querySelectorAll('#timing-options .vib-option').forEach(btn => {
   });
 });
 
-// ══════════════════════════════════════════════════════════════════
 //  ONLINE / OFFLINE LISTENER
-// ══════════════════════════════════════════════════════════════════
 
 window.addEventListener('online',  () => { isOnline = true;  if (currentScreen === 'home') initHome(); if (currentScreen === 'ai') renderAIStatus(); });
 window.addEventListener('offline', () => { isOnline = false; if (currentScreen === 'home') initHome(); if (currentScreen === 'ai') renderAIStatus(); });
 
-// ══════════════════════════════════════════════════════════════════
 //  BOOT
-// ══════════════════════════════════════════════════════════════════
 
 initHome();
 initAIKeyDisplay();
