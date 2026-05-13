@@ -1,10 +1,16 @@
-const CACHE = "senyaspo-v3";
+const CACHE = "senyaspo-v4";
 
 const ASSETS = [
   "/",
   "/index.html",
   "/data/stops.json",
   "/data/routes.json",
+  "/js/data.js",
+  "/js/fare.js",
+  "/js/gps.js",
+  "/js/phrases.js",
+  "/js/ai.js",
+  "/js/app.js",
 ];
 
 self.addEventListener("install", (e) => {
@@ -25,7 +31,19 @@ self.addEventListener("fetch", (e) => {
   // AI assistant requests always go to network
   if (e.request.url.includes("/api/")) return;
 
+  // Cache-first for JS, CSS, and data files; network fallback
+  if (e.request.url.match(/\.(js|css|json)$/)) {
+    e.respondWith(
+      caches.match(e.request).then((cached) => cached || fetch(e.request).then(res => {
+        if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+        return res;
+      }))
+    );
+    return;
+  }
+
+  // Network-first for everything else; cache fallback
   e.respondWith(
-    caches.match(e.request).then((cached) => cached || fetch(e.request))
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });

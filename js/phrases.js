@@ -3,6 +3,12 @@
 let phraseLang      = 'fil';
 let pfActiveLang    = 'fil';
 let pfPhrase        = null;
+let pfAudioPlaying  = false;
+let pfAudioElement  = null;
+
+// Audio file support: set to true when audio files are available
+const AUDIO_ENABLED = false;
+const AUDIO_BASE_URL = '/audio'; // e.g., /audio/greeting-fil.mp3
 
 function initPhrases() {
   phraseLang = loadStorage('phrase_lang', 'fil');
@@ -86,14 +92,73 @@ document.getElementById('pf-lang-toggle').addEventListener('click', () => {
 
 document.getElementById('pf-close').addEventListener('click', () => {
   window.speechSynthesis && window.speechSynthesis.cancel();
+  if (pfAudioElement) {
+    pfAudioElement.pause();
+    pfAudioElement.currentTime = 0;
+    pfAudioPlaying = false;
+  }
   document.getElementById('phrase-fullscreen').classList.add('d-none');
   vibrate(30);
 });
 
 function speakPhrase() {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
+  if (!window.speechSynthesis && !AUDIO_ENABLED) return;
+
   const text = pfActiveLang === 'fil' ? pfPhrase.filText : pfPhrase.enText;
+
+  // Attempt audio first if enabled
+  if (AUDIO_ENABLED && pfPhrase.id) {
+    playPhraseAudio();
+    return;
+  }
+
+  // Fallback to TTS
+  speakPhraseWithTTS(text);
+}
+
+function playPhraseAudio() {
+  // Build audio filename from phrase ID and language
+  const audioFile = `${AUDIO_BASE_URL}/${pfPhrase.id}-${pfActiveLang}.mp3`;
+  
+  // Stop any currently playing audio
+  if (pfAudioElement) {
+    pfAudioElement.pause();
+    pfAudioElement.currentTime = 0;
+  }
+
+  // Create or reuse audio element
+  if (!pfAudioElement) {
+    pfAudioElement = new Audio();
+    pfAudioElement.addEventListener('ended', () => {
+      pfAudioPlaying = false;
+      updatePhrasePlayButton();
+    });
+    pfAudioElement.addEventListener('error', (err) => {
+      // If audio fails to load/play, fall back to TTS
+      console.warn(`Audio failed for ${audioFile}:`, err.message);
+      const text = pfActiveLang === 'fil' ? pfPhrase.filText : pfPhrase.enText;
+      speakPhraseWithTTS(text);
+    });
+  }
+
+  pfAudioElement.src = audioFile;
+  pfAudioPlaying = true;
+  updatePhrasePlayButton();
+  
+  pfAudioElement.play().catch(err => {
+    // Fallback on play failure
+    console.warn('Audio playback failed:', err.message);
+    const text = pfActiveLang === 'fil' ? pfPhrase.filText : pfPhrase.enText;
+    speakPhraseWithTTS(text);
+  });
+
+  vibrate(30);
+}
+
+function speakPhraseWithTTS(text) {
+  if (!window.speechSynthesis) return;
+  
+  window.speechSynthesis.cancel();
   const utt  = new SpeechSynthesisUtterance(text);
   utt.lang   = pfActiveLang === 'fil' ? 'fil-PH' : 'en-PH';
   utt.rate   = 0.85;
@@ -103,11 +168,23 @@ function speakPhrase() {
   const match  = voices.find(v => v.lang.toLowerCase().startsWith(prefix));
   if (match) utt.voice = match;
   const btn = document.getElementById('pf-speak');
-  btn.style.opacity = '0.5';
-  utt.onend   = () => { btn.style.opacity = '1'; };
-  utt.onerror = () => { btn.style.opacity = '1'; };
+  if (btn) {
+    btn.style.opacity = '0.5';
+    utt.onend   = () => { btn.style.opacity = '1'; };
+    utt.onerror = () => { btn.style.opacity = '1'; };
+  }
   window.speechSynthesis.speak(utt);
   vibrate(30);
+}
+
+function updatePhrasePlayButton() {
+  const btn = document.getElementById('pf-speak');
+  if (!btn) return;
+  if (pfAudioPlaying) {
+    btn.style.opacity = '0.5';
+  } else {
+    btn.style.opacity = '1';
+  }
 }
 
 document.getElementById('pf-speak').addEventListener('click', speakPhrase);

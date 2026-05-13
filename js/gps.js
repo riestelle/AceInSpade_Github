@@ -6,6 +6,9 @@ let gpsWatchId       = null;
 let gpsLiveWatchId    = null;
 let gpsLiveMarker     = null;
 let gpsLiveAccuracy   = null;
+let gpsPermissionRequested = false;
+let gpsPermissionRetryTimeout = null;
+let gpsLocatorTimeout = null;
 
 function initGPS() {
   cleanupGPS();
@@ -54,16 +57,27 @@ function initLeafletMap() {
   }).addTo(leafletMap);
 }
 
-function startLiveLocator() {
-  if (!navigator.geolocation) {
-    const err = document.getElementById('gps-error');
-    err.classList.remove('d-none');
-    err.textContent = 'Live GPS locator is not available on this device.';
-    return;
-  }
+function startLocationWatch() {
+  // Clear any existing timeout
+  if (gpsLocatorTimeout) clearTimeout(gpsLocatorTimeout);
+
+  // Set 30-second timeout for location watch
+  gpsLocatorTimeout = setTimeout(() => {
+    if (gpsLiveWatchId !== null && !gpsLiveMarker) {
+      const errEl = document.getElementById('gps-error');
+      errEl.classList.remove('d-none');
+      errEl.textContent = 'Location timeout. Ensure GPS is enabled and try again.';
+    }
+  }, 30000);
 
   gpsLiveWatchId = navigator.geolocation.watchPosition(
     pos => {
+      // Clear timeout on first successful position
+      if (gpsLocatorTimeout) {
+        clearTimeout(gpsLocatorTimeout);
+        gpsLocatorTimeout = null;
+      }
+
       const userLat = pos.coords.latitude;
       const userLon = pos.coords.longitude;
       const accuracy = Math.max(15, pos.coords.accuracy || 50);
@@ -98,17 +112,125 @@ function startLiveLocator() {
     err => {
       const errEl = document.getElementById('gps-error');
       errEl.classList.remove('d-none');
-      errEl.textContent = 'Live GPS locator error: ' + err.message;
+      if (err.code === 1) {
+        errEl.textContent = 'Location permission denied. Tap "Enable Location" button below.';
+        showGPSPermissionButton();
+      } else if (err.code === 3) {
+        errEl.textContent = 'Location timeout. Check GPS settings.';
+      } else {
+        errEl.textContent = 'GPS error: ' + err.message;
+      }
     },
-    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
   );
 }
 
+function requestGPSPermission() {
+  if (!navigator.geolocation) {
+    const err = document.getElementById('gps-error');
+    err.classList.remove('d-none');
+    err.textContent = 'Live GPS locator is not available on this device.';
+    return;
+  }
+
+  // Clear any pending retry
+  if (gpsPermissionRetryTimeout) clearTimeout(gpsPermissionRetryTimeout);
+
+  gpsPermissionRequested = true;
+  saveStorage('gps_permission_requested', true);
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      // Permission granted, start watching location
+      document.getElementById('gps-error').classList.add('d-none');
+      hideGPSPermissionButton();
+      startLocationWatch();
+    },
+    err => {
+      if (err.code === 1) {
+        // Permission denied - show button but don't retry
+        const errEl = document.getElementById('gps-error');
+        errEl.classList.remove('d-none');
+        errEl.textContent = 'Location permission denied. Tap "Enable Location" button below.';
+        showGPSPermissionButton();
+      } else if (err.code === 3) {
+        // Timeout - show button to retry
+        const errEl = document.getElementById('gps-error');
+        errEl.classList.remove('d-none');
+        errEl.textContent = 'Location request timed out. Tap "Enable Location" to retry.';
+        showGPSPermissionButton();
+      } else {
+        const errEl = document.getElementById('gps-error');
+        errEl.classList.remove('d-none');
+        errEl.textContent = 'Error: ' + err.message;
+      }
+    },
+    { enableHighAccuracy: true, timeout: 15000 }
+  );
+}
+
+function showGPSPermissionButton() {
+  let permBtn = document.getElementById('gps-permission-btn');
+  if (!permBtn) {
+    permBtn = document.createElement('button');
+    permBtn.id = 'gps-permission-btn';
+    permBtn.className = 'btn-primary-sp';
+    permBtn.style.marginTop = '12px';
+    permBtn.innerHTML = '<span class="material-symbols-outlined">location_on</span> Enable Location Access';
+    permBtn.addEventListener('click', requestGPSPermission);
+    document.querySelector('#screen-gps main').appendChild(permBtn);
+  }
+  permBtn.classList.remove('d-none');
+}
+
+function hideGPSPermissionButton() {
+  const permBtn = document.getElementById('gps-permission-btn');
+  if (permBtn) permBtn.classList.add('d-none');
+}
+
+function startLiveLocator() {
+  if (!navigator.geolocation) {
+    const err = document.getElementById('gps-error');
+    err.classList.remove('d-none');
+    err.textContent = 'Live GPS locator is not available on this device.';
+    return;
+  }
+
+  // Check if we've already asked for permission
+  const wasRequested = loadStorage('gps_permission_requested', false);
+  
+  if (!gpsPermissionRequested && !wasRequested) {
+    // First time - request permission
+    gpsPermissionRequested = true;
+    requestGPSPermission();
+  } else if (gpsPermissionRequested) {
+    // Already requested in this session - just start watching
+    startLocationWatch();
+  } else {
+    // Was requested before - try to start watching directly
+    gpsPermissionRequested = true;
+    startLocationWatch();
+  }
+}
+
 function cleanupGPS() {
+  // Clear all timeouts
+  if (gpsLocatorTimeout) clearTimeout(gpsLocatorTimeout);
+  if (gpsPermissionRetryTimeout) clearTimeout(gpsPermissionRetryTimeout);
+  gpsLocatorTimeout = null;
+  gpsPermissionRetryTimeout = null;
+
+  // Clear location watches
   if (gpsLiveWatchId !== null) {
     navigator.geolocation.clearWatch(gpsLiveWatchId);
     gpsLiveWatchId = null;
   }
+  if (gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = null;
+  }
+
+  // Remove markers
   if (gpsLiveMarker) {
     gpsLiveMarker.remove();
     gpsLiveMarker = null;
@@ -117,6 +239,8 @@ function cleanupGPS() {
     gpsLiveAccuracy.remove();
     gpsLiveAccuracy = null;
   }
+
+  hideGPSPermissionButton();
 }
 
 function panMapToStop(stop) {
@@ -179,7 +303,11 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
     err => {
       const errEl = document.getElementById('gps-error');
       errEl.classList.remove('d-none');
-      errEl.textContent = 'GPS error: ' + err.message;
+      if (err.code === 1) {
+        errEl.textContent = 'Location permission denied for alert.';
+      } else {
+        errEl.textContent = 'GPS error: ' + err.message;
+      }
     },
     { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
   );
