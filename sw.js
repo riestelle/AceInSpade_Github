@@ -1,9 +1,10 @@
-const CACHE = "senyaspo-v2";
+const CACHE = "senyaspo-v3";
 
 const ASSETS = [
   "/",
   "/index.html",
   "/data/stops.json",
+  "/data/routes.json",
 ];
 
 self.addEventListener("install", (e) => {
@@ -22,7 +23,7 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   // AI assistant requests always go to network
-  if (e.request.url.includes("groq.com")) return;
+  if (e.request.url.includes("/api/")) return;
 
   e.respondWith(
     caches.match(e.request).then((cached) => cached || fetch(e.request))

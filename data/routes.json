@@ -1,0 +1,71 @@
+[
+  {
+    "id": "cubao-vito-cruz",
+    "code": "CUBAO — VITO CRUZ VIA MABINI",
+    "shortCode": "CUBAO-VITO CRUZ",
+    "stops": [
+      { "name": "CUBAO EXPO / GATEWAY",       "note": "Transfer point for LRT-2 and MRT-3",            "km": 0  },
+      { "name": "EDSA COR AURORA BLVD",       "note": "Main intersection for provincial buses",         "km": 3  },
+      { "name": "STA. MESA / SM CENTERPOINT", "note": "V. Mapa and Polytechnic University access",      "km": 7  },
+      { "name": "QUIAPO CHURCH",              "note": "Plaza Miranda and heavy pedestrian crossing",     "km": 10 },
+      { "name": "VITO CRUZ / DLSU",           "note": "University area and LRT-1 terminal destination", "km": 15 }
+    ]
+  },
+  {
+    "id": "fairview-quiapo",
+    "code": "FAIRVIEW — QUIAPO VIA COMMONWEALTH",
+    "shortCode": "FAIRVIEW-QUIAPO",
+    "stops": [
+      { "name": "SM FAIRVIEW",          "note": "End/start terminal, QC North",             "km": 0  },
+      { "name": "COMMONWEALTH AVE",     "note": "Main corridor, multiple transfer options",  "km": 5  },
+      { "name": "PHILCOA / UP DILIMAN", "note": "University access point",                   "km": 12 },
+      { "name": "ESPANA BLVD",          "note": "UST and University Belt area",               "km": 18 },
+      { "name": "QUIAPO CHURCH",        "note": "Terminal and transfer hub",                  "km": 22 }
+    ]
+  },
+  {
+    "id": "pitx-baclaran",
+    "code": "PITX — BACLARAN",
+    "shortCode": "PITX-BACLARAN",
+    "stops": [
+      { "name": "PITX TERMINAL 1",          "note": "Parañaque Integrated Terminal Exchange", "km": 0 },
+      { "name": "COASTAL ROAD / MALL OF ASIA", "note": "SM Mall of Asia stop",               "km": 3 },
+      { "name": "EDSA COR LIBERTAD",        "note": "Transfer to EDSA routes",                "km": 5 },
+      { "name": "BACLARAN CHURCH",          "note": "End terminal, LRT-1 Baclaran station",   "km": 7 }
+    ]
+  },
+  {
+    "id": "divisoria-malabon",
+    "code": "DIVISORIA — MALABON",
+    "shortCode": "DIVISORIA-MALABON",
+    "stops": [
+      { "name": "DIVISORIA MARKET",        "note": "Major market and start terminal",   "km": 0 },
+      { "name": "TONDO / SMOKEY MOUNTAIN", "note": "Residential and industrial area",   "km": 3 },
+      { "name": "NAVOTAS FISH PORT",       "note": "Fishport complex stop",              "km": 6 },
+      { "name": "MALABON PALENGKE",        "note": "End terminal near public market",    "km": 9 }
+    ]
+  },
+  {
+    "id": "novaliches-quiapo",
+    "code": "NOVALICHES — QUIAPO VIA RECTO",
+    "shortCode": "NOVALICHES-QUIAPO",
+    "stops": [
+      { "name": "NOVALICHES TERMINAL", "note": "Start terminal, Novaliches town center", "km": 0  },
+      { "name": "CALOOCAN CITY HALL",  "note": "Government center transfer point",        "km": 6  },
+      { "name": "AVENIDA / RECTO",     "note": "Shopping and transfer corridor",           "km": 14 },
+      { "name": "QUIAPO CHURCH",       "note": "End terminal, major hub",                  "km": 17 }
+    ]
+  },
+  {
+    "id": "alabang-lawton",
+    "code": "ALABANG — LAWTON VIA SKYWAY",
+    "shortCode": "ALABANG-LAWTON",
+    "stops": [
+      { "name": "ALABANG TERMINAL",          "note": "South terminal, Muntinlupa",          "km": 0  },
+      { "name": "FILINVEST / AYALA ALABANG", "note": "Commercial and business district",    "km": 3  },
+      { "name": "SUCAT INTERCHANGE",         "note": "SLEX and Skyway entry point",          "km": 8  },
+      { "name": "PACO MARKET",               "note": "Market and residential stop",          "km": 20 },
+      { "name": "LAWTON / MANILA CITY HALL", "note": "End terminal near Manila Bay",         "km": 24 }
+    ]
+  }
+]

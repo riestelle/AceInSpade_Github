@@ -810,7 +810,7 @@
         </button>
       </div>
       <p style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center">
-        Libreng Groq key sa <a href="https://console.groq.com" target="_blank" style="color:var(--amber)">console.groq.com</a> · Paste key: <code id="key-display" style="color:var(--amber);cursor:pointer" onclick="promptApiKey()" title="Click to set API key">[ set key ]</code>
+        Powered by <span style="color:var(--amber)">Groq · llama-3.3-70b-versatile</span>
       </p>
     </div>
   </div>
@@ -1593,6 +1593,8 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
         vibrate('signal');
         navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null;
         navigate('alert', { stopName: gpsSelectedStop.name });
+      } else if (dist <= 200) {
+        vibrate('near');
       } else if (dist <= 250) {
         vibrate('approach');
       }
@@ -1788,7 +1790,6 @@ window.addEventListener('offline', () => { isOnline = false; if (currentScreen =
 //  BOOT
 
 initHome();
-initAIKeyDisplay();
 
 // Register service worker
 if ('serviceWorker' in navigator) {
