@@ -100,6 +100,7 @@ function navigate(screenId, params = {}) {
   if (screenId === 'ai')      initAI();
   if (screenId === 'vib')     initVib();
   if (screenId === 'fsl')     {}
+  if (screenId === 'family')  initFamily();
 }
 
 function initHome() {

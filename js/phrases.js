@@ -137,7 +137,7 @@ function speakPhrase() {
 function playPhraseAudio() {
   const playbackLang = getPhrasePlaybackLang();
   const audioFile = `${AUDIO_BASE_URL}/${pfPhrase.id}-${playbackLang}.mp3`;
-  
+
   if (pfAudioElement) {
     pfAudioElement.pause();
     pfAudioElement.currentTime = 0;
@@ -158,7 +158,7 @@ function playPhraseAudio() {
   pfAudioElement.src = audioFile;
   pfAudioPlaying = true;
   updatePhrasePlayButton();
-  
+
   pfAudioElement.play().catch(err => {
     console.warn('Audio playback failed:', err.message);
     speakPhraseWithTTS(getPhrasePlaybackText());
@@ -169,10 +169,10 @@ function playPhraseAudio() {
 
 function speakPhraseWithTTS(text) {
   if (!window.speechSynthesis) return;
-  
+
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
-  
+
   const playbackLang = getPhrasePlaybackLang();
   const langTag = playbackLang === 'fil' ? 'fil-PH' : 'en-PH';
   utt.lang = langTag;
@@ -181,29 +181,29 @@ function speakPhraseWithTTS(text) {
 
   let selectedVoice = null;
   let voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
-  
+
   if (voices && voices.length > 0) {
     selectedVoice = voices.find(v => v.lang === langTag);
-    
+
     if (!selectedVoice) {
       const prefix = playbackLang === 'fil' ? 'fil' : 'en';
       selectedVoice = voices.find(v => v.lang && v.lang.startsWith(prefix));
     }
-    
+
     if (!selectedVoice) {
       const langCode = playbackLang === 'fil' ? 'fil' : 'en';
       selectedVoice = voices.find(v => v.lang && v.lang.split('-')[0] === langCode);
     }
-    
+
     if (!selectedVoice && playbackLang === 'fil') {
       selectedVoice = voices.find(v => v.lang && v.lang.includes('PH'));
     }
-    
+
     if (!selectedVoice) {
       const searchLang = playbackLang === 'fil' ? 'Filipino' : 'English';
       selectedVoice = voices.find(v => v.name && v.name.includes(searchLang));
     }
-    
+
     if (selectedVoice) {
       utt.voice = selectedVoice;
     }

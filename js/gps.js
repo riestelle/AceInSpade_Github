@@ -302,6 +302,10 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
       const dist = haversine(pos.coords.latitude, pos.coords.longitude, gpsSelectedStop.lat, gpsSelectedStop.lon);
       if (dist <= 150) {
         vibrate('signal');
+        // Notify family if sharing is active
+        if (typeof notifyFamilyAlert === 'function') {
+          notifyFamilyAlert(gpsSelectedStop.name);
+        }
         navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null;
         navigate('alert', { stopName: gpsSelectedStop.name });
       } else if (dist <= 200) {

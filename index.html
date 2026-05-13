@@ -665,6 +665,18 @@
           <span class="material-symbols-outlined" style="font-size:20px;color:var(--outline-var)">chevron_right</span>
         </button>
 
+        <!-- Pamilya — Family Notification row -->
+        <button class="card-gps" data-nav="family" style="border-color:#4a3800">
+          <div class="card-gps-left">
+            <span class="material-symbols-outlined" style="font-size:24px;color:#feb700">group</span>
+            <div>
+              <div class="card-gps-label" style="color:#feb700">Pamilya</div>
+              <div class="card-gps-sub">I-share ang live status mo sa kamag-anak</div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--outline-var)">chevron_right</span>
+        </button>
+
       </div>
 
       <!-- ── ZONE 2: BAGO SUMAKAY (Before You Board) ── -->
@@ -705,6 +717,64 @@
 
     </main>
     <!-- BUG FIX — do not revert: legend-strip removed -->
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       SCREEN: PAMILYA (Family Notification)
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="screen-family" class="screen">
+    <header class="topbar">
+      <button class="btn p-0 d-flex align-items-center gap-2" style="background:none;border:none;color:#888;font-weight:700;font-size:14px" onclick="navigate('home')">
+        <span class="material-symbols-outlined" style="font-size:20px">arrow_back</span> Bumalik
+      </button>
+      <span style="font-weight:900;font-size:16px;color:#feb700;letter-spacing:.5px">👨‍👩‍👧 PAMILYA</span>
+      <div style="width:72px"></div>
+    </header>
+
+    <main style="padding:16px;display:flex;flex-direction:column;gap:14px;max-width:480px;margin:0 auto">
+
+      <!-- Explainer -->
+      <div style="background:#1a1a0f;border:1px solid #3a2d00;border-radius:14px;padding:16px">
+        <p style="font-size:13px;color:#feb700;font-weight:800;margin-bottom:6px">Paano gumagana?</p>
+        <p style="font-size:13px;color:#aaa;line-height:1.6;margin:0">
+          I-share ang link sa ibaba sa iyong kamag-anak. Kapag tiningnan nila ito, makikita nila ang iyong live status habang nakasakay ka. <strong style="color:#fff">Walang login na kailangan.</strong>
+        </p>
+      </div>
+
+      <!-- Status toggle -->
+      <div style="background:#151515;border:1px solid #2a2a2a;border-radius:14px;padding:16px">
+        <p id="family-status-label" style="font-size:13px;color:var(--text-muted);margin-bottom:12px">⬜ Hindi pa aktibo</p>
+        <button id="family-toggle-btn" class="btn-primary-sp" style="width:100%">
+          <span class="material-symbols-outlined" style="font-size:20px">share_location</span> Simulan ang Pagbabahagi
+        </button>
+      </div>
+
+      <!-- Shareable link -->
+      <div style="background:#151515;border:1px solid #2a2a2a;border-radius:14px;padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <p style="font-size:13px;font-weight:800;color:#fff;margin:0">Shareable Link</p>
+          <span id="family-id-badge" style="font-size:11px;color:#555;background:#1a1a1a;padding:3px 8px;border-radius:20px"></span>
+        </div>
+        <input id="family-link" type="text" readonly
+          style="width:100%;background:#0d0d0d;border:1px solid #333;border-radius:8px;color:#feb700;font-size:12px;padding:10px 12px;margin-bottom:10px;font-family:monospace;word-break:break-all"
+        />
+        <div style="display:flex;gap:8px">
+          <button id="family-copy-btn" class="btn-ghost" style="flex:1;font-size:13px">Kopyahin ang Link</button>
+          <button id="family-share-btn" class="btn-primary-sp" style="flex:1;font-size:13px">
+            <span class="material-symbols-outlined" style="font-size:16px">ios_share</span> I-share
+          </button>
+        </div>
+      </div>
+
+      <!-- Info note -->
+      <div style="background:#0f1a0f;border:1px solid #1a3a1a;border-radius:14px;padding:14px">
+        <p style="font-size:12px;color:#6b9;line-height:1.6;margin:0">
+          💡 <strong>Tip:</strong> Kapag nag-set ka ng GPS Alert at malapit ka na sa iyong hintuan, awtomatikong maabisuhan din ang iyong kamag-anak. I-on ang pagbabahagi bago sumakay.
+        </p>
+      </div>
+
+    </main>
   </div>
 
 
@@ -1143,6 +1213,7 @@
 <script src="js/gps.js"></script>
 <script src="js/phrases.js"></script>
 <script src="js/ai.js"></script>
+<script src="js/family.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
