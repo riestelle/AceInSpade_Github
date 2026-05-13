@@ -1215,5 +1215,35 @@
 <script src="js/ai.js"></script>
 <script src="js/family.js"></script>
 <script src="js/app.js"></script>
+<script>
+(function() {
+  const scriptFallbacks = [
+    { src: 'js/data.js', guard: () => typeof ROUTES === 'undefined' },
+    { src: 'js/fare.js', guard: () => typeof fareRouteId === 'undefined' },
+    { src: 'js/gps.js', guard: () => typeof gpsSelectedStop === 'undefined' },
+    { src: 'js/phrases.js', guard: () => typeof phraseLang === 'undefined' },
+    { src: 'js/ai.js', guard: () => typeof aiMessages === 'undefined' },
+    { src: 'js/family.js', guard: () => typeof FIREBASE_URL === 'undefined' },
+    { src: 'js/app.js', guard: () => typeof navigate === 'undefined' },
+  ];
+
+  const loadScript = (src) => fetch(src)
+    .then(res => res.ok ? res.text() : Promise.reject(new Error('Failed to fetch ' + src)))
+    .then(code => {
+      const script = document.createElement('script');
+      script.textContent = code + '\n//# sourceURL=' + src;
+      document.body.appendChild(script);
+    })
+    .catch(() => {
+      // Ignore fetch/eval failures; the app may still work if the script loaded normally.
+    });
+
+  scriptFallbacks.reduce((promise, item) => {
+    return promise.then(() => {
+      return item.guard() ? loadScript(item.src) : Promise.resolve();
+    });
+  }, Promise.resolve());
+})();
+</script>
 </body>
 </html>
