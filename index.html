@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="SenyasPo" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png" />
   <title>SenyasPo</title>
 
   <!-- Bootstrap 5 -->
@@ -95,12 +96,13 @@
     .topbar-logo {
       width: 40px; height: 40px;
       border-radius: 8px;
-      background: var(--amber);
+      overflow: hidden;
       display: flex; align-items: center; justify-content: center;
-      border: 2px dashed #412d00;
       flex-shrink: 0;
+      background: transparent;
     }
-    .topbar-logo span { font-size: 9px; font-weight: 900; color: #412d00; text-align: center; line-height: 1.1; letter-spacing: -0.02em; }
+    .topbar-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    /* BUG FIX — do not revert: old span/placeholder removed, using real logo image */
     .topbar-title { font-weight: 800; font-size: 20px; color: var(--amber); letter-spacing: -0.02em; text-transform: uppercase; }
     .topbar-back { min-width: 56px; min-height: 56px; background: none; border: none; color: var(--text); display: flex; align-items: center; justify-content: center; margin-left: -16px; }
     .topbar-menu { min-width: 56px; min-height: 56px; background: none; border: none; color: var(--text); display: flex; align-items: center; justify-content: center; }
@@ -240,11 +242,14 @@
     .phrase-fullscreen.emergency { background: #8b0000; }
 
     /* ── ALERT SCREEN ─────────────────────────────────────────────── */
+    /* BUG FIX — do not revert: animation must only run when .active */
     .alert-screen {
       background: #000; color: white;
-      display: flex; flex-direction: column;
+      flex-direction: column;
       align-items: center; justify-content: space-between;
       padding: 80px 24px 40px;
+    }
+    .alert-screen.active {
       animation: alertpulse 0.6s ease-in-out infinite alternate;
     }
     @keyframes alertpulse {
@@ -355,8 +360,7 @@
     .ltfrb-block { background: var(--surface-lo); border: 1px solid var(--outline-var); border-radius: 10px; padding: 14px 16px; }
 
     /* LEGEND STRIP */
-    .legend-strip { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; padding: 0 20px 24px; }
-    .legend-item  { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 40px; }
+    /* BUG FIX — do not revert: legend-strip removed, acts as bottom nav */
 
     /* scrollbar */
     ::-webkit-scrollbar { width: 4px; }
@@ -375,7 +379,7 @@
     <!-- Topbar -->
     <header class="topbar">
       <div class="d-flex align-items-center gap-2">
-        <div class="topbar-logo"><span>LOGO</span></div>
+        <div class="topbar-logo"><img src="https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png" alt="SenyasPo" /></div>
         <span class="topbar-title">SENYASPO</span>
       </div>
       <button class="topbar-menu" id="home-vib-btn" title="Vibration Settings">
@@ -437,14 +441,7 @@
     </main>
 
     <!-- Legend -->
-    <div class="legend-strip">
-      <div class="legend-item"><span class="material-symbols-outlined" style="font-size:16px;color:var(--text-muted)">front_hand</span><span class="tag-mono" style="font-size:8px;color:var(--text-muted)">DEAF ID</span></div>
-      <div class="legend-item"><span class="material-symbols-outlined" style="font-size:16px;color:var(--text-muted)">chat_bubble</span><span class="tag-mono" style="font-size:8px;color:var(--text-muted)">SABIHIN</span></div>
-      <div class="legend-item"><span class="material-symbols-outlined" style="font-size:16px;color:var(--text-muted)">payments</span><span class="tag-mono" style="font-size:8px;color:var(--text-muted)">BAYAD</span></div>
-      <div class="legend-item"><span class="material-symbols-outlined" style="font-size:16px;color:var(--text-muted)">directions_bus</span><span class="tag-mono" style="font-size:8px;color:var(--text-muted)">RUTA</span></div>
-      <div class="legend-item"><span class="material-symbols-outlined" style="font-size:16px;color:var(--text-muted)">location_on</span><span class="tag-mono" style="font-size:8px;color:var(--text-muted)">GPS</span></div>
-      <div class="legend-item"><span class="material-symbols-outlined" style="font-size:16px;color:var(--text-muted)">smart_toy</span><span class="tag-mono" style="font-size:8px;color:var(--text-muted)">AI</span></div>
-    </div>
+    <!-- BUG FIX — do not revert: legend-strip removed -->
   </div>
 
 
@@ -1626,6 +1623,9 @@ function cleanupAlert() {
   clearInterval(alertInterval);
   alertInterval = null;
   if (alertWakeLock) { alertWakeLock.release().catch(() => {}); alertWakeLock = null; }
+  /* BUG FIX — do not revert: explicitly remove active to stop pulse animation */
+  const alertEl = document.getElementById('screen-alert');
+  if (alertEl) alertEl.classList.remove('active');
 }
 
 document.getElementById('alert-dismiss').addEventListener('click', () => {
