@@ -248,7 +248,7 @@ function initFamilyUI() {
         sosBtn.textContent = '✓ Alert sent!';
         sosBtn.style.background = '#16a34a';
         setTimeout(() => {
-          sosBtn.textContent = '<span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle">warning</span> SEND SOS';
+          sosBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle">warning</span> SEND SOS';
           sosBtn.style.background = '#d32f2f';
         }, 2000);
       }
@@ -257,6 +257,11 @@ function initFamilyUI() {
 
   renderFamilyStatus();
   restoreFamilySharingState();
+}
+
+function initFamily() {
+  initFamilyUI();
+  renderFamilyStatus();
 }
 
 document.addEventListener('DOMContentLoaded', initFamilyUI);

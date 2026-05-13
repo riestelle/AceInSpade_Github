@@ -519,7 +519,7 @@ function startLocationWatch() {
     if (gpsLiveWatchId !== null && !gpsLiveMarker) {
       const errEl = document.getElementById('gps-error');
       errEl.classList.remove('d-none');
-      errEl.textContent = 'Location timeout. Ensure GPS is enabled and try again.';
+      errEl.textContent = 'Location timeout. Retrying GPS tracking...';
     }
   }, 30000);
 
@@ -534,6 +534,10 @@ function startLocationWatch() {
       const userLat = pos.coords.latitude;
       const userLon = pos.coords.longitude;
       const accuracy = Math.max(15, pos.coords.accuracy || 50);
+
+      // Clear any previous error state once we have a fix
+      const errEl = document.getElementById('gps-error');
+      if (errEl) errEl.classList.add('d-none');
 
       // Store current position for distance calculations
       gpsCurrentPosition = { latitude: userLat, longitude: userLon };
@@ -584,7 +588,18 @@ function startLocationWatch() {
         errEl.textContent = 'Location permission denied. Tap "Enable Location" button below.';
         showGPSPermissionButton();
       } else if (err.code === 3) {
-        errEl.textContent = 'Location timeout. Check GPS settings.';
+        errEl.textContent = 'Location timeout. Retrying GPS tracking...';
+        if (gpsLiveWatchId !== null) {
+          navigator.geolocation.clearWatch(gpsLiveWatchId);
+          gpsLiveWatchId = null;
+        }
+        if (gpsLocatorTimeout) {
+          clearTimeout(gpsLocatorTimeout);
+          gpsLocatorTimeout = null;
+        }
+        setTimeout(() => {
+          if (gpsLiveWatchId === null) startLocationWatch();
+        }, 5000);
       } else {
         errEl.textContent = 'GPS error: ' + err.message;
       }
@@ -875,6 +890,36 @@ function selectGPSStop(id) {
   vibrate(40);
 }
 
+function cancelSelectedStop() {
+  if (gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = null;
+  }
+  gpsAlertActive = false;
+  saveGPSState();
+  gpsSelectedStop = null;
+  document.getElementById('gps-search').value = '';
+  document.getElementById('gps-dropdown').classList.add('d-none');
+  document.getElementById('gps-preview-card').classList.add('d-none');
+  document.getElementById('selected-stop-card').classList.add('d-none');
+  document.getElementById('gps-distance').classList.add('d-none');
+  document.getElementById('alert-active-msg').classList.add('d-none');
+  document.getElementById('gps-error').classList.add('d-none');
+  const alertBtn = document.getElementById('set-alert-btn');
+  if (alertBtn) {
+    alertBtn.disabled = true;
+    alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> SET ALERT';
+  }
+  if (typeof saveStorage === 'function') {
+    saveStorage('family_selected_stop', '');
+  }
+  const trackingBadge = document.getElementById('home-tracking-badge');
+  if (trackingBadge) trackingBadge.classList.add('d-none');
+  hideGPSPermissionButton();
+}
+
+document.getElementById('gps-cancel-btn')?.addEventListener('click', cancelSelectedStop);
+
 document.getElementById('set-alert-btn').addEventListener('click', () => {
   if (!gpsSelectedStop || gpsAlertActive) return;
   gpsAlertActive = true;
@@ -975,7 +1020,7 @@ document.getElementById('gps-help-btn').addEventListener('click', () => {
 });
 
 // Destination Guide button - provides safe arrival guidance
-document.getElementById('gps-ai-guide-btn').addEventListener('click', async () => {
+document.getElementById('gps-destination-guide-btn').addEventListener('click', async () => {
   if (!gpsSelectedStop) {
     alert('Please select a destination stop first.');
     return;
