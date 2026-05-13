@@ -27,6 +27,8 @@ const PROFANITY_PATTERNS = [
   /\bbwisit\b/i,
 ];
 
+let tagalogWarningShown = false;
+
 function hasVoiceForLanguage(voices, lang) {
   if (!voices || voices.length === 0) return false;
 
@@ -46,10 +48,42 @@ function hasVoiceForLanguage(voices, lang) {
   });
 }
 
+function createPhraseWarningPopup(title, message) {
+  const overlay = document.createElement('div');
+  overlay.className = 'help-modal-overlay';
+  overlay.style.zIndex = '9999';
+  overlay.innerHTML = `
+    <div class="help-modal">
+      <div class="help-modal-title">${title}</div>
+      <div class="help-modal-section" style="padding:0 8px;">
+        <p style="margin:0;font-size:15px;color:var(--text);line-height:1.5">${message}</p>
+      </div>
+      <button id="phrase-warning-close" style="width:100%;height:48px;background:var(--amber);color:#271900;border:none;border-radius:8px;font-weight:700;margin-top:16px;cursor:pointer">OK</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#phrase-warning-close').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+}
+
+function showTagalogSupportWarning() {
+  if (tagalogWarningShown) return;
+  tagalogWarningShown = true;
+  createPhraseWarningPopup(
+    'Tagalog speech may not work',
+    'The Sabihin Mo screen is currently set to Filipino/Tagalog, but this browser may not support Tagalog speech playback. The app will still show Filipino text, but spoken output may fall back to English or a default voice.'
+  );
+}
+
 function showMissingTTSVoicePopup() {
   if (ttsVoicePopupShown) return;
   ttsVoicePopupShown = true;
-  alert('No Filipino or English TTS voice was detected on this device/browser. Speech playback may not work until a compatible voice is installed or enabled.');
+  createPhraseWarningPopup(
+    'No TTS voice available',
+    'No Filipino or English TTS voice was detected on this device/browser. Speech playback may not work until a compatible voice is installed or enabled.'
+  );
 }
 
 function hasProfanity(text) {
@@ -108,6 +142,12 @@ function initPhrases() {
   }
   document.getElementById('phrases-lang-btn').textContent = getPhraseDirectionLabel(phraseLang);
   renderPhraseList();
+
+  if (phraseLang === 'fil') {
+    if (!window.speechSynthesis || !hasVoiceForLanguage(getAvailableVoices(), 'fil')) {
+      showTagalogSupportWarning();
+    }
+  }
 }
 
 function getStoredPhrases() {

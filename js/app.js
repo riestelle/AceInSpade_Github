@@ -40,6 +40,8 @@ function getAppStorageKeys() {
     'deaf_lang',
     'deaf_stop',
     'gps_permission_requested',
+    'gps_selected_stop',
+    'gps_alert_active',
     'family_watch_id',
     'family_selected_stop',
     'family_arrived_stop',
@@ -230,9 +232,11 @@ function navigate(screenId, params = {}) {
   }
   if (currentScreen === 'alert') cleanupAlert();
   if (currentScreen === 'gps' && screenId !== 'gps' && typeof cleanupGPS === 'function') {
-    cleanupGPS();
-    if (gpsWatchId !== null) {
-      navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; gpsAlertActive = false;
+    if (!gpsAlertActive) {
+      cleanupGPS();
+      if (gpsWatchId !== null) {
+        navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; gpsAlertActive = false;
+      }
     }
   }
 
