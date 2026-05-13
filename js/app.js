@@ -23,6 +23,57 @@ const VALID_VIB_INTENSITIES = ['soft', 'medium', 'strong'];
 const VALID_VIB_TIMINGS = ['fast', 'normal', 'slow'];
 const VALID_PHRASE_LANGS = ['fil', 'en'];
 const VALID_DEAF_LANGS = ['fil', 'en'];
+const APP_CACHE_PREFIX = 'senyaspo-';
+
+function getAppStorageKeys() {
+  return [
+    'app_storage_version',
+    'vib_intensity',
+    'vib_timing',
+    'phrase_lang',
+    'custom_phrases',
+    'last_fare',
+    'is_pwd',
+    'deaf_lang',
+    'deaf_stop',
+    'gps_permission_requested',
+    'family_watch_id',
+    'family_selected_stop',
+    'family_arrived_stop',
+    'family_is_watching',
+    'install_prompt_dismissed',
+    'ios_install_dismissed',
+  ];
+}
+
+async function clearWebsiteData() {
+  const confirmed = confirm('Clear all SenyasPo settings, saved phrases, and offline cache?');
+  if (!confirmed) return;
+
+  try {
+    getAppStorageKeys().forEach(key => localStorage.removeItem(key));
+
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames
+          .filter(name => name.startsWith(APP_CACHE_PREFIX))
+          .map(name => caches.delete(name))
+      );
+    }
+
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(reg => reg.unregister()));
+    }
+
+    alert('SenyasPo data cleared. The page will reload now.');
+    window.location.reload();
+  } catch (error) {
+    console.warn('Failed to clear website data:', error);
+    alert('Could not clear all data. Try reloading the page and again.');
+  }
+}
 
 function loadStorage(key, fallback) {
   try {
@@ -42,17 +93,7 @@ function resetStaleStorage() {
   const storedVersion = loadStorage('app_storage_version', null);
   if (storedVersion === STORAGE_VERSION) return;
 
-  const keysToReset = [
-    'vib_intensity',
-    'vib_timing',
-    'phrase_lang',
-    'deaf_lang',
-    'deaf_stop',
-    'install_prompt_dismissed',
-    'ios_install_dismissed',
-  ];
-
-  keysToReset.forEach(k => localStorage.removeItem(k));
+  getAppStorageKeys().forEach(k => localStorage.removeItem(k));
   saveStorage('app_storage_version', STORAGE_VERSION);
 }
 
@@ -424,6 +465,11 @@ document.querySelectorAll('[data-vib-pattern]').forEach(btn => {
     vibrateDemo(key);
   });
 });
+
+const clearWebsiteDataBtn = document.getElementById('clear-website-data-btn');
+if (clearWebsiteDataBtn) {
+  clearWebsiteDataBtn.addEventListener('click', clearWebsiteData);
+}
 
 window.addEventListener('online',  () => { isOnline = true;  if (currentScreen === 'home') initHome(); if (currentScreen === 'ai') renderAIStatus(); });
 window.addEventListener('offline', () => { isOnline = false; if (currentScreen === 'home') initHome(); if (currentScreen === 'ai') renderAIStatus(); });
