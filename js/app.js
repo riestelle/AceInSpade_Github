@@ -3,7 +3,9 @@
 let currentScreen = 'home';
 let isOnline = navigator.onLine;
 
-let selectedRouteId = ROUTES[0].id;
+let selectedRouteId = (typeof ROUTES !== 'undefined' && Array.isArray(ROUTES) && ROUTES.length > 0)
+  ? ROUTES[0].id
+  : null;
 let routeSearchQuery = '';
 
 let alertWakeLock   = null;
@@ -257,6 +259,11 @@ function initRoute() {
 }
 
 function renderRouteList() {
+  if (typeof ROUTES === 'undefined' || !Array.isArray(ROUTES)) {
+    document.getElementById('route-list').innerHTML = '<p style="color:var(--text-muted);padding:12px">Route data unavailable.</p>';
+    return;
+  }
+
   const q = routeSearchQuery.toLowerCase();
   const filtered = q.length > 0
     ? ROUTES.filter(r => r.code.toLowerCase().includes(q) || r.stops.some(s => s.name.toLowerCase().includes(q)))
@@ -269,7 +276,13 @@ function renderRouteList() {
 }
 
 function renderRouteDetail() {
-  const route = ROUTES.find(r => r.id === selectedRouteId);
+  if (typeof ROUTES === 'undefined' || !Array.isArray(ROUTES)) {
+    document.getElementById('windshield-text').textContent = 'No routes available';
+    document.getElementById('stop-list').innerHTML = '<p style="color:var(--text-muted);padding:12px">Unable to load stops.</p>';
+    return;
+  }
+
+  const route = ROUTES.find(r => r.id === selectedRouteId) || ROUTES[0];
   document.getElementById('windshield-text').textContent = route.code;
   const stopList = document.getElementById('stop-list');
   stopList.innerHTML = route.stops.map(s => `
