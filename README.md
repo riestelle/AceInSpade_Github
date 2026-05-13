@@ -1,5 +1,4 @@
 ## 040-AceInSpade-SenyasPo
-### SenyasPo (Senyas Po!) — Mobile-first PWA for Deaf/HoH Jeepney Commuters
 
 SenyasPo is a lightweight, mobile-first Progressive Web Application (PWA) designed to reduce communication barriers faced by Deaf and Hard-of-Hearing (HoH) Filipino commuters who use jeepneys.
 
