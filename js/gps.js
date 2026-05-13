@@ -19,21 +19,57 @@ function toggleMapExpand() {
   const controls = document.getElementById('gps-map-controls');
   const screen = document.getElementById('screen-gps');
   const main = screen.querySelector('main');
+  const searchNormal = document.getElementById('gps-search-normal');
+  const expandBtn = document.getElementById('gps-expand-btn-map');
+  const locationInfo = document.getElementById('gps-location-info');
+  const legend = document.getElementById('gps-map-legend');
   
   gpsMapExpanded = !gpsMapExpanded;
   
   if (gpsMapExpanded) {
     map.classList.add('fullscreen');
     controls.classList.remove('d-none');
+    expandBtn.classList.add('d-none');
     main.style.padding = '0';
     main.style.gap = '0';
     screen.style.overflow = 'hidden';
+    searchNormal.classList.add('d-none');
+    
+    // Move search bar inside map
+    const searchClone = searchNormal.cloneNode(true);
+    searchClone.id = 'gps-search-expanded';
+    searchClone.className = 'search-wrap gps-search-expanded';
+    container.appendChild(searchClone);
+    
+    // Sync input values
+    const expandedInput = searchClone.querySelector('input');
+    if (expandedInput) {
+      expandedInput.value = document.getElementById('gps-search').value;
+      expandedInput.addEventListener('input', function() {
+        document.getElementById('gps-search').value = this.value;
+        document.getElementById('gps-search').dispatchEvent(new Event('input'));
+      });
+    }
+    
+    // Show legend and location info
+    locationInfo.classList.remove('d-none');
+    legend.classList.remove('d-none');
   } else {
     map.classList.remove('fullscreen');
     controls.classList.add('d-none');
+    expandBtn.classList.remove('d-none');
     main.style.padding = '16px 24px';
     main.style.gap = '16px';
     screen.style.overflow = 'auto';
+    searchNormal.classList.remove('d-none');
+    
+    // Remove expanded search bar
+    const expandedSearch = container.querySelector('#gps-search-expanded');
+    if (expandedSearch) expandedSearch.remove();
+    
+    // Hide legend and location info
+    locationInfo.classList.add('d-none');
+    legend.classList.add('d-none');
   }
   
   requestAnimationFrame(() => {
@@ -89,6 +125,55 @@ function updateDistanceDisplay() {
   document.getElementById('selected-stop-distance').textContent = `📍 ${distLabel}`;
 }
 
+function previewGPSStop(id) {
+  const stop = STOPS_DB.find(s => s.id === id);
+  if (!stop) return;
+  
+  // Pan map to this stop
+  initLeafletMap();
+  leafletMap.setView([stop.lat, stop.lon], 16);
+  
+  // Update all preview markers - highlight this one
+  Object.entries(gpsStopMarkers).forEach(([stopId, marker]) => {
+    if (stopId === id) {
+      marker.setStyle({ radius: 10, fillOpacity: 0.8, weight: 3 });
+      marker.openPopup();
+    } else {
+      marker.setStyle({ radius: 7, fillOpacity: 0.5, weight: 2 });
+      marker.closePopup();
+    }
+  });
+  
+  // Show preview card
+  const previewCard = document.getElementById('gps-preview-card');
+  previewCard.classList.remove('d-none');
+  document.getElementById('preview-stop-name').textContent = stop.name;
+  document.getElementById('preview-stop-route').textContent = getRouteShortCode(stop.routeId);
+  
+  // Show distance if available
+  if (gpsCurrentPosition) {
+    const dist = haversine(
+      gpsCurrentPosition.latitude,
+      gpsCurrentPosition.longitude,
+      stop.lat,
+      stop.lon
+    );
+    const distLabel = dist < 1000 
+      ? `${Math.round(dist)}m from your location`
+      : `${(dist / 1000).toFixed(2)}km from your location`;
+    document.getElementById('preview-stop-distance').textContent = distLabel;
+    document.getElementById('preview-stop-distance').classList.remove('d-none');
+  } else {
+    document.getElementById('preview-stop-distance').classList.add('d-none');
+  }
+  
+  // Set the stop for confirmation
+  document.getElementById('preview-confirm-btn').onclick = () => selectGPSStop(id);
+  document.getElementById('preview-cancel-btn').onclick = () => {
+    previewCard.classList.add('d-none');
+  };
+}
+
 function initGPS() {
   cleanupGPS();
   gpsSelectedStop = null;
@@ -97,6 +182,7 @@ function initGPS() {
   document.getElementById('gps-search').value = '';
   document.getElementById('gps-dropdown').classList.add('d-none');
   document.getElementById('gps-distance').classList.add('d-none');
+  document.getElementById('gps-preview-card').classList.add('d-none');
   if (leafletPreviewMarker) { leafletPreviewMarker.remove(); leafletPreviewMarker = null; }
   document.getElementById('selected-stop-card').classList.add('d-none');
   document.getElementById('alert-active-msg').classList.add('d-none');
@@ -113,45 +199,202 @@ function initGPS() {
   startLiveLocator();
 }
 
+// Flexible regex search matcher - handles ambiguous queries
+// Fuzzy search score - rates how well a string matches a pattern
+function fuzzySearchScore(str, pattern) {
+  str = str.toLowerCase();
+  pattern = pattern.toLowerCase();
+  
+  let score = 0;
+  let patternIdx = 0;
+  let strIdx = 0;
+  
+  while (patternIdx < pattern.length && strIdx < str.length) {
+    if (pattern[patternIdx] === str[strIdx]) {
+      score += 1;
+      patternIdx++;
+    }
+    strIdx++;
+  }
+  
+  // Bonus for contiguous matches
+  if (patternIdx === pattern.length) {
+    score += (pattern.length * 10);
+  }
+  
+  // Penalty for long search needed
+  score -= (strIdx - patternIdx);
+  
+  return score;
+}
+
+function createFlexibleRegex(query) {
+  const cleaned = query
+    .toLowerCase()
+    .replace(/[.,:;!?'\-—–]/g, '')  // Remove punctuation
+    .trim();
+  
+  if (cleaned.length === 0) return null;
+  
+  // For single character queries, match anything starting with it
+  if (cleaned.length === 1) {
+    try {
+      return new RegExp(`\\b${cleaned}`, 'i');
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  // For longer queries, create flexible pattern allowing partial matches
+  // Each character can have optional letters between them
+  const chars = cleaned.split('');
+  const pattern = chars.map((char, i) => {
+    // Last character doesn't need flexibility after it
+    if (i === chars.length - 1) {
+      return char;
+    }
+    // Allow 0-3 any characters between search chars
+    return char + '.{0,3}?';
+  }).join('');
+  
+  try {
+    return new RegExp(pattern, 'i');
+  } catch (e) {
+    return null;
+  }
+}
+
+// Score search results by relevance
+function scoreSearchResult(stop, query) {
+  const stopName = stop.name.toLowerCase();
+  const routeCode = getRouteShortCode(stop.routeId).toLowerCase();
+  const qLower = query.trim().toLowerCase().replace(/[.,:;!?'\-—–]/g, '');
+  
+  let score = 0;
+  
+  // Exact matches (ignoring punctuation)
+  const stopNameCleaned = stopName.replace(/[.,:;!?'\-—–]/g, '');
+  if (stopNameCleaned === qLower || routeCode === qLower) {
+    score += 10000;
+  }
+  
+  // Starts with query
+  if (stopNameCleaned.startsWith(qLower) || routeCode.startsWith(qLower)) {
+    score += 5000;
+  }
+  
+  // Starts with any word in query
+  const queryWords = qLower.split(/\s+/).filter(w => w);
+  queryWords.forEach(word => {
+    if (stopNameCleaned.startsWith(word)) score += 1000;
+    if (routeCode.startsWith(word)) score += 800;
+  });
+  
+  // Contains as word boundary
+  queryWords.forEach(word => {
+    if (new RegExp(`\\b${word}`, 'i').test(stopName)) score += 300;
+    if (new RegExp(`\\b${word}`, 'i').test(routeCode)) score += 200;
+  });
+  
+  // Substring match (no spaces/punctuation)
+  if (stopNameCleaned.includes(qLower.replace(/\s+/g, ''))) {
+    score += 100;
+  }
+  
+  // Partial substring match
+  if (stopName.includes(qLower)) {
+    score += 50;
+  }
+  
+  return score;
+}
+
 document.getElementById('gps-search').addEventListener('input', function() {
-  const q = this.value.trim().toLowerCase();
-  if (q.length < 2) {
+  const q = this.value.trim();
+  
+  if (q.length < 1) {
     document.getElementById('gps-dropdown').classList.add('d-none');
-    // Clear any preview markers if query too short
     if (leafletPreviewMarker) { leafletPreviewMarker.remove(); leafletPreviewMarker = null; }
+    Object.values(gpsStopMarkers).forEach(marker => marker.remove());
+    gpsStopMarkers = {};
     return;
   }
 
-  const results = STOPS_DB.filter(s =>
-    s.name.toLowerCase().includes(q) ||
-    getRouteShortCode(s.routeId).toLowerCase().includes(q)
-  ).slice(0, 6);
+  // Use flexible regex matching
+  const regex = createFlexibleRegex(q);
+  
+  // Filter and score results
+  let results = [];
+  if (regex) {
+    results = STOPS_DB
+      .filter(s => 
+        regex.test(s.name) || 
+        regex.test(getRouteShortCode(s.routeId))
+      )
+      .map(s => ({
+        stop: s,
+        score: scoreSearchResult(s, q)
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map(item => item.stop);
+  }
 
+  // Render dropdown results
   const dd = document.getElementById('gps-dropdown');
   if (!results.length) { dd.classList.add('d-none'); return; }
   dd.classList.remove('d-none');
-  dd.innerHTML = results.map(s =>
-    `<button class="stop-item" onclick="selectGPSStop('${s.id}')">
-      <span style="font-size:15px;font-weight:700;text-transform:uppercase">${s.name}</span>
+  dd.innerHTML = results.map(s => {
+    // Highlight matched portions
+    const qLower = q.toLowerCase().replace(/[.,:;!?'\-—–]/g, '');
+    let highlightedName = s.name;
+    
+    // Try to highlight the first matched word
+    const nameWords = s.name.split(/(\s+)/);
+    let foundMatch = false;
+    const highlightedWords = nameWords.map(word => {
+      if (!foundMatch && word.toLowerCase().replace(/[.,:;!?'\-—–]/g, '').includes(qLower.split(/\s+/)[0])) {
+        foundMatch = true;
+        return `<strong style="color:var(--amber)">${word}</strong>`;
+      }
+      return word;
+    });
+    highlightedName = highlightedWords.join('');
+    
+    return `<button class="stop-item" onclick="previewGPSStop('${s.id}')" style="text-align:left">
+      <span style="font-size:15px;font-weight:700;text-transform:uppercase">${highlightedName}</span>
       <span style="font-size:12px;color:var(--text-muted)">${getRouteShortCode(s.routeId)}</span>
-    </button>`
-  ).join('');
+    </button>`;
+  }).join('');
 
-  // Show map and pan to first result as preview
+  // Show all results as preview markers on map
+  initLeafletMap();
+  
+  // Clear old preview markers
+  Object.values(gpsStopMarkers).forEach(marker => marker.remove());
+  gpsStopMarkers = {};
+  
+  // Add all results as preview markers
+  results.forEach(stop => {
+    const marker = L.circleMarker([stop.lat, stop.lon], {
+      radius: 7,
+      color: '#feb700',
+      fillColor: '#feb700',
+      fillOpacity: 0.5,
+      weight: 2,
+      dashArray: '3 3',
+    }).addTo(leafletMap)
+      .bindPopup(`<b>${stop.name}</b><br/>${getRouteShortCode(stop.routeId)}`)
+      .on('click', () => previewGPSStop(stop.id));
+    
+    gpsStopMarkers[stop.id] = marker;
+  });
+
+  // Pan to first result to show all results
   if (results.length > 0) {
-    const first = results[0];
-    initLeafletMap();
-    leafletMap.setView([first.lat, first.lon], 15);
+    const bounds = L.latLngBounds(results.map(s => [s.lat, s.lon]));
+    leafletMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
     document.getElementById('map-label').style.display = 'none';
-
-    // Show a dim preview marker
-    if (leafletPreviewMarker) leafletPreviewMarker.remove();
-    leafletPreviewMarker = L.circleMarker([first.lat, first.lon], {
-      radius: 8, color: '#888', fillColor: '#888', fillOpacity: 0.5, weight: 2,
-      dashArray: '4 4',
-    }).addTo(leafletMap).bindTooltip(first.name, { permanent: false });
-
-    setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 50);
   }
 });
 
@@ -204,6 +447,13 @@ function startLocationWatch() {
       gpsCurrentPosition = { latitude: userLat, longitude: userLon };
 
       initLeafletMap();
+      
+      // Update location info
+      const locationInfo = document.getElementById('gps-location-info');
+      if (locationInfo && !locationInfo.classList.contains('d-none')) {
+        document.getElementById('gps-location-coords').textContent = `${userLat.toFixed(4)}°, ${userLon.toFixed(4)}°`;
+        document.getElementById('gps-location-desc').innerHTML = `Accuracy: ±${Math.round(accuracy)}m`;
+      }
 
       if (!gpsLiveMarker) {
         gpsLiveMarker = L.circleMarker([userLat, userLon], {
@@ -416,6 +666,7 @@ function selectGPSStop(id) {
   gpsSelectedStop = stop;
   document.getElementById('gps-search').value = stop.name;
   document.getElementById('gps-dropdown').classList.add('d-none');
+  document.getElementById('gps-preview-card').classList.add('d-none');
   document.getElementById('selected-stop-card').classList.remove('d-none');
   document.getElementById('selected-stop-name').textContent  = stop.name;
   document.getElementById('selected-stop-route').textContent = getRouteShortCode(stop.routeId);
@@ -495,4 +746,77 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
     },
     { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
   );
+});
+
+// Help modal for "How to set stop"
+document.getElementById('gps-help-btn').addEventListener('click', () => {
+  const modal = document.createElement('div');
+  modal.className = 'help-modal-overlay';
+  modal.innerHTML = `
+    <div class="help-modal">
+      <div class="help-modal-title">📍 How to Set Your Stop</div>
+      <div class="help-modal-section">
+        <div class="help-modal-step"><strong>1. Search:</strong> Type a stop name or route code in the search box.</div>
+        <div class="help-modal-step"><strong>2. Preview:</strong> All matching stops appear as dashed markers on the map.</div>
+        <div class="help-modal-step"><strong>3. Select:</strong> Tap a marker or result to see a preview card with distance.</div>
+        <div class="help-modal-step"><strong>4. Confirm:</strong> Tap "CONFIRM" to set it as your destination.</div>
+        <div class="help-modal-step"><strong>5. Alert:</strong> Tap "SET ALERT" to start GPS tracking to your stop.</div>
+      </div>
+      <div class="help-modal-section">
+        <strong style="color:var(--amber);font-size:12px;text-transform:uppercase">Vibration Alerts:</strong>
+        <div class="help-modal-step">🟡 250m away: Soft pulse</div>
+        <div class="help-modal-step">🟠 200m away: Medium vibration</div>
+        <div class="help-modal-step">🔴 ≤150m: Strong vibration + arrival screen</div>
+      </div>
+      <button onclick="this.closest('.help-modal-overlay').remove()" style="width:100%;height:48px;background:var(--amber);color:#271900;border:none;border-radius:8px;font-weight:700;margin-top:12px;cursor:pointer">CLOSE</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+});
+
+// AI Guide button - provides safe arrival guidance
+document.getElementById('gps-ai-guide-btn').addEventListener('click', async () => {
+  if (!gpsSelectedStop) {
+    alert('Please select a destination stop first.');
+    return;
+  }
+  
+  const modal = document.createElement('div');
+  modal.className = 'help-modal-overlay';
+  modal.innerHTML = `
+    <div class="help-modal">
+      <div class="help-modal-title">🤖 Safe Arrival Guide</div>
+      <div class="help-modal-section">
+        <strong style="color:var(--amber);font-size:13px">${gpsSelectedStop.name}</strong>
+        <div class="help-modal-step" style="margin-top:8px;font-size:12px;color:var(--text-muted)">Route: ${getRouteShortCode(gpsSelectedStop.routeId)}</div>
+      </div>
+      <div class="help-modal-section">
+        <div class="help-modal-step"><strong>Before You Arrive:</strong></div>
+        <div class="help-modal-step">• Keep phone volume on or vibration enabled</div>
+        <div class="help-modal-step">• Watch for our GPS alerts at 250m, 200m, and 150m</div>
+        <div class="help-modal-step">• Stay seated until the final alert</div>
+      </div>
+      <div class="help-modal-section">
+        <div class="help-modal-step"><strong>When You Arrive (Final Alert):</strong></div>
+        <div class="help-modal-step">• Watch for the arrival screen notification</div>
+        <div class="help-modal-step">• Signal the driver: "Para po!" or use hand signals</div>
+        <div class="help-modal-step">• Wait for jeepney to slow down before standing</div>
+        <div class="help-modal-step">• Exit safely on the right side near your stop</div>
+      </div>
+      <div class="help-modal-section">
+        <div class="help-modal-step"><strong>Safety Tips:</strong></div>
+        <div class="help-modal-step">• Keep your belonging secure while traveling</div>
+        <div class="help-modal-step">• If unsure, ask fellow passengers or the driver</div>
+        <div class="help-modal-step">• Use the "Pamilya" feature to share your location</div>
+      </div>
+      <button onclick="this.closest('.help-modal-overlay').remove()" style="width:100%;height:48px;background:var(--amber);color:#271900;border:none;border-radius:8px;font-weight:700;margin-top:12px;cursor:pointer">CLOSE</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
 });
