@@ -16,6 +16,7 @@ function initGPS() {
   gpsAlertActive  = false;
   document.getElementById('gps-search').value = '';
   document.getElementById('gps-dropdown').classList.add('d-none');
+  if (leafletPreviewMarker) { leafletPreviewMarker.remove(); leafletPreviewMarker = null; }
   document.getElementById('selected-stop-card').classList.add('d-none');
   document.getElementById('alert-active-msg').classList.add('d-none');
   document.getElementById('gps-error').classList.add('d-none');
@@ -32,7 +33,12 @@ function initGPS() {
 
 document.getElementById('gps-search').addEventListener('input', function() {
   const q = this.value.trim().toLowerCase();
-  if (q.length < 2) { document.getElementById('gps-dropdown').classList.add('d-none'); return; }
+  if (q.length < 2) {
+    document.getElementById('gps-dropdown').classList.add('d-none');
+    // Clear any preview markers if query too short
+    if (leafletPreviewMarker) { leafletPreviewMarker.remove(); leafletPreviewMarker = null; }
+    return;
+  }
 
   const results = STOPS_DB.filter(s =>
     s.name.toLowerCase().includes(q) ||
@@ -48,10 +54,28 @@ document.getElementById('gps-search').addEventListener('input', function() {
       <span style="font-size:12px;color:var(--text-muted)">${getRouteShortCode(s.routeId)}</span>
     </button>`
   ).join('');
+
+  // Show map and pan to first result as preview
+  if (results.length > 0) {
+    const first = results[0];
+    initLeafletMap();
+    leafletMap.setView([first.lat, first.lon], 15);
+    document.getElementById('map-label').style.display = 'none';
+
+    // Show a dim preview marker
+    if (leafletPreviewMarker) leafletPreviewMarker.remove();
+    leafletPreviewMarker = L.circleMarker([first.lat, first.lon], {
+      radius: 8, color: '#888', fillColor: '#888', fillOpacity: 0.5, weight: 2,
+      dashArray: '4 4',
+    }).addTo(leafletMap).bindTooltip(first.name, { permanent: false });
+
+    setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 50);
+  }
 });
 
 let leafletMap = null;
 let leafletMarker = null;
+let leafletPreviewMarker = null;
 
 function initLeafletMap() {
   if (leafletMap) return;
@@ -254,6 +278,7 @@ function cleanupGPS() {
 function panMapToStop(stop) {
   initLeafletMap();
   leafletMap.setView([stop.lat, stop.lon], 16);
+  if (leafletPreviewMarker) { leafletPreviewMarker.remove(); leafletPreviewMarker = null; }
   if (leafletMarker) leafletMarker.remove();
   leafletMarker = L.circleMarker([stop.lat, stop.lon], {
     radius: 10, color: '#feb700', fillColor: '#feb700', fillOpacity: 1, weight: 3
@@ -273,6 +298,10 @@ function selectGPSStop(id) {
   document.getElementById('selected-stop-name').textContent  = stop.name;
   document.getElementById('selected-stop-route').textContent = getRouteShortCode(stop.routeId);
   panMapToStop(stop);
+  // Save for family sharing
+  if (typeof saveStorage === 'function') {
+    saveStorage('family_selected_stop', stop.name);
+  }
   const alertBtn = document.getElementById('set-alert-btn');
   alertBtn.disabled = false;
   alertBtn.textContent = '';

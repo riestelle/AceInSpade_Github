@@ -490,10 +490,10 @@
 
     /* ── GPS MAP PLACEHOLDER ──────────────────────────────────────── */
     .map-placeholder {
-      background: #e8edf0; border-radius: 8px; height: 200px;
+      background: #e8edf0; border-radius: 12px; height: 360px;
       display: flex; align-items: center; justify-content: center;
     }
-    #leaflet-map { height: 200px; border-radius: 8px; z-index: 1; }
+    #leaflet-map { height: 360px; border-radius: 12px; z-index: 1; }
 
     /* ── RESPONSIVE: small phones ─────────────────────────────────── */
     @media (max-width: 360px) {
@@ -510,7 +510,7 @@
       .fare-amount { font-size: 44px; }
       .windshield-text { font-size: 28px; }
       .topbar-title { font-size: 16px; }
-      #leaflet-map { height: 160px; }
+      #leaflet-map { height: 280px; }
       /* Fix Jeepney Type + PWD overlap */
       .fare-type-pwd-row { flex-direction: column !important; }
       .fare-type-pwd-row > .col-6 { width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important; }
