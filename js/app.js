@@ -16,27 +16,41 @@ let deafStop    = '';
 let vibIntensity = 'medium';
 let vibTiming    = 'normal';
 
-function loadStorage(key, fallback) {
-  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : fallback; }
-  catch { return fallback; }
-}
+const VIBRATION_TEST_PATTERNS = {
+  single: [200],
+  pulse:  [100, 50, 100],
+  signal: [300, 75, 300, 75, 300],
+  long:   [500, 200, 500],
+  stop:   0,
+};
 
-function saveStorage(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+function getVibrationFunction() {
+  return navigator.vibrate || navigator.webkitVibrate || null;
 }
 
 function vibrate(patternOrKey) {
-  if (!navigator.vibrate) return;
+  const vibrateFn = getVibrationFunction();
+  if (!vibrateFn) return;
+
   const scale      = vibIntensity === 'soft' ? 0.5 : vibIntensity === 'strong' ? 1.8 : 1.0;
   const timescale  = vibTiming    === 'fast' ? 0.6 : vibTiming    === 'slow'   ? 1.5 : 1.0;
+
   if (typeof patternOrKey === 'string') {
     const pat = ALERT_PATTERNS[vibIntensity]?.[patternOrKey];
-    if (pat) navigator.vibrate(pat);
+    if (pat) vibrateFn(pat.map(v => Math.round(v * scale * timescale)));
   } else if (Array.isArray(patternOrKey)) {
-    navigator.vibrate(patternOrKey.map(v => Math.round(v * scale * timescale)));
+    vibrateFn(patternOrKey.map(v => Math.round(v * scale * timescale)));
   } else {
-    navigator.vibrate(Math.round(patternOrKey * scale * timescale));
+    vibrateFn(Math.round(patternOrKey * scale * timescale));
   }
+}
+
+function vibrateDemo(patternKey) {
+  const vibrateFn = getVibrationFunction();
+  if (!vibrateFn) return;
+  const pattern = VIBRATION_TEST_PATTERNS[patternKey];
+  if (pattern === undefined) return;
+  vibrateFn(pattern);
 }
 
 function calcFare(distKm, type) {
@@ -257,6 +271,7 @@ function initVib() {
   vibIntensity = loadStorage('vib_intensity', 'medium');
   vibTiming    = loadStorage('vib_timing', 'normal');
   renderVibOptions();
+  renderVibDemo();
 }
 
 function renderVibOptions() {
@@ -270,6 +285,20 @@ function renderVibOptions() {
     btn.classList.toggle('active', active);
     btn.querySelector('p').style.color = active ? 'var(--amber)' : 'var(--text)';
   });
+}
+
+function renderVibDemo() {
+  const supported = Boolean(getVibrationFunction());
+  document.querySelectorAll('[data-vib-pattern]').forEach(btn => {
+    btn.disabled = !supported;
+    btn.style.opacity = supported ? '1' : '.5';
+  });
+  const status = document.getElementById('vib-support-status');
+  if (status) {
+    status.textContent = supported
+      ? 'Vibration API detected — tap a pattern to preview it.'
+      : 'Vibration API unsupported on this device/browser.';
+  }
 }
 
 document.querySelectorAll('#intensity-options .vib-option').forEach(btn => {
@@ -287,6 +316,13 @@ document.querySelectorAll('#timing-options .vib-option').forEach(btn => {
     saveStorage('vib_timing', vibTiming);
     renderVibOptions();
     vibrate('approach');
+  });
+});
+
+document.querySelectorAll('[data-vib-pattern]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.vibPattern;
+    vibrateDemo(key);
   });
 });
 

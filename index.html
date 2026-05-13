@@ -1113,6 +1113,21 @@
         </div>
       </div>
 
+      <div style="background:var(--bg-alt);border:1px solid var(--outline-var);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px">
+        <div class="d-flex align-items-center gap-2">
+          <span class="material-symbols-outlined" style="color:var(--amber);font-size:18px">touch_app</span>
+          <p style="font-size:13px;color:var(--text-var);margin:0">Vibration Demo · Uses the browser Vibration API pattern support from Google Chrome samples.</p>
+        </div>
+        <p id="vib-support-status" style="font-size:12px;color:var(--text-muted);margin:0">Checking vibration support…</p>
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-secondary btn-sm" data-vib-pattern="single">Vibrate 200ms</button>
+          <button class="btn btn-secondary btn-sm" data-vib-pattern="pulse">Pulse 100‑50‑100</button>
+          <button class="btn btn-secondary btn-sm" data-vib-pattern="signal">Signal pattern</button>
+          <button class="btn btn-secondary btn-sm" data-vib-pattern="long">Long buzz</button>
+          <button class="btn btn-outline-secondary btn-sm" data-vib-pattern="stop">Stop</button>
+        </div>
+      </div>
+
       <p style="font-size:11px;color:var(--outline);text-align:center;padding-bottom:8px">
         Note: Vibration is Android-only. iPhone (Safari) does not support the Vibration API.
       </p>
