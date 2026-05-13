@@ -493,13 +493,29 @@
       background: #e8edf0; border-radius: 12px; height: 360px;
       display: flex; align-items: center; justify-content: center;
     }
-    #leaflet-map { height: 360px; border-radius: 12px; z-index: 1; }
+    #gps-map-container { position: relative; }
+    #leaflet-map { height: 360px; border-radius: 12px; z-index: 1; filter: invert(0.93) hue-rotate(200deg); }
     #leaflet-map.fullscreen { height: 100dvh; border-radius: 0; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999; }
     .gps-map-controls { position: absolute; top: 16px; right: 16px; z-index: 10; display: flex; gap: 8px; }
-    .gps-map-btn { background: white; border: none; border-radius: 8px; width: 44px; height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 20px; }
+    .gps-map-btn { background: rgba(255,255,255,0.95); border: none; border-radius: 8px; width: 44px; height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-size: 20px; color: #333; }
     .gps-map-btn:active { transform: scale(0.95); }
+    .gps-map-legend { position: absolute; bottom: 16px; left: 16px; z-index: 10; background: rgba(255,255,255,0.95); border-radius: 8px; padding: 12px; max-width: 200px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .gps-map-legend-title { font-size: 12px; font-weight: 700; color: #333; margin-bottom: 8px; text-transform: uppercase; }
+    .gps-map-legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #555; margin-bottom: 6px; }
+    .gps-map-legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .gps-location-info { position: absolute; top: 16px; left: 16px; z-index: 10; background: rgba(255,255,255,0.95); border-radius: 8px; padding: 12px; max-width: 220px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 12px; color: #555; line-height: 1.4; }
+    .gps-location-info-title { font-weight: 700; color: #333; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; }
+    .gps-search-expanded { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 11; width: calc(100% - 32px); max-width: 90%; }
+    .gps-search-expanded .search-wrap { background: rgba(255,255,255,0.95); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .gps-search-expanded .input-sp { background: transparent; border: none; }
     .tracking-indicator { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(34,197,94,0.2); border: 1px solid #22c55e; border-radius: 20px; font-size: 11px; font-weight: 700; color: #22c55e; letter-spacing: 0.05em; text-transform: uppercase; animation: trackingPulse 2s ease-in-out infinite; }
     @keyframes trackingPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .help-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .help-modal { background: var(--bg); border: 2px solid var(--amber); border-radius: 12px; padding: 24px; max-width: 340px; max-height: 80dvh; overflow-y: auto; }
+    .help-modal-title { font-size: 16px; font-weight: 900; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; }
+    .help-modal-section { margin-bottom: 16px; }
+    .help-modal-step { font-size: 13px; color: var(--text); margin-bottom: 8px; line-height: 1.5; }
+    .help-modal-step strong { color: var(--amber); }
 
     /* ── RESPONSIVE: small phones ─────────────────────────────────── */
     @media (max-width: 360px) {
@@ -1019,9 +1035,6 @@
         <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">SET MY STOP</span>
       </div>
-      <button id="gps-expand-btn" class="topbar-menu" onclick="toggleMapExpand()" title="Expand map">
-        <span class="material-symbols-outlined" style="font-size:24px">fullscreen</span>
-      </button>
     </header>
     <main class="scroll-main" style="padding:16px 24px;display:flex;flex-direction:column;gap:16px">
       <div class="search-wrap">
@@ -1038,13 +1051,39 @@
       </div>
       <p id="gps-distance" class="d-none" style="font-size:16px;font-weight:700;color:var(--amber);text-align:center"></p>
       <p id="gps-error" class="d-none" style="color:#ef4444;font-size:14px;font-weight:700;text-align:center"></p>
+      
+      <!-- Stop Preview Card (appears before confirming selection) -->
+      <div id="gps-preview-card" class="d-none" style="background:var(--surface-hi);border:2px solid var(--amber);border-radius:12px;padding:16px">
+        <p class="tag-mono mb-1" style="color:var(--amber);letter-spacing:.15em">PREVIEW DESTINATION</p>
+        <p id="preview-stop-name" style="font-size:24px;font-weight:900;color:var(--text);text-transform:uppercase;line-height:1.2;margin-bottom:6px"></p>
+        <p id="preview-stop-route" style="font-size:12px;color:var(--text-muted);margin-bottom:8px"></p>
+        <p id="preview-stop-distance" style="font-size:13px;color:var(--amber);margin-bottom:12px;font-weight:700"></p>
+        <div style="display:flex;gap:8px">
+          <button id="preview-confirm-btn" class="btn-primary-sp" style="height:48px;flex:1;font-size:16px">
+            <span class="material-symbols-outlined" style="font-size:18px">check_circle</span> CONFIRM
+          </button>
+          <button id="preview-cancel-btn" class="btn-ghost" style="height:48px;flex:1;font-size:16px;border:1px solid var(--outline-var)">
+            <span class="material-symbols-outlined" style="font-size:18px">close</span> BACK
+          </button>
+        </div>
+      </div>
+      
       <div id="selected-stop-card" class="selected-stop-card d-none">
         <p class="tag-mono mb-1" style="color:var(--amber);letter-spacing:.15em">SELECTED STOP</p>
         <p id="selected-stop-name" style="font-size:28px;font-weight:900;color:var(--text);text-transform:uppercase;line-height:1.1"></p>
         <p id="selected-stop-route" style="font-size:13px;color:var(--text-muted);margin-top:4px"></p>
         <p id="selected-stop-distance" style="font-size:14px;color:var(--amber);margin-top:8px;font-weight:700"></p>
         <div class="mt-3">
-          <p style="font-size:12px;color:var(--text-var);margin-bottom:8px">Alert at 250m (soft) and 150m (full vibration + screen)</p>
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <button id="gps-help-btn" class="btn-ghost" style="flex:1;height:48px;border:1px solid var(--outline-var);display:flex;align-items:center;justify-content:center;gap:8px">
+              <span class="material-symbols-outlined" style="font-size:18px">help</span>
+              <span style="font-size:12px;font-weight:700">HOW TO</span>
+            </button>
+            <button id="gps-ai-guide-btn" class="btn-ghost" style="flex:1;height:48px;border:1px solid var(--amber);color:var(--amber);display:flex;align-items:center;justify-content:center;gap:8px">
+              <span class="material-symbols-outlined" style="font-size:18px">smart_toy</span>
+              <span style="font-size:12px;font-weight:700">AI GUIDE</span>
+            </button>
+          </div>
           <button id="set-alert-btn" class="btn-primary-sp" style="height:64px">
             <span class="material-symbols-outlined" style="font-size:22px">notifications_active</span>
             SET ALERT
