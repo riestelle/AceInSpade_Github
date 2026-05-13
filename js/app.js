@@ -349,7 +349,9 @@ let isInstalled = false;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  showInstallPrompt();
+  if (!loadStorage('install_prompt_dismissed', false)) {
+    showInstallPrompt();
+  }
 });
 
 window.addEventListener('appinstalled', () => {
@@ -373,8 +375,9 @@ function showInstallPrompt() {
         <button id="dismiss-install" style="background:transparent;color:var(--text-muted);border:1px solid var(--outline-var);border-radius:6px;padding:8px 12px;font-weight:700;font-size:12px;cursor:pointer;">✕</button>
       </div>
     `;
-    document.body.insertBefore(banner, document.body.firstChild);
-    
+    const app = document.getElementById('app');
+    app.insertBefore(banner, app.firstChild);
+
     document.getElementById('install-btn').addEventListener('click', handleInstallClick);
     document.getElementById('dismiss-install').addEventListener('click', hideInstallPrompt);
   } else {
@@ -421,7 +424,8 @@ function showIOSInstallGuide() {
       <span style="flex:1;font-size:13px;">📱 Tap Share, then "Add to Home Screen"</span>
       <button id="dismiss-ios-install" style="background:transparent;color:var(--text-muted);border:1px solid var(--outline-var);border-radius:6px;padding:8px 12px;font-weight:700;font-size:12px;cursor:pointer;">✕</button>
     `;
-    document.body.insertBefore(banner, document.body.firstChild);
+    const app = document.getElementById('app');
+    app.insertBefore(banner, app.firstChild);
     
     document.getElementById('dismiss-ios-install').addEventListener('click', () => {
       banner.style.display = 'none';
