@@ -609,7 +609,10 @@
         <p id="pf-main" style="font-size:56px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;text-align:center;line-height:1.1;color:white;word-break:break-word"></p>
         <p id="pf-sub" style="font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#888"></p>
       </div>
-      <div style="position:absolute;bottom:24px;left:0;right:0;display:flex;justify-content:center">
+      <div style="position:absolute;bottom:24px;left:0;right:0;display:flex;justify-content:center;gap:24px;align-items:center">
+        <button id="pf-speak" style="width:64px;height:64px;border-radius:50%;background:#111;border:3px solid var(--amber);color:var(--amber);display:flex;align-items:center;justify-content:center" title="Read aloud">
+          <span class="material-symbols-outlined" style="font-size:28px">volume_up</span>
+        </button>
         <button id="pf-close" style="width:64px;height:64px;border-radius:50%;background:#111;border:3px solid #333;color:white;display:flex;align-items:center;justify-content:center">
           <span class="material-symbols-outlined" style="font-size:28px">close</span>
         </button>
@@ -1266,6 +1269,8 @@ function openPhraseFullscreen(phrase, filText, enText) {
   fs.className = 'phrase-fullscreen' + (phrase.type === 'emergency' ? ' emergency' : '');
   renderPhraseFullscreen();
   vibrate(50);
+  // Auto-speak on open (slight delay so the card is visible first)
+  setTimeout(speakPhrase, 300);
 }
 
 function renderPhraseFullscreen() {
@@ -1282,12 +1287,38 @@ document.getElementById('pf-lang-toggle').addEventListener('click', () => {
   pfActiveLang = pfActiveLang === 'fil' ? 'en' : 'fil';
   renderPhraseFullscreen();
   vibrate(30);
+  setTimeout(speakPhrase, 150);
 });
 
 document.getElementById('pf-close').addEventListener('click', () => {
+  window.speechSynthesis && window.speechSynthesis.cancel();
   document.getElementById('phrase-fullscreen').classList.add('d-none');
   vibrate(30);
 });
+
+// TTS - speak the active phrase text aloud
+function speakPhrase() {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const text = pfActiveLang === 'fil' ? pfPhrase.filText : pfPhrase.enText;
+  const utt  = new SpeechSynthesisUtterance(text);
+  utt.lang   = pfActiveLang === 'fil' ? 'fil-PH' : 'en-PH';
+  utt.rate   = 0.85;
+  utt.pitch  = 1;
+  // Try to pick a matching voice; fall back to browser default
+  const voices = window.speechSynthesis.getVoices();
+  const prefix = pfActiveLang === 'fil' ? 'fil' : 'en';
+  const match  = voices.find(v => v.lang.toLowerCase().startsWith(prefix));
+  if (match) utt.voice = match;
+  const btn = document.getElementById('pf-speak');
+  btn.style.opacity = '0.5';
+  utt.onend   = () => { btn.style.opacity = '1'; };
+  utt.onerror = () => { btn.style.opacity = '1'; };
+  window.speechSynthesis.speak(utt);
+  vibrate(30);
+}
+
+document.getElementById('pf-speak').addEventListener('click', speakPhrase);
 
 document.getElementById('phrases-lang-btn').addEventListener('click', () => {
   phraseLang = phraseLang === 'fil' ? 'en' : 'fil';
