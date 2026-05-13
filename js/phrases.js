@@ -126,7 +126,7 @@ function speakPhraseWithTTS(text) {
   const utt = new SpeechSynthesisUtterance(text);
 
   const playbackLang = getPhrasePlaybackLang();
-  const langTag = playbackLang === 'fil' ? 'fil-PH' : 'en-PH';
+  const langTag = playbackLang === 'fil' ? 'tl-PH' : 'en-PH';
   utt.lang = langTag;
   utt.rate = 0.85;
   utt.pitch = 1;
@@ -135,27 +135,26 @@ function speakPhraseWithTTS(text) {
   let voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
 
   if (voices && voices.length > 0) {
-    selectedVoice = voices.find(v => v.lang === langTag);
+    const targetPrefixes = playbackLang === 'fil' ? ['fil', 'tl'] : ['en'];
+    const exactTags = playbackLang === 'fil' ? ['tl-PH', 'fil-PH'] : ['en-PH', 'en-US'];
 
+    selectedVoice = voices.find(v => exactTags.includes(v.lang));
     if (!selectedVoice) {
-      const prefix = playbackLang === 'fil' ? 'fil' : 'en';
-      selectedVoice = voices.find(v => v.lang && v.lang.startsWith(prefix));
+      selectedVoice = voices.find(v => v.lang && targetPrefixes.some(prefix => v.lang.startsWith(prefix)));
     }
-
-    if (!selectedVoice) {
-      const langCode = playbackLang === 'fil' ? 'fil' : 'en';
-      selectedVoice = voices.find(v => v.lang && v.lang.split('-')[0] === langCode);
+    if (!selectedVoice && playbackLang === 'fil') {
+      selectedVoice = voices.find(v => v.lang && /^(fil|tl)(-|$)/.test(v.lang));
     }
-
     if (!selectedVoice && playbackLang === 'fil') {
       selectedVoice = voices.find(v => v.lang && v.lang.includes('PH'));
     }
-
     if (!selectedVoice) {
-      const searchLang = playbackLang === 'fil' ? 'Filipino' : 'English';
-      selectedVoice = voices.find(v => v.name && v.name.includes(searchLang));
+      const searchLang = playbackLang === 'fil' ? ['Filipino', 'Tagalog'] : ['English'];
+      selectedVoice = voices.find(v => v.name && searchLang.some(term => v.name.includes(term)));
     }
-
+    if (!selectedVoice && playbackLang !== 'fil') {
+      selectedVoice = voices.find(v => v.lang && v.lang.startsWith('en'));
+    }
     if (selectedVoice) {
       utt.voice = selectedVoice;
     }
