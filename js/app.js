@@ -67,6 +67,13 @@ function vibrate(patternOrKey) {
 
   const scale      = vibIntensity === 'soft' ? 0.5 : vibIntensity === 'strong' ? 1.8 : 1.0;
   const timescale  = vibTiming    === 'fast' ? 0.6 : vibTiming    === 'slow'   ? 1.5 : 1.0;
+  const safeVibrate = (value) => {
+    try {
+      vibrateFn(value);
+    } catch (e) {
+      // Ignore vibration failures so UI still responds.
+    }
+  };
 
   if (typeof patternOrKey === 'string') {
     // Try intensity-specific pattern first, fall back to test patterns
@@ -74,15 +81,15 @@ function vibrate(patternOrKey) {
              || VIBRATION_TEST_PATTERNS[patternOrKey];
     if (pat !== undefined) {
       if (Array.isArray(pat)) {
-        vibrateFn(pat.map(v => Math.round(v * scale * timescale)));
+        safeVibrate(pat.map(v => Math.round(v * scale * timescale)));
       } else if (pat) {
-        vibrateFn(Math.round(pat * scale * timescale));
+        safeVibrate(Math.round(pat * scale * timescale));
       }
     }
   } else if (Array.isArray(patternOrKey)) {
-    vibrateFn(patternOrKey.map(v => Math.round(v * scale * timescale)));
+    safeVibrate(patternOrKey.map(v => Math.round(v * scale * timescale)));
   } else {
-    vibrateFn(Math.round(patternOrKey * scale * timescale));
+    safeVibrate(Math.round(patternOrKey * scale * timescale));
   }
 }
 
@@ -116,7 +123,11 @@ function getRouteShortCode(routeId) {
 }
 
 function navigate(screenId, params = {}) {
-  vibrate(30);
+  try {
+    vibrate(30);
+  } catch (e) {
+    // Ignore vibration errors so navigation is not blocked.
+  }
   if (currentScreen === 'alert') cleanupAlert();
   if (currentScreen === 'gps' && screenId !== 'gps' && typeof cleanupGPS === 'function') {
     cleanupGPS();
