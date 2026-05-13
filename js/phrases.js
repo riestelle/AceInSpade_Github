@@ -111,10 +111,18 @@ document.getElementById('pf-close').addEventListener('click', () => {
   vibrate(30);
 });
 
+function getPhrasePlaybackLang() {
+  return pfActiveLang === 'fil' ? 'en' : 'fil';
+}
+
+function getPhrasePlaybackText() {
+  return getPhrasePlaybackLang() === 'fil' ? pfPhrase.filText : pfPhrase.enText;
+}
+
 function speakPhrase() {
   if (!window.speechSynthesis && !AUDIO_ENABLED) return;
 
-  const text = pfActiveLang === 'fil' ? pfPhrase.filText : pfPhrase.enText;
+  const text = getPhrasePlaybackText();
 
   // Attempt audio first if enabled
   if (AUDIO_ENABLED && pfPhrase.id) {
@@ -127,16 +135,14 @@ function speakPhrase() {
 }
 
 function playPhraseAudio() {
-  // Build audio filename from phrase ID and language
-  const audioFile = `${AUDIO_BASE_URL}/${pfPhrase.id}-${pfActiveLang}.mp3`;
+  const playbackLang = getPhrasePlaybackLang();
+  const audioFile = `${AUDIO_BASE_URL}/${pfPhrase.id}-${playbackLang}.mp3`;
   
-  // Stop any currently playing audio
   if (pfAudioElement) {
     pfAudioElement.pause();
     pfAudioElement.currentTime = 0;
   }
 
-  // Create or reuse audio element
   if (!pfAudioElement) {
     pfAudioElement = new Audio();
     pfAudioElement.addEventListener('ended', () => {
@@ -144,10 +150,8 @@ function playPhraseAudio() {
       updatePhrasePlayButton();
     });
     pfAudioElement.addEventListener('error', (err) => {
-      // If audio fails to load/play, fall back to TTS
       console.warn(`Audio failed for ${audioFile}:`, err.message);
-      const text = pfActiveLang === 'fil' ? pfPhrase.filText : pfPhrase.enText;
-      speakPhraseWithTTS(text);
+      speakPhraseWithTTS(getPhrasePlaybackText());
     });
   }
 
@@ -156,10 +160,8 @@ function playPhraseAudio() {
   updatePhrasePlayButton();
   
   pfAudioElement.play().catch(err => {
-    // Fallback on play failure
     console.warn('Audio playback failed:', err.message);
-    const text = pfActiveLang === 'fil' ? pfPhrase.filText : pfPhrase.enText;
-    speakPhraseWithTTS(text);
+    speakPhraseWithTTS(getPhrasePlaybackText());
   });
 
   vibrate(30);
@@ -171,46 +173,37 @@ function speakPhraseWithTTS(text) {
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
   
-  // Set language tag
-  const langTag = pfActiveLang === 'fil' ? 'fil-PH' : 'en-PH';
+  const playbackLang = getPhrasePlaybackLang();
+  const langTag = playbackLang === 'fil' ? 'fil-PH' : 'en-PH';
   utt.lang = langTag;
   utt.rate = 0.85;
   utt.pitch = 1;
 
-  // Find matching voice with multiple fallback strategies
   let selectedVoice = null;
-  
-  // Ensure voices are loaded
   let voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
   
   if (voices && voices.length > 0) {
-    // Strategy 1: Exact lang match (fil-PH, en-PH, etc.)
     selectedVoice = voices.find(v => v.lang === langTag);
     
-    // Strategy 2: Country-specific match (fil-*, en-*, etc.)
     if (!selectedVoice) {
-      const prefix = pfActiveLang === 'fil' ? 'fil' : 'en';
+      const prefix = playbackLang === 'fil' ? 'fil' : 'en';
       selectedVoice = voices.find(v => v.lang && v.lang.startsWith(prefix));
     }
     
-    // Strategy 3: Language code match (just 'fil' or 'en')
     if (!selectedVoice) {
-      const langCode = pfActiveLang === 'fil' ? 'fil' : 'en';
+      const langCode = playbackLang === 'fil' ? 'fil' : 'en';
       selectedVoice = voices.find(v => v.lang && v.lang.split('-')[0] === langCode);
     }
     
-    // Strategy 4: Try Philippine voices specifically
-    if (!selectedVoice && pfActiveLang === 'fil') {
+    if (!selectedVoice && playbackLang === 'fil') {
       selectedVoice = voices.find(v => v.lang && v.lang.includes('PH'));
     }
     
-    // Strategy 5: Any voice that mentions the language
     if (!selectedVoice) {
-      const searchLang = pfActiveLang === 'fil' ? 'Filipino' : 'English';
+      const searchLang = playbackLang === 'fil' ? 'Filipino' : 'English';
       selectedVoice = voices.find(v => v.name && v.name.includes(searchLang));
     }
     
-    // Use selected voice if found
     if (selectedVoice) {
       utt.voice = selectedVoice;
     }
