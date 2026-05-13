@@ -6,6 +6,7 @@ let gpsWatchId       = null;
 let gpsLiveWatchId    = null;
 let gpsLiveMarker     = null;
 let gpsLiveAccuracy   = null;
+let gpsProgressStartDistance = null;
 let gpsPermissionRequested = false;
 let gpsPermissionRetryTimeout = null;
 let gpsLocatorTimeout = null;
@@ -880,6 +881,7 @@ function cleanupGPS() {
     gpsLiveAccuracy.remove();
     gpsLiveAccuracy = null;
   }
+  gpsProgressStartDistance = null;
   
   // Remove stop markers
   Object.values(gpsStopMarkers).forEach(marker => marker.remove());
@@ -971,6 +973,13 @@ function fireNearNotification(stopName) {
   });
 }
 
+function getProgressBar(percent) {
+  const totalBlocks = 10;
+  const filled = Math.min(totalBlocks, Math.max(0, Math.round((percent / 100) * totalBlocks)));
+  const empty = totalBlocks - filled;
+  return '▰'.repeat(filled) + '▱'.repeat(empty);
+}
+
 function fireProgressNotification(distance) {
   if (!('Notification' in window) || Notification.permission !== 'granted' || !gpsSelectedStop) return;
   const now = Date.now();
@@ -978,22 +987,31 @@ function fireProgressNotification(distance) {
   const minAge = stage === gpsLastProgressNotificationStage ? 60000 : 30000;
   if (now - gpsLastProgressNotificationAt < minAge) return;
 
-  let body;
+  let percent = 0;
+  if (gpsProgressStartDistance && gpsProgressStartDistance > distance) {
+    percent = Math.round(((gpsProgressStartDistance - distance) / gpsProgressStartDistance) * 100);
+  }
+  percent = Math.min(100, Math.max(0, percent));
+  const progressBar = getProgressBar(percent);
+
+  let summary;
   if (distance > 1000) {
-    body = `You are ${(distance / 1000).toFixed(2)}km from ${gpsSelectedStop.name}.`;
+    summary = `🚶 ${progressBar} ${percent}% — ${(distance / 1000).toFixed(2)}km to ${gpsSelectedStop.name}`;
   } else if (distance > 500) {
-    body = `You are ${Math.round(distance)}m from ${gpsSelectedStop.name}.`;
+    summary = `🚶 ${progressBar} ${percent}% — ${Math.round(distance)}m to ${gpsSelectedStop.name}`;
   } else if (distance > 250) {
-    body = `Less than 500m left until ${gpsSelectedStop.name}.`;
+    summary = `🚶 ${progressBar} ${percent}% — less than 500m to ${gpsSelectedStop.name}`;
   } else {
-    body = `Almost there — ${Math.round(distance)}m to ${gpsSelectedStop.name}.`;
+    summary = `🏁 ${progressBar} ${percent}% — almost at ${gpsSelectedStop.name}`;
   }
 
-  new Notification('🚏 Trip update', {
-    body,
+  new Notification('🚶 Destination progress', {
+    body: summary,
     icon: '/icon.png',
+    badge: '/icon.png',
     tag: 'gps-progress',
     renotify: true,
+    silent: true,
   });
 
   gpsLastProgressNotificationAt = now;
@@ -1050,6 +1068,7 @@ function cancelSelectedStop() {
     gpsWatchId = null;
   }
   gpsAlertActive = false;
+  gpsProgressStartDistance = null;
   saveGPSState();
   gpsSelectedStop = null;
   document.getElementById('gps-search').value = '';
@@ -1098,6 +1117,17 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
     err.classList.remove('d-none');
     err.textContent = 'GPS not available on this device.';
     return;
+  }
+
+  if (gpsCurrentPosition) {
+    gpsProgressStartDistance = haversine(
+      gpsCurrentPosition.latitude,
+      gpsCurrentPosition.longitude,
+      gpsSelectedStop.lat,
+      gpsSelectedStop.lon
+    );
+  } else {
+    gpsProgressStartDistance = null;
   }
 
   gpsWatchId = navigator.geolocation.watchPosition(

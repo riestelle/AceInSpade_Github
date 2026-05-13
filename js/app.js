@@ -271,6 +271,37 @@ function initHome() {
   }
 }
 
+function requestStartupPermissions() {
+  if (!navigator.geolocation) return;
+  const gpsRequested = loadStorage('gps_permission_requested', false);
+  if (gpsRequested) return;
+  navigator.geolocation.getCurrentPosition(
+    () => saveStorage('gps_permission_requested', true),
+    () => saveStorage('gps_permission_requested', true),
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+function requestStartupNotifications() {
+  if (!('Notification' in window) || Notification.permission !== 'default') return;
+  if (typeof requestNotifPermission === 'function') {
+    requestNotifPermission();
+  } else {
+    Notification.requestPermission().then(() => {});
+  }
+}
+
+function requestStartupAccess() {
+  requestStartupPermissions();
+  requestStartupNotifications();
+}
+
+if (document.readyState === 'complete') {
+  requestStartupAccess();
+} else {
+  window.addEventListener('load', requestStartupAccess);
+}
+
 document.querySelectorAll('[data-nav]').forEach(btn => {
   btn.addEventListener('click', function() {
     const target = this.getAttribute('data-nav');
