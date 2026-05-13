@@ -33,12 +33,22 @@ self.addEventListener("fetch", (e) => {
 
   // Network-first for JS, CSS, HTML, and JSON files; cache fallback
   if (e.request.url.match(/\.(js|css|json|html)$/)) {
-    e.respondWith(
-      fetch(e.request).then(res => {
-        if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+    e.respondWith((async () => {
+      try {
+        const res = await fetch(e.request);
+        if (res.ok) {
+          const cache = await caches.open(CACHE);
+          try {
+            await cache.put(e.request, res.clone());
+          } catch {
+            // Ignore cache write failures so the live response still succeeds.
+          }
+        }
         return res;
-      }).catch(() => caches.match(e.request))
-    );
+      } catch {
+        return caches.match(e.request);
+      }
+    })());
     return;
   }
 
