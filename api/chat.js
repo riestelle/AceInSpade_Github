@@ -1,4 +1,6 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
   const keys = [
@@ -9,7 +11,9 @@ export default async function handler(req, res) {
     process.env.GROQ_5,
   ].filter(Boolean);
 
-  if (!keys.length) return res.status(500).json({ error: 'No API keys configured' });
+  if (!keys.length) {
+    return res.status(500).json({ error: 'Server configuration error: no API keys found. Contact the app owner.' });
+  }
 
   let lastErr = null;
   for (const key of keys) {
@@ -24,5 +28,5 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     } catch (e) { lastErr = e.message; }
   }
-  res.status(500).json({ error: lastErr });
-}
+  res.status(500).json({ error: lastErr || 'Unknown error from Groq API' });
+};

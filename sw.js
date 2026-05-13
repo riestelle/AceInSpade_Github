@@ -1,4 +1,4 @@
-const CACHE = "senyaspo-v1";
+const CACHE = "senyaspo-v2";
 
 const ASSETS = [
   "/",
