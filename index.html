@@ -1694,46 +1694,23 @@ async function sendAI() {
   vibrate(30);
 
   try {
-    const groqKeys = [
-      loadStorage('groq_key', ''),
-      loadStorage('groq_key_2', ''),
-      loadStorage('groq_key_3', ''),
-      loadStorage('groq_key_4', ''),
-      loadStorage('groq_key_5', ''),
-      window.__GROQ_KEY__ || '',
-    ].filter(k => k && k.startsWith('gsk_'));
-
-    if (!groqKeys.length) {
-      aiMessages.push({ role:'assistant', text:'⚠️ No Groq API key set. Click "[ set key ]" below the chat input and paste your free key from console.groq.com' });
-      aiLoading = false; renderMessages(); renderAIStatus(); return;
-    }
-
-    let lastErr = null;
-    let replied = false;
-    for (const groqKey of groqKeys) {
-      try {
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+groqKey },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            max_tokens: 512,
-            temperature: 0.4,
-            messages: [
-              { role:'system', content: AI_SYSTEM_PROMPT },
-              ...aiMessages.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.text })),
-            ]
-          })
-        });
-        const data = await res.json();
-        if (data.error) { lastErr = data.error.message; continue; }
-        const reply = data.choices?.[0]?.message?.content || 'Walang response. Try ulit.';
-        aiMessages.push({ role:'assistant', text: reply });
-        replied = true;
-        break;
-      } catch (err) { lastErr = err.message; }
-    }
-    if (!replied) throw new Error(lastErr || 'All keys failed');
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 512,
+        temperature: 0.4,
+        messages: [
+          { role:'system', content: AI_SYSTEM_PROMPT },
+          ...aiMessages.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.text })),
+        ]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const reply = data.choices?.[0]?.message?.content || 'Walang response. Try ulit.';
+    aiMessages.push({ role:'assistant', text: reply });
   } catch (err) {
     aiMessages.push({ role:'assistant', text: `Connection error: ${err.message}` });
   } finally {
