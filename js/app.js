@@ -35,24 +35,6 @@ const VIBRATION_TEST_PATTERNS = {
   stop:   0,
 };
 
-const ALERT_PATTERNS = {
-  soft: {
-    approach: [80, 60, 80],
-    near:     [120, 60, 120, 60, 120],
-    signal:   [150, 75, 150, 75, 150],
-  },
-  medium: {
-    approach: [150, 60, 150],
-    near:     [200, 75, 200, 75, 200],
-    signal:   [300, 75, 300, 75, 300],
-  },
-  strong: {
-    approach: [250, 60, 250],
-    near:     [350, 75, 350, 75, 350],
-    signal:   [500, 100, 500, 100, 500],
-  },
-};
-
 function getVibrationFunction() {
   if (typeof navigator.vibrate === 'function') {
     return function(...args) { return navigator.vibrate.apply(navigator, args); };
@@ -84,7 +66,7 @@ function vibrate(patternOrKey) {
     if (pat !== undefined) {
       if (Array.isArray(pat)) {
         safeVibrate(pat.map(v => Math.round(v * scale * timescale)));
-      } else if (pat) {
+      } else {
         safeVibrate(Math.round(pat * scale * timescale));
       }
     }
