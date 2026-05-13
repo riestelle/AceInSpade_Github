@@ -48,6 +48,19 @@ function notifyFamilyAlert(stopName) {
   pushFamilyStatus({ status: 'arrived', stop: stopName, ts: Date.now() }, true);
 }
 
+function sendSOS() {
+  const id = getFamilyId();
+  pushFamilyStatus({
+    status: 'sos',
+    ts: Date.now(),
+    lat: null,
+    lon: null,
+  }, true);
+  
+  // Local notification
+  vibrate([200, 100, 200, 100, 200, 100, 400]);
+}
+
 function fetchAndPushLocation() {
   if (!navigator.geolocation || !familyIsWatching) return;
   const savedStop = loadStorage('family_selected_stop', '');
@@ -174,6 +187,7 @@ function initFamilyUI() {
   const toggleBtn = document.getElementById('family-toggle-btn');
   const copyBtn = document.getElementById('family-copy-btn');
   const shareBtn = document.getElementById('family-share-btn');
+  const sosBtn = document.getElementById('family-sos-btn');
 
   const id = getFamilyId();
   const url = getFamilyShareURL();
@@ -223,6 +237,21 @@ function initFamilyUI() {
         alert('Link nakopya! I-paste sa Viber o SMS.');
       }
       vibrate(30);
+    });
+  }
+
+  if (sosBtn) {
+    sosBtn.addEventListener('click', () => {
+      const confirmed = confirm('Sigurado ka na? Mag-send ng SOS alert sa lahat ng nakakakita ng iyong link?');
+      if (confirmed) {
+        sendSOS();
+        sosBtn.textContent = '✓ Alert sent!';
+        sosBtn.style.background = '#16a34a';
+        setTimeout(() => {
+          sosBtn.textContent = '<span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle">warning</span> SEND SOS';
+          sosBtn.style.background = '#d32f2f';
+        }, 2000);
+      }
     });
   }
 
@@ -421,6 +450,7 @@ function renderWatcherPage(watchId) {
     const time = document.getElementById('watcher-time-text');
     const mapWrap = document.getElementById('watcher-map-wrap');
     const placeholder = document.getElementById('watcher-map-placeholder');
+    const card = document.getElementById('watcher-card');
 
     if (!icon || !label || !stop || !time) return;
 
@@ -433,6 +463,7 @@ function renderWatcherPage(watchId) {
       time.textContent = '';
       if (mapWrap) mapWrap.style.display = 'none';
       if (placeholder) placeholder.style.display = 'flex';
+      if (card) card.style.borderColor = '#2a2a2a';
       return;
     }
 
@@ -447,22 +478,85 @@ function renderWatcherPage(watchId) {
       time.textContent = '';
     }
 
+    // SOS ALERT — highest priority
+    if (data.status === 'sos') {
+      icon.textContent = '🚨';
+      label.textContent = 'SOS EMERGENCY';
+      label.style.color = '#ff4757';
+      label.style.fontSize = '24px';
+      label.style.fontWeight = '900';
+      label.style.textShadow = '0 0 12px rgba(255, 71, 87, 0.5)';
+      stop.textContent = 'Urgent — Needs help NOW!';
+      stop.style.color = '#ff6b6b';
+      stop.style.fontSize = '14px';
+      stop.style.fontWeight = '700';
+      if (mapWrap) mapWrap.style.display = 'none';
+      if (placeholder) placeholder.style.display = 'none';
+      if (card) {
+        card.style.borderColor = '#ff4757';
+        card.style.borderWidth = '2px';
+        card.style.background = '#2d1a1a';
+        card.style.boxShadow = '0 0 20px rgba(255, 71, 87, 0.3)';
+      }
+
+      // Fire aggressive SOS notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('🚨 SOS EMERGENCY!', {
+          body: 'URGENT: Kailangan ng tulong!',
+          badge: '🚨',
+          tag: 'sos-alert',
+          requireInteraction: true,
+        });
+      }
+
+      // Aggressive vibration pattern
+      if (navigator.vibrate) {
+        try {
+          navigator.vibrate([300, 150, 300, 150, 300, 150, 500]);
+        } catch (e) {
+          console.warn('Vibrate failed:', e);
+        }
+      }
+
+      return;
+    }
+
     if (data.status === 'arrived') {
       icon.textContent = '🎉';
       label.textContent = 'NAKARATING NA!';
       label.style.color = '#4ade80';
+      label.style.fontSize = '18px';
+      label.style.textShadow = 'none';
       stop.textContent = `Hintuan: ${data.stop || '—'}`;
       stop.style.color = '#4ade80';
+      stop.style.fontSize = '14px';
+      stop.style.fontWeight = '400';
       if (mapWrap) mapWrap.style.display = 'none';
       if (placeholder) placeholder.style.display = 'none';
+      if (card) {
+        card.style.borderColor = '#4ade80';
+        card.style.borderWidth = '1px';
+        card.style.background = '#151515';
+        card.style.boxShadow = 'none';
+      }
       notifyArrival(data.stop);
 
     } else if (data.status === 'riding' && !isStale) {
       icon.textContent = '🚌';
       label.textContent = 'Nakasakay sa jeep';
       label.style.color = '#fff';
+      label.style.fontSize = '18px';
+      label.style.textShadow = 'none';
       stop.textContent = data.stop ? `Papunta: ${data.stop}` : 'Nagsasabay...';
       stop.style.color = '#feb700';
+      stop.style.fontSize = '14px';
+      stop.style.fontWeight = '400';
+      if (card) {
+        card.style.borderColor = '#2a2a2a';
+        card.style.borderWidth = '1px';
+        card.style.background = '#151515';
+        card.style.boxShadow = 'none';
+      }
 
       if (data.lat && data.lon) {
         showWatcherMap(data.lat, data.lon, data.stop);
@@ -483,17 +577,35 @@ function renderWatcherPage(watchId) {
       icon.textContent = '📵';
       label.textContent = isStale && data.status !== 'offline' ? 'Pahinga (walang update)' : 'Offline';
       label.style.color = '#888';
+      label.style.fontSize = '18px';
+      label.style.textShadow = 'none';
       stop.textContent = '';
+      stop.style.fontSize = '14px';
       if (mapWrap) mapWrap.style.display = 'none';
       if (placeholder) placeholder.style.display = 'none';
+      if (card) {
+        card.style.borderColor = '#2a2a2a';
+        card.style.borderWidth = '1px';
+        card.style.background = '#151515';
+        card.style.boxShadow = 'none';
+      }
 
     } else {
       icon.textContent = '⏳';
       label.textContent = 'Naghihintay...';
       label.style.color = '#fff';
+      label.style.fontSize = '18px';
+      label.style.textShadow = 'none';
       stop.textContent = '';
+      stop.style.fontSize = '14px';
       if (mapWrap) mapWrap.style.display = 'none';
       if (placeholder) placeholder.style.display = 'flex';
+      if (card) {
+        card.style.borderColor = '#2a2a2a';
+        card.style.borderWidth = '1px';
+        card.style.background = '#151515';
+        card.style.boxShadow = 'none';
+      }
     }
   }
 
@@ -531,3 +643,4 @@ function renderWatcherPage(watchId) {
     }
   });
 }
+
