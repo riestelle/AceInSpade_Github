@@ -16,10 +16,20 @@ let gpsWakeLock = null;
 let gpsNotifPermission = false;
 let gpsLastProgressNotificationAt = 0;
 let gpsLastProgressNotificationStage = '';
+let gpsSearchFetchTimeout = null;
+let gpsSearchController = null;
+let gpsCurrentSearchQuery = '';
 
 function saveGPSState() {
   if (typeof saveStorage !== 'function') return;
-  saveStorage('gps_selected_stop', gpsSelectedStop ? { id: gpsSelectedStop.id } : null);
+  saveStorage('gps_selected_stop', gpsSelectedStop ? {
+    id: gpsSelectedStop.id,
+    name: gpsSelectedStop.name,
+    lat: gpsSelectedStop.lat,
+    lon: gpsSelectedStop.lon,
+    routeId: gpsSelectedStop.routeId || null,
+    type: gpsSelectedStop.type || 'local'
+  } : null);
   saveStorage('gps_alert_active', gpsAlertActive);
 }
 
@@ -27,9 +37,11 @@ function loadPersistedGPSState() {
   if (typeof loadStorage !== 'function') return;
   const storedStop = loadStorage('gps_selected_stop', null);
   if (storedStop && storedStop.id) {
-    const stop = STOPS_DB.find(s => s.id === storedStop.id);
-    if (stop) {
-      gpsSelectedStop = stop;
+    if (storedStop.type === 'osm') {
+      gpsSelectedStop = storedStop;
+    } else {
+      const stop = STOPS_DB.find(s => s.id === storedStop.id);
+      gpsSelectedStop = stop || storedStop;
     }
   }
   gpsAlertActive = loadStorage('gps_alert_active', false);
@@ -42,7 +54,7 @@ function restoreGPSUI() {
   document.getElementById('gps-preview-card').classList.add('d-none');
   document.getElementById('selected-stop-card').classList.remove('d-none');
   document.getElementById('selected-stop-name').textContent = gpsSelectedStop.name;
-  document.getElementById('selected-stop-route').textContent = getRouteShortCode(gpsSelectedStop.routeId);
+  document.getElementById('selected-stop-route').textContent = gpsSelectedStop.routeId ? getRouteShortCode(gpsSelectedStop.routeId) : (gpsSelectedStop.type === 'osm' ? 'OpenStreetMap' : '');
   const alertBtn = document.getElementById('set-alert-btn');
   if (alertBtn) {
     if (gpsAlertActive) {
@@ -319,46 +331,215 @@ function fuzzySearchScore(str, pattern) {
   return score;
 }
 
+function normalizeSearchText(text) {
+  return String(text || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[.,:;!?"'’“”`~(){}\[\]\/\\|<>@#%^&*+=]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function escapeRegex(text) {
+  return String(text || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function isRecommendedResult(result, query) {
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedQuery) return false;
+
+  const normalizedName = normalizeSearchText(result.name || '');
+  const normalizedRoute = normalizeSearchText(result.routeId ? getRouteShortCode(result.routeId) : '');
+  if (normalizedName === normalizedQuery || normalizedRoute === normalizedQuery) return true;
+  if (normalizedName.startsWith(normalizedQuery) || normalizedRoute.startsWith(normalizedQuery)) return true;
+
+  return normalizedQuery
+    .split(' ')
+    .filter(Boolean)
+    .some(word => new RegExp(`\\b${escapeRegex(word)}`, 'i').test(normalizedName) || new RegExp(`\\b${escapeRegex(word)}`, 'i').test(normalizedRoute));
+}
+
 function createFlexibleRegex(query) {
-  const cleaned = query
-    .toLowerCase()
-    .replace(/[.,:;!?'\-—–]/g, '')  // Remove punctuation
-    .trim();
-  
-  if (cleaned.length === 0) return null;
-  
-  // For single character queries, match anything starting with it
-  if (cleaned.length === 1) {
-    try {
-      return new RegExp(`\\b${cleaned}`, 'i');
-    } catch (e) {
-      return null;
+  const cleaned = normalizeSearchText(query);
+  if (!cleaned) return null;
+  const words = cleaned.split(' ').filter(Boolean);
+
+  if (words.length === 1) {
+    const token = escapeRegex(words[0]);
+    if (token.length <= 2) {
+      return new RegExp(`\\b${token}`, 'i');
     }
+    return new RegExp(token.split('').map(ch => `${escapeRegex(ch)}.*?`).join(''), 'i');
   }
-  
-  // For longer queries, create flexible pattern allowing partial matches
-  // Each character can have optional letters between them
-  const chars = cleaned.split('');
-  const pattern = chars.map((char, i) => {
-    // Last character doesn't need flexibility after it
-    if (i === chars.length - 1) {
-      return char;
+
+  const lookaheads = words.map(word => `(?=.*${escapeRegex(word)})`).join('');
+  return new RegExp(`^${lookaheads}.*$`, 'i');
+}
+
+function scoreOSMResult(place, query) {
+  const placeName = normalizeSearchText(place.name || '');
+  const q = normalizeSearchText(query);
+  if (!q) return 0;
+
+  let score = 0;
+  if (placeName === q) score += 10000;
+  if (placeName.startsWith(q)) score += 5000;
+  if (placeName.includes(q)) score += 300;
+
+  const words = q.split(' ').filter(Boolean);
+  words.forEach(word => {
+    if (placeName.includes(word)) score += 200;
+  });
+
+  return score;
+}
+
+async function fetchOSMSearchResults(query, signal) {
+  const normalized = normalizeSearchText(query);
+  if (!normalized || normalized.length < 3) return [];
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&q=${encodeURIComponent(normalized)}`;
+  const response = await fetch(url, { signal, headers: { Accept: 'application/json' } });
+  if (!response.ok) return [];
+  const data = await response.json();
+  return Array.isArray(data) ? data.map(place => ({
+    id: `osm:${place.place_id}`,
+    type: 'osm',
+    name: place.display_name,
+    lat: parseFloat(place.lat),
+    lon: parseFloat(place.lon),
+    routeId: null,
+    source: 'OpenStreetMap',
+  })) : [];
+}
+
+function mergeSearchResults(localResults, osmResults, query) {
+  const merged = [...localResults];
+  osmResults.forEach(osm => {
+    const exists = merged.some(item => item.id === osm.id || item.name === osm.name);
+    if (!exists) {
+      osm.recommended = isRecommendedResult(osm, query);
+      osm.searchScore = scoreOSMResult(osm, query) + (osm.recommended ? 1000 : 0);
+      merged.push(osm);
     }
-    // Allow 0-3 any characters between search chars
-    return char + '.{0,3}?';
-  }).join('');
-  
-  try {
-    return new RegExp(pattern, 'i');
-  } catch (e) {
-    return null;
+  });
+  return merged
+    .sort((a, b) => (b.searchScore || 0) - (a.searchScore || 0))
+    .slice(0, 8);
+}
+
+function renderSearchSuggestions(results) {
+  const dd = document.getElementById('gps-dropdown');
+  dd.innerHTML = '';
+  if (!results.length) {
+    dd.classList.add('d-none');
+    return;
+  }
+  dd.classList.remove('d-none');
+
+  results.forEach(result => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'stop-item';
+    button.style.textAlign = 'left';
+    button.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <span style="font-size:15px;font-weight:700;text-transform:uppercase">${result.name}</span>
+        ${result.recommended ? '<span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--amber);background:rgba(254,183,0,0.14);padding:4px 8px;border-radius:999px;letter-spacing:.04em;">recommended</span>' : ''}
+      </div>
+      <span style="font-size:12px;color:var(--text-muted)">${result.type === 'osm' ? result.source : getRouteShortCode(result.routeId)}</span>`;
+    button.addEventListener('click', () => previewSearchResult(result));
+    dd.appendChild(button);
+  });
+}
+
+function renderSearchMarkers(results) {
+  initLeafletMap();
+  Object.values(gpsStopMarkers).forEach(marker => marker.remove());
+  gpsStopMarkers = {};
+
+  results.forEach(result => {
+    if (!result.lat || !result.lon) return;
+    const marker = L.circleMarker([result.lat, result.lon], {
+      radius: result.type === 'osm' ? 7 : 6,
+      color: result.type === 'osm' ? '#34d399' : '#feb700',
+      fillColor: result.type === 'osm' ? '#34d399' : '#feb700',
+      fillOpacity: 0.5,
+      weight: 2,
+      dashArray: result.type === 'osm' ? '4 3' : null,
+    }).addTo(leafletMap)
+      .bindPopup(`<b>${result.name}</b><br/>${result.type === 'osm' ? result.source : getRouteShortCode(result.routeId)}`)
+      .on('click', () => previewSearchResult(result));
+    gpsStopMarkers[result.id] = marker;
+  });
+}
+
+function previewSearchResult(result) {
+  collapseExpandedSearch();
+  document.getElementById('gps-search').value = result.name;
+  document.getElementById('gps-dropdown').classList.add('d-none');
+  document.getElementById('gps-preview-card').classList.remove('d-none');
+  document.getElementById('preview-stop-name').textContent = result.name;
+  document.getElementById('preview-stop-route').textContent = result.routeId ? getRouteShortCode(result.routeId) : (result.type === 'osm' ? 'OpenStreetMap' : '');
+
+  if (gpsCurrentPosition) {
+    const dist = haversine(gpsCurrentPosition.latitude, gpsCurrentPosition.longitude, result.lat, result.lon);
+    const distLabel = dist < 1000 ? `${Math.round(dist)}m from your location` : `${(dist / 1000).toFixed(2)}km from your location`;
+    document.getElementById('preview-stop-distance').textContent = distLabel;
+    document.getElementById('preview-stop-distance').classList.remove('d-none');
+  } else {
+    document.getElementById('preview-stop-distance').classList.add('d-none');
+  }
+
+  document.getElementById('preview-confirm-btn').onclick = () => {
+    if (result.type === 'osm') {
+      selectOSMPlace(result);
+    } else {
+      selectGPSStop(result.id);
+    }
+  };
+  document.getElementById('preview-cancel-btn').onclick = () => {
+    document.getElementById('gps-preview-card').classList.add('d-none');
+  };
+
+  panMapToStop(result);
+  updateStopMarkers();
+}
+
+function selectOSMPlace(place) {
+  gpsSelectedStop = {
+    id: place.id,
+    name: place.name,
+    lat: place.lat,
+    lon: place.lon,
+    routeId: null,
+    type: 'osm',
+  };
+
+  document.getElementById('gps-search').value = gpsSelectedStop.name;
+  document.getElementById('gps-dropdown').classList.add('d-none');
+  document.getElementById('gps-preview-card').classList.add('d-none');
+  document.getElementById('selected-stop-card').classList.remove('d-none');
+  document.getElementById('selected-stop-name').textContent = gpsSelectedStop.name;
+  document.getElementById('selected-stop-route').textContent = 'OpenStreetMap';
+  updateStopMarkers();
+
+  if (typeof saveStorage === 'function') {
+    saveStorage('family_selected_stop', gpsSelectedStop.name);
+  }
+  saveGPSState();
+
+  const alertBtn = document.getElementById('set-alert-btn');
+  if (alertBtn) {
+    alertBtn.disabled = false;
+    alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> SET ALERT';
   }
 }
 
 // Score search results by relevance
 function scoreSearchResult(stop, query) {
-  const stopName = stop.name.toLowerCase();
-  const routeCode = getRouteShortCode(stop.routeId).toLowerCase();
+  const stopName = String(stop.name || '').toLowerCase();
+  const routeCode = String(getRouteShortCode(stop.routeId) || '').toLowerCase();
   const qLower = query.trim().toLowerCase().replace(/[.,:;!?'\-—–]/g, '');
   
   let score = 0;
@@ -402,7 +583,17 @@ function scoreSearchResult(stop, query) {
 
 document.getElementById('gps-search').addEventListener('input', function() {
   const q = this.value.trim();
-  
+  gpsCurrentSearchQuery = q;
+
+  if (gpsSearchFetchTimeout) {
+    clearTimeout(gpsSearchFetchTimeout);
+    gpsSearchFetchTimeout = null;
+  }
+  if (gpsSearchController) {
+    gpsSearchController.abort();
+    gpsSearchController = null;
+  }
+
   if (q.length < 1) {
     document.getElementById('gps-dropdown').classList.add('d-none');
     if (leafletPreviewMarker) { leafletPreviewMarker.remove(); leafletPreviewMarker = null; }
@@ -411,81 +602,44 @@ document.getElementById('gps-search').addEventListener('input', function() {
     return;
   }
 
-  // Use flexible regex matching
   const regex = createFlexibleRegex(q);
-  
-  // Filter and score results
-  let results = [];
-  if (regex) {
-    results = STOPS_DB
-      .filter(s => 
-        regex.test(s.name) || 
-        regex.test(getRouteShortCode(s.routeId))
-      )
-      .map(s => ({
-        stop: s,
-        score: scoreSearchResult(s, q)
-      }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 8)
-      .map(item => item.stop);
-  }
+  const localResults = regex ? STOPS_DB
+    .map(stop => ({ ...stop, type: 'local' }))
+    .filter(stop => {
+      const normalizedName = normalizeSearchText(stop.name);
+      const normalizedRoute = normalizeSearchText(getRouteShortCode(stop.routeId));
+      return regex.test(normalizedName) || regex.test(normalizedRoute);
+    })
+    .map(stop => {
+      const recommended = isRecommendedResult(stop, q);
+      return {
+        ...stop,
+        searchScore: scoreSearchResult(stop, q) + (recommended ? 1000 : 0),
+        recommended,
+      };
+    })
+    .sort((a, b) => b.searchScore - a.searchScore)
+    .slice(0, 6) : [];
 
-  // Render dropdown results
-  const dd = document.getElementById('gps-dropdown');
-  if (!results.length) { dd.classList.add('d-none'); return; }
-  dd.classList.remove('d-none');
-  dd.innerHTML = results.map(s => {
-    // Highlight matched portions
-    const qLower = q.toLowerCase().replace(/[.,:;!?'\-—–]/g, '');
-    let highlightedName = s.name;
-    
-    // Try to highlight the first matched word
-    const nameWords = s.name.split(/(\s+)/);
-    let foundMatch = false;
-    const highlightedWords = nameWords.map(word => {
-      if (!foundMatch && word.toLowerCase().replace(/[.,:;!?'\-—–]/g, '').includes(qLower.split(/\s+/)[0])) {
-        foundMatch = true;
-        return `<strong style="color:var(--amber)">${word}</strong>`;
+  renderSearchSuggestions(localResults);
+  renderSearchMarkers(localResults);
+
+  if (q.length >= 3) {
+    gpsSearchFetchTimeout = setTimeout(async () => {
+      gpsSearchFetchTimeout = null;
+      gpsSearchController = new AbortController();
+      try {
+        const osmResults = await fetchOSMSearchResults(q, gpsSearchController.signal);
+        if (gpsCurrentSearchQuery !== q) return;
+        const merged = mergeSearchResults(localResults, osmResults, q);
+        renderSearchSuggestions(merged);
+        renderSearchMarkers(merged);
+      } catch (error) {
+        if (error.name !== 'AbortError') console.warn('OSM search failed', error);
+      } finally {
+        gpsSearchController = null;
       }
-      return word;
-    });
-    highlightedName = highlightedWords.join('');
-    
-    return `<button class="stop-item" onclick="previewGPSStop('${s.id}')" style="text-align:left">
-      <span style="font-size:15px;font-weight:700;text-transform:uppercase">${highlightedName}</span>
-      <span style="font-size:12px;color:var(--text-muted)">${getRouteShortCode(s.routeId)}</span>
-    </button>`;
-  }).join('');
-
-  // Show all results as preview markers on map
-  initLeafletMap();
-  
-  // Clear old preview markers
-  Object.values(gpsStopMarkers).forEach(marker => marker.remove());
-  gpsStopMarkers = {};
-  
-  // Add all results as preview markers
-  results.forEach(stop => {
-    const marker = L.circleMarker([stop.lat, stop.lon], {
-      radius: 7,
-      color: '#feb700',
-      fillColor: '#feb700',
-      fillOpacity: 0.5,
-      weight: 2,
-      dashArray: '3 3',
-    }).addTo(leafletMap)
-      .bindPopup(`<b>${stop.name}</b><br/>${getRouteShortCode(stop.routeId)}`)
-      .on('click', () => previewGPSStop(stop.id));
-    
-    gpsStopMarkers[stop.id] = marker;
-  });
-
-  // Pan to first result to show all results
-  if (results.length > 0) {
-    const bounds = L.latLngBounds(results.map(s => [s.lat, s.lon]));
-    leafletMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
-    document.getElementById('map-label').style.display = 'none';
+    }, 220);
   }
 });
 

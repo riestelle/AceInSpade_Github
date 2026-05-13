@@ -5,6 +5,10 @@ let pfActiveLang    = 'fil';
 let pfPhrase        = null;
 let cachedVoices    = [];
 let ttsVoicePopupShown = false;
+let phraseVibrationTimer = null;
+
+const TTS_VIBRATION_PATTERN = [70, 40];
+const TTS_VIBRATION_REPEAT_MS = 120;
 
 const PROFANITY_PATTERNS = [
   /\bfuck(?:ing|er|ers|ed|s)?\b/i,
@@ -16,10 +20,25 @@ const PROFANITY_PATTERNS = [
   /\bcunt(?:s)?\b/i,
   /\bpiss(?:ed|ing|es|er|ers)?\b/i,
   /\bdamn(?:ed|ing)?\b/i,
+  /\basshole\b/i,
+  /\barsehole\b/i,
+  /\basshat\b/i,
+  /\bwhore(?:s)?\b/i,
+  /\bslut(?:s)?\b/i,
+  /\bcrap\b/i,
+  /\bidiot(?:s)?\b/i,
+  /\bmoron\b/i,
+  /\bnigga(?:s)?\b/i,
+  /\bnigger(?:s)?\b/i,
   /\bputang\s*ina(?:\s*mo)?\b/i,
   /\bputangina(?:\s*mo)?\b/i,
   /\btang\s*ina(?:\s*mo)?\b/i,
   /\btangina(?:\s*mo)?\b/i,
+  /\bkupal\b/i,
+  /\bhayop\b/i,
+  /\bpakyu\b/i,
+  /\btae\b/i,
+  /\bwalang\s*kwenta\b/i,
   /\bgago(?:ng)?\b/i,
   /\bpunyeta\b/i,
   /\bulol\b/i,
@@ -241,7 +260,10 @@ document.getElementById('pf-lang-toggle').addEventListener('click', () => {
 });
 
 document.getElementById('pf-close').addEventListener('click', () => {
-  window.speechSynthesis && window.speechSynthesis.cancel();
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+  clearPhraseVibration();
   document.getElementById('phrase-fullscreen').classList.add('d-none');
   vibrate(30);
 });
@@ -298,9 +320,23 @@ function speakPhrase() {
   speakPhraseWithTTS(text);
 }
 
+function clearPhraseVibration() {
+  if (phraseVibrationTimer !== null) {
+    clearInterval(phraseVibrationTimer);
+    phraseVibrationTimer = null;
+  }
+}
+
+function startPhraseVibration() {
+  clearPhraseVibration();
+  vibrate(TTS_VIBRATION_PATTERN);
+  phraseVibrationTimer = setInterval(() => vibrate(TTS_VIBRATION_PATTERN), TTS_VIBRATION_REPEAT_MS);
+}
+
 function speakPhraseWithTTS(text) {
   if (!window.speechSynthesis) return;
 
+  clearPhraseVibration();
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
 
@@ -326,12 +362,24 @@ function speakPhraseWithTTS(text) {
   const btn = document.getElementById('pf-speak');
   if (btn) {
     btn.style.opacity = '0.5';
-    utt.onend = () => { btn.style.opacity = '1'; };
-    utt.onerror = () => { btn.style.opacity = '1'; };
+    utt.onstart = () => {
+      startPhraseVibration();
+    };
+    utt.onend = () => {
+      btn.style.opacity = '1';
+      clearPhraseVibration();
+    };
+    utt.onerror = () => {
+      btn.style.opacity = '1';
+      clearPhraseVibration();
+    };
+  } else {
+    utt.onstart = startPhraseVibration;
+    utt.onend = clearPhraseVibration;
+    utt.onerror = clearPhraseVibration;
   }
 
   window.speechSynthesis.speak(utt);
-  vibrate(30);
 }
 
 document.getElementById('pf-speak').addEventListener('click', speakPhrase);
