@@ -3,8 +3,12 @@
 let gpsSelectedStop  = null;
 let gpsAlertActive   = false;
 let gpsWatchId       = null;
+let gpsLiveWatchId    = null;
+let gpsLiveMarker     = null;
+let gpsLiveAccuracy   = null;
 
 function initGPS() {
+  cleanupGPS();
   gpsSelectedStop = null;
   gpsAlertActive  = false;
   document.getElementById('gps-search').value = '';
@@ -13,7 +17,9 @@ function initGPS() {
   setTimeout(initLeafletMap, 50);
   document.getElementById('alert-active-msg').classList.add('d-none');
   document.getElementById('gps-error').classList.add('d-none');
-  document.getElementById('map-label').textContent = 'Select a stop above';
+  const mapLabel = document.getElementById('map-label');
+  if (mapLabel) mapLabel.textContent = 'Select a stop above';
+  startLiveLocator();
 }
 
 document.getElementById('gps-search').addEventListener('input', function() {
@@ -46,6 +52,71 @@ function initLeafletMap() {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
   }).addTo(leafletMap);
+}
+
+function startLiveLocator() {
+  if (!navigator.geolocation) {
+    const err = document.getElementById('gps-error');
+    err.classList.remove('d-none');
+    err.textContent = 'Live GPS locator is not available on this device.';
+    return;
+  }
+
+  gpsLiveWatchId = navigator.geolocation.watchPosition(
+    pos => {
+      const userLat = pos.coords.latitude;
+      const userLon = pos.coords.longitude;
+      const accuracy = Math.max(15, pos.coords.accuracy || 50);
+
+      initLeafletMap();
+
+      if (!gpsLiveMarker) {
+        gpsLiveMarker = L.circleMarker([userLat, userLon], {
+          radius: 8,
+          color: '#60a5fa',
+          fillColor: '#60a5fa',
+          fillOpacity: 1,
+          weight: 3,
+        }).addTo(leafletMap).bindPopup('You are here');
+      } else {
+        gpsLiveMarker.setLatLng([userLat, userLon]);
+      }
+
+      if (!gpsLiveAccuracy) {
+        gpsLiveAccuracy = L.circle([userLat, userLon], {
+          radius: accuracy,
+          color: '#60a5fa',
+          fillColor: '#60a5fa',
+          fillOpacity: 0.12,
+          weight: 1,
+        }).addTo(leafletMap);
+      } else {
+        gpsLiveAccuracy.setLatLng([userLat, userLon]);
+        gpsLiveAccuracy.setRadius(accuracy);
+      }
+    },
+    err => {
+      const errEl = document.getElementById('gps-error');
+      errEl.classList.remove('d-none');
+      errEl.textContent = 'Live GPS locator error: ' + err.message;
+    },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+  );
+}
+
+function cleanupGPS() {
+  if (gpsLiveWatchId !== null) {
+    navigator.geolocation.clearWatch(gpsLiveWatchId);
+    gpsLiveWatchId = null;
+  }
+  if (gpsLiveMarker) {
+    gpsLiveMarker.remove();
+    gpsLiveMarker = null;
+  }
+  if (gpsLiveAccuracy) {
+    gpsLiveAccuracy.remove();
+    gpsLiveAccuracy = null;
+  }
 }
 
 function panMapToStop(stop) {

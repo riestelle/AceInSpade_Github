@@ -63,8 +63,11 @@ function getRouteShortCode(routeId) {
 function navigate(screenId, params = {}) {
   vibrate(30);
   if (currentScreen === 'alert') cleanupAlert();
-  if (currentScreen === 'gps' && gpsWatchId !== null && screenId !== 'alert') {
-    navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; gpsAlertActive = false;
+  if (currentScreen === 'gps' && screenId !== 'gps' && typeof cleanupGPS === 'function') {
+    cleanupGPS();
+    if (gpsWatchId !== null) {
+      navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; gpsAlertActive = false;
+    }
   }
 
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
