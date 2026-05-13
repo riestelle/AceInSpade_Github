@@ -4,6 +4,7 @@ let phraseLang      = 'fil';
 let pfActiveLang    = 'fil';
 let pfPhrase        = null;
 let cachedVoices    = [];
+let ttsVoicePopupShown = false;
 
 const PROFANITY_PATTERNS = [
   /\bfuck(?:ing|er|ers|ed|s)?\b/i,
@@ -25,6 +26,31 @@ const PROFANITY_PATTERNS = [
   /\btarantado\b/i,
   /\bbwisit\b/i,
 ];
+
+function hasVoiceForLanguage(voices, lang) {
+  if (!voices || voices.length === 0) return false;
+
+  const exactTags = lang === 'fil' ? ['tl-PH', 'fil-PH'] : ['en-PH', 'en-US', 'en-GB'];
+  const prefixes = lang === 'fil' ? ['fil', 'tl'] : ['en'];
+  const searchNames = lang === 'fil' ? ['Filipino', 'Tagalog'] : ['English'];
+
+  return voices.some(v => {
+    const voiceLang = String(v.lang || '').toLowerCase();
+    const voiceName = String(v.name || '');
+
+    if (exactTags.includes(v.lang)) return true;
+    if (voiceLang && prefixes.some(prefix => voiceLang.startsWith(prefix))) return true;
+    if (lang === 'fil' && /^(fil|tl)(-|$)/i.test(v.lang || '')) return true;
+    if (lang === 'fil' && String(v.lang || '').toUpperCase().includes('PH')) return true;
+    return searchNames.some(term => voiceName.includes(term));
+  });
+}
+
+function showMissingTTSVoicePopup() {
+  if (ttsVoicePopupShown) return;
+  ttsVoicePopupShown = true;
+  alert('No Filipino or English TTS voice was detected on this device/browser. Speech playback may not work until a compatible voice is installed or enabled.');
+}
 
 function hasProfanity(text) {
   if (!text) return false;
@@ -250,7 +276,7 @@ function speakPhraseWithTTS(text) {
   if (selectedVoice) {
     utt.voice = selectedVoice;
   } else if (!voices || voices.length === 0) {
-    alert('No TTS voices are available on this device/browser. Please install or enable a voice for speech playback.');
+    showMissingTTSVoicePopup();
     return;
   } else {
     const languageLabel = playbackLang === 'fil' ? 'Filipino/Tagalog' : 'English';
