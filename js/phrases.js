@@ -16,6 +16,10 @@ if (window.speechSynthesis) {
 
 function initPhrases() {
   phraseLang = loadStorage('phrase_lang', 'fil');
+  if (!['fil','en'].includes(phraseLang)) {
+    phraseLang = 'fil';
+    saveStorage('phrase_lang', phraseLang);
+  }
   document.getElementById('phrases-lang-btn').textContent = phraseLang.toUpperCase();
   renderPhraseList();
 }

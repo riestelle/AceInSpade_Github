@@ -31,13 +31,13 @@ self.addEventListener("fetch", (e) => {
   // AI assistant requests always go to network
   if (e.request.url.includes("/api/")) return;
 
-  // Cache-first for JS, CSS, and data files; network fallback
-  if (e.request.url.match(/\.(js|css|json)$/)) {
+  // Network-first for JS, CSS, HTML, and JSON files; cache fallback
+  if (e.request.url.match(/\.(js|css|json|html)$/)) {
     e.respondWith(
-      caches.match(e.request).then((cached) => cached || fetch(e.request).then(res => {
+      fetch(e.request).then(res => {
         if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
         return res;
-      }))
+      }).catch(() => caches.match(e.request))
     );
     return;
   }

@@ -18,14 +18,51 @@ let deafStop    = '';
 let vibIntensity = 'medium';
 let vibTiming    = 'normal';
 
+const STORAGE_VERSION = 1;
+const VALID_VIB_INTENSITIES = ['soft', 'medium', 'strong'];
+const VALID_VIB_TIMINGS = ['fast', 'normal', 'slow'];
+const VALID_PHRASE_LANGS = ['fil', 'en'];
+const VALID_DEAF_LANGS = ['fil', 'en'];
+
 function loadStorage(key, fallback) {
-  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : fallback; }
-  catch { return fallback; }
+  try {
+    const raw = localStorage.getItem(key);
+    return raw !== null ? JSON.parse(raw) : fallback;
+  } catch {
+    localStorage.removeItem(key);
+    return fallback;
+  }
 }
 
 function saveStorage(key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
 }
+
+function resetStaleStorage() {
+  const storedVersion = loadStorage('app_storage_version', null);
+  if (storedVersion === STORAGE_VERSION) return;
+
+  const keysToReset = [
+    'vib_intensity',
+    'vib_timing',
+    'phrase_lang',
+    'deaf_lang',
+    'deaf_stop',
+    'install_prompt_dismissed',
+    'ios_install_dismissed',
+  ];
+
+  keysToReset.forEach(k => localStorage.removeItem(k));
+  saveStorage('app_storage_version', STORAGE_VERSION);
+}
+
+function validateStorageValue(key, value, allowed, fallback) {
+  if (allowed.includes(value)) return value;
+  saveStorage(key, fallback);
+  return fallback;
+}
+
+resetStaleStorage();
 
 const VIBRATION_TEST_PATTERNS = {
   single: [200],
@@ -330,8 +367,8 @@ document.getElementById('alert-dismiss').addEventListener('click', () => {
 });
 
 function initVib() {
-  vibIntensity = loadStorage('vib_intensity', 'medium');
-  vibTiming    = loadStorage('vib_timing', 'normal');
+  vibIntensity = validateStorageValue('vib_intensity', loadStorage('vib_intensity', 'medium'), VALID_VIB_INTENSITIES, 'medium');
+  vibTiming    = validateStorageValue('vib_timing', loadStorage('vib_timing', 'normal'), VALID_VIB_TIMINGS, 'normal');
   renderVibOptions();
   renderVibDemo();
 }
