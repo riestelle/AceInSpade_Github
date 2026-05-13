@@ -5,6 +5,19 @@ let pfActiveLang    = 'fil';
 let pfPhrase        = null;
 let cachedVoices    = [];
 
+function getPhraseDirectionLabel(lang) {
+  return lang === 'fil' ? 'FIL → EN' : 'EN → FIL';
+}
+
+function getPhraseTextOrder(filText, enText, lang) {
+  const sourceLang = lang === 'fil' ? 'fil' : 'en';
+  const targetLang = sourceLang === 'fil' ? 'en' : 'fil';
+  const mainText = targetLang === 'fil' ? filText : enText;
+  const subText  = targetLang === 'fil' ? enText : filText;
+
+  return { sourceLang, targetLang, mainText, subText };
+}
+
 // Preload voices when they become available
 if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => {
@@ -20,7 +33,7 @@ function initPhrases() {
     phraseLang = 'fil';
     saveStorage('phrase_lang', phraseLang);
   }
-  document.getElementById('phrases-lang-btn').textContent = phraseLang.toUpperCase();
+  document.getElementById('phrases-lang-btn').textContent = getPhraseDirectionLabel(phraseLang);
   renderPhraseList();
 }
 
@@ -41,6 +54,8 @@ function renderPhraseList() {
       enText  = `Pass the fare — ₱${Number(lastFare.amount).toFixed(2)}`;
     }
 
+    const phraseText = getPhraseTextOrder(filText, enText, phraseLang);
+
     const btn = document.createElement('button');
     btn.className = 'phrase-row' + (p.type === 'emergency' ? ' emergency' : '');
     btn.style.cssText = `width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:transparent;border:none;border-bottom:1px solid var(--outline-var);text-align:left;cursor:pointer`;
@@ -48,8 +63,8 @@ function renderPhraseList() {
       <div style="display:flex;align-items:center;gap:14px">
         <span style="font-size:36px;line-height:1;flex-shrink:0">${p.icon || '💬'}</span>
         <div>
-          <div style="font-size:18px;font-weight:800;${p.type==='emergency'?'color:#ff6b6b':'color:var(--text)'}">${filText}</div>
-          <div style="font-size:13px;color:var(--text-muted);margin-top:2px">${enText}</div>
+          <div style="font-size:18px;font-weight:800;${p.type==='emergency'?'color:#ff6b6b':'color:var(--text)'}">${phraseText.mainText}</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:2px">${phraseText.subText}</div>
         </div>
       </div>
       <span class="material-symbols-outlined" style="font-size:22px;color:var(--outline-var)">chevron_right</span>`;
@@ -82,13 +97,12 @@ function openPhraseFullscreen(phrase, filText, enText) {
 }
 
 function renderPhraseFullscreen() {
-  const main = pfActiveLang === 'fil' ? pfPhrase.filText : pfPhrase.enText;
-  const sub  = pfActiveLang === 'fil' ? pfPhrase.enText  : pfPhrase.filText;
+  const phraseText = getPhraseTextOrder(pfPhrase.filText, pfPhrase.enText, pfActiveLang);
   document.getElementById('pf-icon').textContent = pfPhrase.icon || '💬';
-  document.getElementById('pf-main').textContent = main;
-  document.getElementById('pf-sub').textContent  = sub;
-  document.getElementById('pf-lang').textContent = pfActiveLang === 'fil' ? 'FIL' : 'EN';
-  document.getElementById('pf-lang-toggle').textContent = pfActiveLang === 'fil' ? 'FIL → EN' : 'EN → FIL';
+  document.getElementById('pf-main').textContent = phraseText.mainText;
+  document.getElementById('pf-sub').textContent  = phraseText.subText;
+  document.getElementById('pf-lang').textContent = getPhraseDirectionLabel(pfActiveLang);
+  document.getElementById('pf-lang-toggle').textContent = getPhraseDirectionLabel(pfActiveLang);
 }
 
 document.getElementById('pf-lang-toggle').addEventListener('click', () => {
@@ -109,7 +123,7 @@ function getPhrasePlaybackLang() {
 }
 
 function getPhrasePlaybackText() {
-  return getPhrasePlaybackLang() === 'fil' ? pfPhrase.filText : pfPhrase.enText;
+  return getPhraseTextOrder(pfPhrase.filText, pfPhrase.enText, pfActiveLang).mainText;
 }
 
 function speakPhrase() {
@@ -176,7 +190,7 @@ document.getElementById('pf-speak').addEventListener('click', speakPhrase);
 document.getElementById('phrases-lang-btn').addEventListener('click', () => {
   phraseLang = phraseLang === 'fil' ? 'en' : 'fil';
   saveStorage('phrase_lang', phraseLang);
-  document.getElementById('phrases-lang-btn').textContent = phraseLang.toUpperCase();
+  document.getElementById('phrases-lang-btn').textContent = getPhraseDirectionLabel(phraseLang);
   renderPhraseList();
   vibrate(30);
 });
