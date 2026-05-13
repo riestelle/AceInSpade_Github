@@ -1,13 +1,28 @@
 {
-  "name": "SenyasPo",
+  "name": "SenyasPo - Deaf Commuter Guide",
   "short_name": "SenyasPo",
-  "description": "Jeepney app for deaf and hard-of-hearing Filipino commuters",
+  "description": "Jeepney app for deaf and hard-of-hearing Filipino commuters with GPS alerts and text-to-speech",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#081425",
   "theme_color": "#feb700",
   "scope": "/",
+  "categories": ["travel", "utilities"],
+  "screenshots": [
+    {
+      "src": "https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
   "prefer_related_applications": false,
   "shortcuts": [
     {
@@ -15,12 +30,19 @@
       "short_name": "GPS",
       "description": "Quick access to GPS stop alert",
       "url": "/?screen=gps",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "icons": [{ "src": "https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Phrases",
+      "short_name": "Phrases",
+      "description": "Quick access to TTS phrases",
+      "url": "/?screen=phrases",
+      "icons": [{ "src": "https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png", "sizes": "192x192", "type": "image/png" }]
     }
   ],
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

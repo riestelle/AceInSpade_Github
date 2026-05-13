@@ -17,11 +17,16 @@ function initGPS() {
   document.getElementById('gps-search').value = '';
   document.getElementById('gps-dropdown').classList.add('d-none');
   document.getElementById('selected-stop-card').classList.add('d-none');
-  setTimeout(initLeafletMap, 50);
   document.getElementById('alert-active-msg').classList.add('d-none');
   document.getElementById('gps-error').classList.add('d-none');
   const mapLabel = document.getElementById('map-label');
   if (mapLabel) mapLabel.textContent = 'Select a stop above';
+  initLeafletMap();
+  requestAnimationFrame(() => {
+    if (leafletMap) {
+      leafletMap.invalidateSize();
+    }
+  });
   startLiveLocator();
 }
 
@@ -55,6 +60,9 @@ function initLeafletMap() {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
   }).addTo(leafletMap);
+  setTimeout(() => {
+    if (leafletMap) leafletMap.invalidateSize();
+  }, 100);
 }
 
 function startLocationWatch() {
@@ -250,7 +258,9 @@ function panMapToStop(stop) {
   leafletMarker = L.circleMarker([stop.lat, stop.lon], {
     radius: 10, color: '#feb700', fillColor: '#feb700', fillOpacity: 1, weight: 3
   }).addTo(leafletMap).bindPopup(`<b>${stop.name}</b>`).openPopup();
-  setTimeout(() => leafletMap.invalidateSize(), 100);
+  requestAnimationFrame(() => {
+    if (leafletMap) leafletMap.invalidateSize();
+  });
 }
 
 function selectGPSStop(id) {

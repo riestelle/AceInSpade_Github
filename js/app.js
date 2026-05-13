@@ -295,6 +295,98 @@ window.addEventListener('offline', () => { isOnline = false; if (currentScreen =
 
 initHome();
 
+// PWA Install Prompt Handler
+let deferredPrompt = null;
+let isInstalled = false;
+
+// Check if app is already installed
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallPrompt();
+});
+
+window.addEventListener('appinstalled', () => {
+  isInstalled = true;
+  deferredPrompt = null;
+  hideInstallPrompt();
+  console.log('✓ SenyasPo installed as app');
+});
+
+function showInstallPrompt() {
+  // Create install banner if it doesn't exist
+  if (!document.getElementById('install-banner')) {
+    const banner = document.createElement('div');
+    banner.id = 'install-banner';
+    banner.className = 'banner banner-info';
+    banner.style.cssText = 'padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;';
+    banner.innerHTML = `
+      <span style="flex:1;font-size:13px;">📦 Install SenyasPo as an app for quick access</span>
+      <div style="display:flex;gap:8px;">
+        <button id="install-btn" style="background:#feb700;color:#271900;border:none;border-radius:6px;padding:8px 16px;font-weight:700;font-size:12px;cursor:pointer;text-transform:uppercase;letter-spacing:.05em;">Install</button>
+        <button id="dismiss-install" style="background:transparent;color:var(--text-muted);border:1px solid var(--outline-var);border-radius:6px;padding:8px 12px;font-weight:700;font-size:12px;cursor:pointer;">✕</button>
+      </div>
+    `;
+    document.body.insertBefore(banner, document.body.firstChild);
+    
+    document.getElementById('install-btn').addEventListener('click', handleInstallClick);
+    document.getElementById('dismiss-install').addEventListener('click', hideInstallPrompt);
+  } else {
+    document.getElementById('install-banner').style.display = 'flex';
+  }
+}
+
+function hideInstallPrompt() {
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'none';
+  saveStorage('install_prompt_dismissed', true);
+}
+
+function handleInstallClick() {
+  if (!deferredPrompt) return;
+  
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then((choiceResult) => {
+    if (choiceResult.outcome === 'accepted') {
+      console.log('✓ User accepted install prompt');
+    } else {
+      console.log('✗ User dismissed install prompt');
+    }
+    deferredPrompt = null;
+  });
+}
+
+// Check if install was dismissed and only show once per session
+if (!loadStorage('install_prompt_dismissed', false)) {
+  // Install prompt will show if beforeinstallprompt fires
+}
+
+// iOS Install Guide (since iOS doesn't support beforeinstallprompt)
+function showIOSInstallGuide() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.navigator.standalone === true;
+  
+  if (isIOS && !isStandalone && !loadStorage('ios_install_dismissed', false)) {
+    const banner = document.createElement('div');
+    banner.id = 'ios-install-banner';
+    banner.className = 'banner banner-info';
+    banner.style.cssText = 'padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;';
+    banner.innerHTML = `
+      <span style="flex:1;font-size:13px;">📱 Tap Share, then "Add to Home Screen"</span>
+      <button id="dismiss-ios-install" style="background:transparent;color:var(--text-muted);border:1px solid var(--outline-var);border-radius:6px;padding:8px 12px;font-weight:700;font-size:12px;cursor:pointer;">✕</button>
+    `;
+    document.body.insertBefore(banner, document.body.firstChild);
+    
+    document.getElementById('dismiss-ios-install').addEventListener('click', () => {
+      banner.style.display = 'none';
+      saveStorage('ios_install_dismissed', true);
+    });
+  }
+}
+
+// Show iOS install guide on first load
+setTimeout(showIOSInstallGuide, 1000);
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
