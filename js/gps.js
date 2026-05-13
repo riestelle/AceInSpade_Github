@@ -12,6 +12,8 @@ let gpsLocatorTimeout = null;
 let gpsMapExpanded = false;
 let gpsStopMarkers = {};
 let gpsCurrentPosition = null;
+let gpsWakeLock = null;
+let gpsNotifPermission = false;
 
 function toggleMapExpand() {
   const map = document.getElementById('leaflet-map');
@@ -346,6 +348,9 @@ function cleanupGPS() {
   gpsLocatorTimeout = null;
   gpsPermissionRetryTimeout = null;
 
+  // Release wake lock
+  releaseWakeLock();
+
   // Clear location watches
   if (gpsLiveWatchId !== null) {
     navigator.geolocation.clearWatch(gpsLiveWatchId);
@@ -397,6 +402,65 @@ function cleanupGPS() {
   hideGPSPermissionButton();
 }
 
+// ── WAKE LOCK ──────────────────────────────────────────────────────────────────
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    gpsWakeLock = await navigator.wakeLock.request('screen');
+    gpsWakeLock.addEventListener('release', () => { gpsWakeLock = null; });
+  } catch (e) {
+    // Wake lock failed silently — not critical
+  }
+}
+
+function releaseWakeLock() {
+  if (gpsWakeLock) {
+    gpsWakeLock.release();
+    gpsWakeLock = null;
+  }
+}
+
+// Re-acquire wake lock if page becomes visible again (e.g. user switched back)
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' && gpsAlertActive && !gpsWakeLock) {
+    await requestWakeLock();
+  }
+});
+
+// ── NOTIFICATIONS ──────────────────────────────────────────────────────────────
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    gpsNotifPermission = true;
+    return;
+  }
+  if (Notification.permission !== 'denied') {
+    const result = await Notification.requestPermission();
+    gpsNotifPermission = result === 'granted';
+  }
+}
+
+function fireStopNotification(stopName) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  new Notification('🚏 You\'re almost there!', {
+    body: `Approaching ${stopName} — time to get ready!`,
+    icon: '/icon.png',
+    tag: 'gps-stop-alert',       // prevents duplicate notifs
+    renotify: false,
+    requireInteraction: true,    // stays on screen until dismissed
+  });
+}
+
+function fireNearNotification(stopName) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  new Notification('📍 Getting close!', {
+    body: `Less than 200m from ${stopName}`,
+    icon: '/icon.png',
+    tag: 'gps-near-alert',
+    renotify: true,
+  });
+}
+
 function panMapToStop(stop) {
   initLeafletMap();
   leafletMap.setView([stop.lat, stop.lon], 16);
@@ -443,6 +507,10 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
   gpsAlertActive = true;
   vibrate([100,50,100]);
 
+  // Keep screen on + request notification permission
+  requestWakeLock();
+  requestNotifPermission();
+
   const alertBtn = document.getElementById('set-alert-btn');
   alertBtn.disabled = true;
   alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> ALERT ACTIVE';
@@ -472,6 +540,8 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
       
       if (dist <= 150) {
         vibrate('signal');
+        fireStopNotification(gpsSelectedStop.name);
+        releaseWakeLock();
         // Notify family if sharing is active
         if (typeof notifyFamilyAlert === 'function') {
           notifyFamilyAlert(gpsSelectedStop.name);
@@ -480,6 +550,7 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
         navigate('alert', { stopName: gpsSelectedStop.name });
       } else if (dist <= 200) {
         vibrate('near');
+        fireNearNotification(gpsSelectedStop.name);
       } else if (dist <= 250) {
         vibrate('approach');
       }
