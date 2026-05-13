@@ -9,13 +9,94 @@ let gpsLiveAccuracy   = null;
 let gpsPermissionRequested = false;
 let gpsPermissionRetryTimeout = null;
 let gpsLocatorTimeout = null;
+let gpsMapExpanded = false;
+let gpsStopMarkers = {};
+let gpsCurrentPosition = null;
+
+function toggleMapExpand() {
+  const map = document.getElementById('leaflet-map');
+  const container = document.getElementById('gps-map-container');
+  const controls = document.getElementById('gps-map-controls');
+  const screen = document.getElementById('screen-gps');
+  const main = screen.querySelector('main');
+  
+  gpsMapExpanded = !gpsMapExpanded;
+  
+  if (gpsMapExpanded) {
+    map.classList.add('fullscreen');
+    controls.classList.remove('d-none');
+    main.style.padding = '0';
+    main.style.gap = '0';
+    screen.style.overflow = 'hidden';
+  } else {
+    map.classList.remove('fullscreen');
+    controls.classList.add('d-none');
+    main.style.padding = '16px 24px';
+    main.style.gap = '16px';
+    screen.style.overflow = 'auto';
+  }
+  
+  requestAnimationFrame(() => {
+    if (leafletMap) {
+      leafletMap.invalidateSize();
+    }
+  });
+}
+
+function updateStopMarkers() {
+  if (!leafletMap) return;
+  
+  const bounds = leafletMap.getBounds();
+  const visibleStops = STOPS_DB.filter(stop => {
+    const latlng = L.latLng(stop.lat, stop.lon);
+    return bounds.contains(latlng);
+  });
+  
+  // Remove old markers
+  Object.values(gpsStopMarkers).forEach(marker => marker.remove());
+  gpsStopMarkers = {};
+  
+  // Add new markers for visible stops
+  visibleStops.forEach(stop => {
+    const marker = L.circleMarker([stop.lat, stop.lon], {
+      radius: 6,
+      color: gpsSelectedStop?.id === stop.id ? '#feb700' : '#888',
+      fillColor: gpsSelectedStop?.id === stop.id ? '#feb700' : '#999',
+      fillOpacity: 0.6,
+      weight: 2,
+    }).addTo(leafletMap)
+      .bindPopup(`<b>${stop.name}</b><br/>${getRouteShortCode(stop.routeId)}`)
+      .on('click', () => selectGPSStop(stop.id));
+    
+    gpsStopMarkers[stop.id] = marker;
+  });
+}
+
+function updateDistanceDisplay() {
+  if (!gpsCurrentPosition || !gpsSelectedStop) return;
+  
+  const dist = haversine(
+    gpsCurrentPosition.latitude,
+    gpsCurrentPosition.longitude,
+    gpsSelectedStop.lat,
+    gpsSelectedStop.lon
+  );
+  
+  const distLabel = dist < 1000 
+    ? `${Math.round(dist)}m away`
+    : `${(dist / 1000).toFixed(2)}km away`;
+  
+  document.getElementById('selected-stop-distance').textContent = `📍 ${distLabel}`;
+}
 
 function initGPS() {
   cleanupGPS();
   gpsSelectedStop = null;
   gpsAlertActive  = false;
+  gpsCurrentPosition = null;
   document.getElementById('gps-search').value = '';
   document.getElementById('gps-dropdown').classList.add('d-none');
+  document.getElementById('gps-distance').classList.add('d-none');
   if (leafletPreviewMarker) { leafletPreviewMarker.remove(); leafletPreviewMarker = null; }
   document.getElementById('selected-stop-card').classList.add('d-none');
   document.getElementById('alert-active-msg').classList.add('d-none');
@@ -26,6 +107,7 @@ function initGPS() {
   requestAnimationFrame(() => {
     if (leafletMap) {
       leafletMap.invalidateSize();
+      updateStopMarkers();
     }
   });
   startLiveLocator();
@@ -84,6 +166,10 @@ function initLeafletMap() {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
   }).addTo(leafletMap);
+  
+  // Update stop markers when map moves/zooms
+  leafletMap.on('moveend', updateStopMarkers);
+  
   setTimeout(() => {
     if (leafletMap) leafletMap.invalidateSize();
   }, 100);
@@ -114,6 +200,9 @@ function startLocationWatch() {
       const userLon = pos.coords.longitude;
       const accuracy = Math.max(15, pos.coords.accuracy || 50);
 
+      // Store current position for distance calculations
+      gpsCurrentPosition = { latitude: userLat, longitude: userLon };
+
       initLeafletMap();
 
       if (!gpsLiveMarker) {
@@ -139,6 +228,11 @@ function startLocationWatch() {
       } else {
         gpsLiveAccuracy.setLatLng([userLat, userLon]);
         gpsLiveAccuracy.setRadius(accuracy);
+      }
+      
+      // Update distance if a stop is selected
+      if (gpsSelectedStop) {
+        updateDistanceDisplay();
       }
     },
     err => {
@@ -271,6 +365,34 @@ function cleanupGPS() {
     gpsLiveAccuracy.remove();
     gpsLiveAccuracy = null;
   }
+  
+  // Remove stop markers
+  Object.values(gpsStopMarkers).forEach(marker => marker.remove());
+  gpsStopMarkers = {};
+  
+  // Hide tracking indicator
+  const trackingBadge = document.getElementById('home-tracking-badge');
+  if (trackingBadge) trackingBadge.classList.add('d-none');
+  
+  // Reset map expand state
+  gpsMapExpanded = false;
+  const map = document.getElementById('leaflet-map');
+  if (map) {
+    map.classList.remove('fullscreen');
+  }
+  const controls = document.getElementById('gps-map-controls');
+  if (controls) {
+    controls.classList.add('d-none');
+  }
+  const screen = document.getElementById('screen-gps');
+  if (screen) {
+    const main = screen.querySelector('main');
+    if (main) {
+      main.style.padding = '16px 24px';
+      main.style.gap = '16px';
+    }
+    screen.style.overflow = 'auto';
+  }
 
   hideGPSPermissionButton();
 }
@@ -298,6 +420,13 @@ function selectGPSStop(id) {
   document.getElementById('selected-stop-name').textContent  = stop.name;
   document.getElementById('selected-stop-route').textContent = getRouteShortCode(stop.routeId);
   panMapToStop(stop);
+  updateStopMarkers();
+  
+  // Update distance display if we have current position
+  if (gpsCurrentPosition) {
+    updateDistanceDisplay();
+  }
+  
   // Save for family sharing
   if (typeof saveStorage === 'function') {
     saveStorage('family_selected_stop', stop.name);
@@ -318,6 +447,10 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
   alertBtn.disabled = true;
   alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> ALERT ACTIVE';
   document.getElementById('alert-active-msg').classList.remove('d-none');
+  
+  // Show tracking indicator on home screen
+  const trackingBadge = document.getElementById('home-tracking-badge');
+  if (trackingBadge) trackingBadge.classList.remove('d-none');
 
   if (!navigator.geolocation) {
     const err = document.getElementById('gps-error');
@@ -329,6 +462,14 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
   gpsWatchId = navigator.geolocation.watchPosition(
     pos => {
       const dist = haversine(pos.coords.latitude, pos.coords.longitude, gpsSelectedStop.lat, gpsSelectedStop.lon);
+      
+      // Update distance display during alert
+      const distLabel = dist < 1000 
+        ? `${Math.round(dist)}m to stop`
+        : `${(dist / 1000).toFixed(2)}km to stop`;
+      document.getElementById('gps-distance').classList.remove('d-none');
+      document.getElementById('gps-distance').textContent = `📍 ${distLabel}`;
+      
       if (dist <= 150) {
         vibrate('signal');
         // Notify family if sharing is active

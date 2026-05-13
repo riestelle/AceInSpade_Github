@@ -494,6 +494,12 @@
       display: flex; align-items: center; justify-content: center;
     }
     #leaflet-map { height: 360px; border-radius: 12px; z-index: 1; }
+    #leaflet-map.fullscreen { height: 100dvh; border-radius: 0; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999; }
+    .gps-map-controls { position: absolute; top: 16px; right: 16px; z-index: 10; display: flex; gap: 8px; }
+    .gps-map-btn { background: white; border: none; border-radius: 8px; width: 44px; height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 20px; }
+    .gps-map-btn:active { transform: scale(0.95); }
+    .tracking-indicator { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(34,197,94,0.2); border: 1px solid #22c55e; border-radius: 20px; font-size: 11px; font-weight: 700; color: #22c55e; letter-spacing: 0.05em; text-transform: uppercase; animation: trackingPulse 2s ease-in-out infinite; }
+    @keyframes trackingPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
     /* ── RESPONSIVE: small phones ─────────────────────────────────── */
     @media (max-width: 360px) {
@@ -660,6 +666,10 @@
             <div>
               <div class="card-gps-label">Hintuan Ko</div>
               <div class="card-gps-sub">GPS vibration alert · Get notified when near your stop</div>
+              <div id="home-tracking-badge" class="tracking-indicator d-none" style="margin-top:6px">
+                <span class="material-symbols-outlined" style="font-size:14px">signal_cellular_alt</span>
+                <span>Actively Tracking</span>
+              </div>
             </div>
           </div>
           <span class="material-symbols-outlined" style="font-size:20px;color:var(--outline-var)">chevron_right</span>
@@ -1009,6 +1019,9 @@
         <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">SET MY STOP</span>
       </div>
+      <button id="gps-expand-btn" class="topbar-menu" onclick="toggleMapExpand()" title="Expand map">
+        <span class="material-symbols-outlined" style="font-size:24px">fullscreen</span>
+      </button>
     </header>
     <main class="scroll-main" style="padding:16px 24px;display:flex;flex-direction:column;gap:16px">
       <div class="search-wrap">
@@ -1017,12 +1030,19 @@
       </div>
       <p id="map-label" class="tag-mono" style="color:var(--amber);text-align:center;letter-spacing:.15em">SELECT A STOP ABOVE</p>
       <div id="gps-dropdown" class="stop-dropdown d-none"></div>
-      <div id="leaflet-map"></div>
+      <div id="gps-map-container" style="position:relative">
+        <div id="leaflet-map"></div>
+        <div class="gps-map-controls d-none" id="gps-map-controls">
+          <button class="gps-map-btn" onclick="toggleMapExpand()" title="Close fullscreen">✕</button>
+        </div>
+      </div>
+      <p id="gps-distance" class="d-none" style="font-size:16px;font-weight:700;color:var(--amber);text-align:center"></p>
       <p id="gps-error" class="d-none" style="color:#ef4444;font-size:14px;font-weight:700;text-align:center"></p>
       <div id="selected-stop-card" class="selected-stop-card d-none">
         <p class="tag-mono mb-1" style="color:var(--amber);letter-spacing:.15em">SELECTED STOP</p>
         <p id="selected-stop-name" style="font-size:28px;font-weight:900;color:var(--text);text-transform:uppercase;line-height:1.1"></p>
         <p id="selected-stop-route" style="font-size:13px;color:var(--text-muted);margin-top:4px"></p>
+        <p id="selected-stop-distance" style="font-size:14px;color:var(--amber);margin-top:8px;font-weight:700"></p>
         <div class="mt-3">
           <p style="font-size:12px;color:var(--text-var);margin-bottom:8px">Alert at 250m (soft) and 150m (full vibration + screen)</p>
           <button id="set-alert-btn" class="btn-primary-sp" style="height:64px">
