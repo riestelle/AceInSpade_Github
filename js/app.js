@@ -96,11 +96,7 @@ function vibrate(patternOrKey) {
 }
 
 function vibrateDemo(patternKey) {
-  const vibrateFn = getVibrationFunction();
-  if (!vibrateFn) return;
-  const pattern = VIBRATION_TEST_PATTERNS[patternKey];
-  if (pattern === undefined) return;
-  vibrateFn(pattern);
+  vibrate(patternKey);
 }
 
 function calcFare(distKm, type) {
@@ -362,7 +358,7 @@ function renderVibDemo() {
   const status = document.getElementById('vib-support-status');
   if (status) {
     status.textContent = supported
-      ? 'Vibration API detected — tap a pattern to preview it.'
+      ? 'Vibration API detected — tap a pattern to preview a test pattern or alert pattern.'
       : 'Vibration API unsupported on this device/browser.';
   }
 }
