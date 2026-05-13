@@ -46,25 +46,28 @@ const PROFANITY_PATTERNS = [
   /\bbwisit\b/i,
 ];
 
-let tagalogWarningShown = false;
+function getTTSVoiceSupportStatus(voices) {
+  const status = { fil: false, en: false };
+  if (!voices || voices.length === 0) return status;
+
+  voices.forEach(v => {
+    const voiceLang = String(v.lang || '').toLowerCase();
+    const voiceName = String(v.name || '').toLowerCase();
+
+    if (/^(tl|fil)(-|$)/.test(voiceLang) || voiceName.includes('filipino') || voiceName.includes('tagalog')) {
+      status.fil = true;
+    }
+    if (/^en(-|$)/.test(voiceLang) || voiceName.includes('english')) {
+      status.en = true;
+    }
+  });
+
+  return status;
+}
 
 function hasVoiceForLanguage(voices, lang) {
-  if (!voices || voices.length === 0) return false;
-
-  const exactTags = lang === 'fil' ? ['tl-PH', 'fil-PH'] : ['en-PH', 'en-US', 'en-GB'];
-  const prefixes = lang === 'fil' ? ['fil', 'tl'] : ['en'];
-  const searchNames = lang === 'fil' ? ['Filipino', 'Tagalog'] : ['English'];
-
-  return voices.some(v => {
-    const voiceLang = String(v.lang || '').toLowerCase();
-    const voiceName = String(v.name || '');
-
-    if (exactTags.includes(v.lang)) return true;
-    if (voiceLang && prefixes.some(prefix => voiceLang.startsWith(prefix))) return true;
-    if (lang === 'fil' && /^(fil|tl)(-|$)/i.test(v.lang || '')) return true;
-    if (lang === 'fil' && String(v.lang || '').toUpperCase().includes('PH')) return true;
-    return searchNames.some(term => voiceName.includes(term));
-  });
+  const status = getTTSVoiceSupportStatus(voices);
+  return Boolean(status[lang]);
 }
 
 function createPhraseWarningPopup(title, message) {
@@ -87,22 +90,40 @@ function createPhraseWarningPopup(title, message) {
   });
 }
 
-function showTagalogSupportWarning() {
-  if (tagalogWarningShown) return;
-  tagalogWarningShown = true;
-  createPhraseWarningPopup(
-    'Tagalog speech may not work',
-    'The Sabihin Mo screen is currently set to Filipino/Tagalog, but this browser may not support Tagalog speech playback. The app will still show Filipino text, but spoken output may fall back to English or a default voice.'
-  );
-}
-
-function showMissingTTSVoicePopup() {
+function showTTSVoiceWarning({ synthAvailable = true, fil = false, en = false } = {}) {
   if (ttsVoicePopupShown) return;
   ttsVoicePopupShown = true;
-  createPhraseWarningPopup(
-    'No TTS voice available',
-    'No Filipino or English TTS voice was detected on this device/browser. Speech playback may not work until a compatible voice is installed or enabled.'
-  );
+
+  if (!synthAvailable) {
+    createPhraseWarningPopup(
+      'Speech synthesis unavailable',
+      'This browser does not support speech synthesis. Sabihin Mo can still show text, but spoken output will not work.'
+    );
+    return;
+  }
+
+  if (!fil && !en) {
+    createPhraseWarningPopup(
+      'No TTS voices found',
+      'No Filipino or English TTS voice was detected in this browser. Speech playback will not work; rely on the displayed text instead.'
+    );
+    return;
+  }
+
+  if (!fil) {
+    createPhraseWarningPopup(
+      'Filipino voice unavailable',
+      'No Filipino/Tagalog TTS voice was detected. English speech may still work, but Filipino playback may fall back to text only.'
+    );
+    return;
+  }
+
+  if (!en) {
+    createPhraseWarningPopup(
+      'English voice unavailable',
+      'No English TTS voice was detected. Filipino speech may still work, but English playback may fall back to text only.'
+    );
+  }
 }
 
 function hasProfanity(text) {
@@ -148,9 +169,29 @@ function getPhraseTextOrder(filText, enText, lang) {
 if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => {
     cachedVoices = window.speechSynthesis.getVoices();
+    if (!ttsVoicePopupShown) checkTTSVoiceSupport();
   };
   // Initial load attempt
   cachedVoices = window.speechSynthesis.getVoices();
+}
+
+function checkTTSVoiceSupport() {
+  if (!window.speechSynthesis) {
+    showTTSVoiceWarning({ synthAvailable: false, fil: false, en: false });
+    return;
+  }
+
+  const voices = getAvailableVoices();
+  if (!voices || voices.length === 0) return;
+
+  const support = getTTSVoiceSupportStatus(voices);
+  if (!support.fil && !support.en) {
+    showTTSVoiceWarning({ synthAvailable: true, fil: false, en: false });
+  } else if (phraseLang === 'fil' && !support.fil) {
+    showTTSVoiceWarning({ synthAvailable: true, fil: false, en: support.en });
+  } else if (phraseLang === 'en' && !support.en) {
+    showTTSVoiceWarning({ synthAvailable: true, fil: support.fil, en: false });
+  }
 }
 
 function initPhrases() {
@@ -162,11 +203,7 @@ function initPhrases() {
   document.getElementById('phrases-lang-btn').textContent = getPhraseDirectionLabel(phraseLang);
   renderPhraseList();
 
-  if (phraseLang === 'fil') {
-    if (!window.speechSynthesis || !hasVoiceForLanguage(getAvailableVoices(), 'fil')) {
-      showTagalogSupportWarning();
-    }
-  }
+  checkTTSVoiceSupport();
 }
 
 function getStoredPhrases() {
@@ -352,9 +389,11 @@ function speakPhraseWithTTS(text) {
   if (selectedVoice) {
     utt.voice = selectedVoice;
   } else if (!voices || voices.length === 0) {
-    showMissingTTSVoicePopup();
+    showTTSVoiceWarning({ synthAvailable: true, fil: false, en: false });
     return;
   } else {
+    const support = getTTSVoiceSupportStatus(voices);
+    showTTSVoiceWarning({ synthAvailable: true, fil: support.fil, en: support.en });
     const languageLabel = playbackLang === 'fil' ? 'Filipino/Tagalog' : 'English';
     alert(`No ${languageLabel} voice was found. The browser will try its default voice instead.`);
   }

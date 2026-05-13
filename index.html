@@ -744,6 +744,7 @@
       <button class="topbar-menu" id="home-vib-btn" title="Vibration Settings">
         <span class="material-symbols-outlined" style="font-size:24px">vibration</span>
       </button>
+      <span id="home-tracking-badge" class="tag-mono d-none" style="margin-left:10px;color:var(--amber);font-weight:700;font-size:12px">TRACKING ACTIVE</span>
     </header>
 
     <div id="offline-banner" class="banner banner-error d-none">📵 No internet — AI Assistant disabled</div>
@@ -905,6 +906,7 @@
         <!-- Right: title + message stacked -->
         <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
           <p id="deaf-main-msg" style="font-size:26px;font-weight:900;color:#000;line-height:1.2;text-transform:uppercase;margin:0">I AM DEAF</p>
+          <p id="deaf-instruction" style="font-size:13px;font-weight:700;color:#555;line-height:1.5;margin:0">Please tap my shoulder to get my attention.</p>
           <div style="height:2px;background:#eee;border-radius:2px;"></div>
           <p style="font-size:13px;font-weight:700;color:#555;line-height:1.5;margin:0">"Bingi ako. Hindi ako makarinig."</p>
         </div>
@@ -1169,6 +1171,16 @@
       <div id="gps-dropdown" class="stop-dropdown d-none"></div>
       <div id="gps-map-container" style="position:relative">
         <div id="leaflet-map"></div>
+        <div id="gps-location-info" class="gps-location-info d-none">
+          <div class="gps-location-info-title">Your location</div>
+          <div id="gps-location-coords">--</div>
+          <div id="gps-location-desc">--</div>
+        </div>
+        <div id="gps-map-legend" class="gps-map-legend d-none">
+          <div class="gps-map-legend-title">Map legend</div>
+          <div class="gps-map-legend-item"><span class="gps-map-legend-dot" style="background:#feb700"></span> Selected stop</div>
+          <div class="gps-map-legend-item"><span class="gps-map-legend-dot" style="background:#34d399"></span> OSM search result</div>
+        </div>
         <button id="gps-expand-btn-map" class="gps-map-btn" type="button" onclick="toggleMapExpand()" title="Expand map" style="position:absolute;right:16px;bottom:16px;z-index:10">
           <span class="material-symbols-outlined" style="font-size:22px">fullscreen</span>
         </button>

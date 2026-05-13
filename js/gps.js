@@ -1145,32 +1145,37 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
 });
 
 // Help modal for "How to set stop"
-document.getElementById('gps-help-btn').addEventListener('click', () => {
-  const modal = document.createElement('div');
-  modal.className = 'help-modal-overlay';
-  modal.innerHTML = `
-    <div class="help-modal">
-      <div class="help-modal-title">📍 How to Set Your Stop</div>
-      <div class="help-modal-section">
-        <div class="help-modal-step"><strong>1. Search:</strong> Type a stop name or route code in the search box.</div>
-        <div class="help-modal-step"><strong>2. Preview:</strong> All matching stops appear as dashed markers on the map.</div>
-        <div class="help-modal-step"><strong>3. Select:</strong> Tap a marker or result to see a preview card with distance.</div>
-        <div class="help-modal-step"><strong>4. Confirm:</strong> Tap "CONFIRM" to set it as your destination.</div>
-        <div class="help-modal-step"><strong>5. Alert:</strong> Tap "SET ALERT" to start GPS tracking to your stop.</div>
-      </div>
-      <div class="help-modal-section">
-        <strong style="color:var(--amber);font-size:12px;text-transform:uppercase">Vibration Alerts:</strong>
-        <div class="help-modal-step">🟡 250m away: Soft pulse</div>
-        <div class="help-modal-step">🟠 200m away: Medium vibration</div>
-        <div class="help-modal-step">🔴 ≤150m: Strong vibration + arrival screen</div>
-      </div>
-      <button onclick="this.closest('.help-modal-overlay').remove()" style="width:100%;height:48px;background:var(--amber);color:#271900;border:none;border-radius:8px;font-weight:700;margin-top:12px;cursor:pointer">CLOSE</button>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) modal.remove();
-  });
+['gps-help-btn','gps-selected-help-btn'].forEach(id => {
+  const btn = document.getElementById(id);
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const modal = document.createElement('div');
+      modal.className = 'help-modal-overlay';
+      modal.innerHTML = `
+        <div class="help-modal">
+          <div class="help-modal-title">📍 How to Set Your Stop</div>
+          <div class="help-modal-section">
+            <div class="help-modal-step"><strong>1. Search:</strong> Type a stop name or route code in the search box.</div>
+            <div class="help-modal-step"><strong>2. Preview:</strong> All matching stops appear as dashed markers on the map.</div>
+            <div class="help-modal-step"><strong>3. Select:</strong> Tap a marker or result to see a preview card with distance.</div>
+            <div class="help-modal-step"><strong>4. Confirm:</strong> Tap "CONFIRM" to set it as your destination.</div>
+            <div class="help-modal-step"><strong>5. Alert:</strong> Tap "SET ALERT" to start GPS tracking to your stop.</div>
+          </div>
+          <div class="help-modal-section">
+            <strong style="color:var(--amber);font-size:12px;text-transform:uppercase">Vibration Alerts:</strong>
+            <div class="help-modal-step">🟡 250m away: Soft pulse</div>
+            <div class="help-modal-step">🟠 200m away: Medium vibration</div>
+            <div class="help-modal-step">🔴 ≤150m: Strong vibration + arrival screen</div>
+          </div>
+          <button onclick="this.closest('.help-modal-overlay').remove()" style="width:100%;height:48px;background:var(--amber);color:#271900;border:none;border-radius:8px;font-weight:700;margin-top:12px;cursor:pointer">CLOSE</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+      });
+    });
+  }
 });
 
 // Destination Guide button - provides safe arrival guidance

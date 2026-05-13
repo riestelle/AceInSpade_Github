@@ -115,9 +115,7 @@ function getAppLanguageLabel(lang = appLang) {
 function applyAppLanguage(lang) {
   appLang = validateStorageValue('app_lang', lang, VALID_APP_LANGS, 'fil');
   saveStorage('app_lang', appLang);
-
-  const btn = document.getElementById('app-lang-btn');
-  if (btn) btn.textContent = getAppLanguageLabel(appLang);
+  renderAppLanguageOptions();
 
   if (currentScreen === 'ai' && typeof renderAIStatus === 'function') {
     renderAIStatus();
@@ -437,8 +435,7 @@ document.getElementById('alert-dismiss').addEventListener('click', () => {
 
 function initVib() {
   appLang = validateStorageValue('app_lang', loadStorage('app_lang', 'fil'), VALID_APP_LANGS, 'fil');
-  const appLangBtn = document.getElementById('app-lang-btn');
-  if (appLangBtn) appLangBtn.textContent = getAppLanguageLabel(appLang);
+  renderAppLanguageOptions();
 
   vibIntensity = validateStorageValue('vib_intensity', loadStorage('vib_intensity', 'medium'), VALID_VIB_INTENSITIES, 'medium');
   vibTiming    = validateStorageValue('vib_timing', loadStorage('vib_timing', 'normal'), VALID_VIB_TIMINGS, 'normal');
