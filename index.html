@@ -575,8 +575,11 @@
         <span id="pf-lang" class="tag-mono" style="color:#666">FIL/EN</span>
         <button id="pf-lang-toggle" style="background:none;border:2px solid #333;color:#ccc;padding:6px 14px;border-radius:8px;font-weight:700;font-size:12px;text-transform:uppercase">FIL ↔ EN</button>
       </div>
-      <p id="pf-main" style="font-size:56px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;text-align:center;line-height:1.1;color:white;word-break:break-word"></p>
-      <p id="pf-sub" style="font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-top:12px;color:#888"></p>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center">
+        <span id="pf-icon" style="font-size:96px;line-height:1"></span>
+        <p id="pf-main" style="font-size:56px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;text-align:center;line-height:1.1;color:white;word-break:break-word"></p>
+        <p id="pf-sub" style="font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#888"></p>
+      </div>
       <div style="position:absolute;bottom:24px;left:0;right:0;display:flex;justify-content:center">
         <button id="pf-close" style="width:64px;height:64px;border-radius:50%;background:#111;border:3px solid #333;color:white;display:flex;align-items:center;justify-content:center">
           <span class="material-symbols-outlined" style="font-size:28px">close</span>
@@ -940,11 +943,11 @@ const STOPS_DB = [
 ];
 
 const DEFAULT_PHRASES = [
-  { id:"bayad",     fil:"Bayad po",                    en:"Pass the fare",          type:"normal"    },
-  { id:"para",      fil:"Para po — bababa na ako",     en:"Stop here — I'm getting off", type:"normal" },
-  { id:"emergency", fil:"May emergency! Tumawag ng tulong!", en:"Emergency! Call for help!", type:"emergency" },
-  { id:"tama",      fil:"Tama bang jeep ito papunta sa...", en:"Is this jeep going to...", type:"normal" },
-  { id:"sukli",     fil:"Sukli ko po",                 en:"My change, please",      type:"normal"    },
+  { id:"bayad",     icon:"💰", fil:"Bayad po",                    en:"Pass the fare",          type:"normal"    },
+  { id:"para",      icon:"✋", fil:"Para po — bababa na ako",     en:"Stop here — I'm getting off", type:"normal" },
+  { id:"emergency", icon:"🚨", fil:"May emergency! Tumawag ng tulong!", en:"Emergency! Call for help!", type:"emergency" },
+  { id:"tama",      icon:"🚌", fil:"Tama bang jeep ito papunta sa...", en:"Is this jeep going to...", type:"normal" },
+  { id:"sukli",     icon:"💵", fil:"Sukli ko po",                 en:"My change, please",      type:"normal"    },
 ];
 
 const BILL_DENOMINATIONS = [20, 50, 100, 200, 500, 1000];
@@ -1221,9 +1224,12 @@ function renderPhraseList() {
     btn.className = 'phrase-row' + (p.type === 'emergency' ? ' emergency' : '');
     btn.style.cssText = `width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:transparent;border:none;border-bottom:1px solid var(--outline-var);text-align:left;cursor:pointer`;
     btn.innerHTML = `
-      <div>
-        <div style="font-size:18px;font-weight:800;${p.type==='emergency'?'color:#ff6b6b':'color:var(--text)'}">${filText}</div>
-        <div style="font-size:13px;color:var(--text-muted);margin-top:2px">${enText}</div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:36px;line-height:1;flex-shrink:0">${p.icon || '💬'}</span>
+        <div>
+          <div style="font-size:18px;font-weight:800;${p.type==='emergency'?'color:#ff6b6b':'color:var(--text)'}">${filText}</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:2px">${enText}</div>
+        </div>
       </div>
       <span class="material-symbols-outlined" style="font-size:22px;color:var(--outline-var)">chevron_right</span>`;
     btn.addEventListener('click', () => openPhraseFullscreen(p, filText, enText));
@@ -1257,6 +1263,7 @@ function openPhraseFullscreen(phrase, filText, enText) {
 function renderPhraseFullscreen() {
   const main = pfActiveLang === 'fil' ? pfPhrase.filText : pfPhrase.enText;
   const sub  = pfActiveLang === 'fil' ? pfPhrase.enText  : pfPhrase.filText;
+  document.getElementById('pf-icon').textContent = pfPhrase.icon || '💬';
   document.getElementById('pf-main').textContent = main;
   document.getElementById('pf-sub').textContent  = sub;
   document.getElementById('pf-lang').textContent = pfActiveLang === 'fil' ? 'FIL' : 'EN';
