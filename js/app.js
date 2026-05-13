@@ -33,6 +33,24 @@ const VIBRATION_TEST_PATTERNS = {
   stop:   0,
 };
 
+const ALERT_PATTERNS = {
+  soft: {
+    approach: [80, 60, 80],
+    near:     [120, 60, 120, 60, 120],
+    signal:   [150, 75, 150, 75, 150],
+  },
+  medium: {
+    approach: [150, 60, 150],
+    near:     [200, 75, 200, 75, 200],
+    signal:   [300, 75, 300, 75, 300],
+  },
+  strong: {
+    approach: [250, 60, 250],
+    near:     [350, 75, 350, 75, 350],
+    signal:   [500, 100, 500, 100, 500],
+  },
+};
+
 function getVibrationFunction() {
   if (typeof navigator.vibrate === 'function') {
     return function(...args) { return navigator.vibrate.apply(navigator, args); };
@@ -51,8 +69,16 @@ function vibrate(patternOrKey) {
   const timescale  = vibTiming    === 'fast' ? 0.6 : vibTiming    === 'slow'   ? 1.5 : 1.0;
 
   if (typeof patternOrKey === 'string') {
-    const pat = ALERT_PATTERNS[vibIntensity]?.[patternOrKey];
-    if (pat) vibrateFn(pat.map(v => Math.round(v * scale * timescale)));
+    // Try intensity-specific pattern first, fall back to test patterns
+    const pat = ALERT_PATTERNS[vibIntensity]?.[patternOrKey]
+             || VIBRATION_TEST_PATTERNS[patternOrKey];
+    if (pat !== undefined) {
+      if (Array.isArray(pat)) {
+        vibrateFn(pat.map(v => Math.round(v * scale * timescale)));
+      } else if (pat) {
+        vibrateFn(Math.round(pat * scale * timescale));
+      }
+    }
   } else if (Array.isArray(patternOrKey)) {
     vibrateFn(patternOrKey.map(v => Math.round(v * scale * timescale)));
   } else {
