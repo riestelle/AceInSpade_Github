@@ -5,6 +5,53 @@ let pfActiveLang    = 'fil';
 let pfPhrase        = null;
 let cachedVoices    = [];
 
+const PROFANITY_PATTERNS = [
+  /\bfuck(?:ing|er|ers|ed|s)?\b/i,
+  /\bshit(?:ty|head|heads|hole|holes)?\b/i,
+  /\bbastard(?:s)?\b/i,
+  /\bbitch(?:es|y)?\b/i,
+  /\bass(?:hole|holes)?\b/i,
+  /\bdick(?:s|head|heads)?\b/i,
+  /\bcunt(?:s)?\b/i,
+  /\bpiss(?:ed|ing|es|er|ers)?\b/i,
+  /\bdamn(?:ed|ing)?\b/i,
+  /\bputang\s*ina(?:\s*mo)?\b/i,
+  /\bputangina(?:\s*mo)?\b/i,
+  /\btang\s*ina(?:\s*mo)?\b/i,
+  /\btangina(?:\s*mo)?\b/i,
+  /\bgago(?:ng)?\b/i,
+  /\bpunyeta\b/i,
+  /\bulol\b/i,
+  /\btarantado\b/i,
+  /\bbwisit\b/i,
+];
+
+function hasProfanity(text) {
+  if (!text) return false;
+  const normalized = String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return PROFANITY_PATTERNS.some(pattern => pattern.test(normalized));
+}
+
+function isBlockedPhrase(filText, enText) {
+  return hasProfanity(filText) || hasProfanity(enText);
+}
+
+function sanitizeProfanity(text) {
+  if (!text) return '';
+  let sanitized = String(text);
+
+  PROFANITY_PATTERNS.forEach(pattern => {
+    sanitized = sanitized.replace(pattern, '');
+  });
+
+  return sanitized.replace(/\s{2,}/g, ' ').trim();
+}
+
 function getPhraseDirectionLabel(lang) {
   return lang === 'fil' ? 'FIL → EN' : 'EN → FIL';
 }
@@ -55,20 +102,31 @@ function renderPhraseList() {
     }
 
     const phraseText = getPhraseTextOrder(filText, enText, phraseLang);
+    const blocked = isBlockedPhrase(filText, enText);
 
     const btn = document.createElement('button');
     btn.className = 'phrase-row' + (p.type === 'emergency' ? ' emergency' : '');
     btn.style.cssText = `width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:transparent;border:none;border-bottom:1px solid var(--outline-var);text-align:left;cursor:pointer`;
+    if (blocked) {
+      btn.style.opacity = '0.65';
+      btn.style.cursor = 'not-allowed';
+    }
     btn.innerHTML = `
       <div style="display:flex;align-items:center;gap:14px">
         <span style="font-size:36px;line-height:1;flex-shrink:0">${p.icon || '💬'}</span>
         <div>
-          <div style="font-size:18px;font-weight:800;${p.type==='emergency'?'color:#ff6b6b':'color:var(--text)'}">${phraseText.mainText}</div>
-          <div style="font-size:13px;color:var(--text-muted);margin-top:2px">${phraseText.subText}</div>
+          <div style="font-size:18px;font-weight:800;${p.type==='emergency'?'color:#ff6b6b':'color:var(--text)'}">${blocked ? 'BLOCKED PHRASE' : phraseText.mainText}</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:2px">${blocked ? 'Contains prohibited words' : phraseText.subText}</div>
         </div>
       </div>
       <span class="material-symbols-outlined" style="font-size:22px;color:var(--outline-var)">chevron_right</span>`;
-    btn.addEventListener('click', () => openPhraseFullscreen(p, filText, enText));
+    btn.addEventListener('click', () => {
+      if (blocked) {
+        alert('This phrase contains prohibited words and cannot be used.');
+        return;
+      }
+      openPhraseFullscreen(p, filText, enText);
+    });
 
     if (!DEFAULT_PHRASES.find(d => d.id === p.id)) {
       btn.addEventListener('contextmenu', e => {
@@ -86,6 +144,10 @@ function renderPhraseList() {
 }
 
 function openPhraseFullscreen(phrase, filText, enText) {
+  if (isBlockedPhrase(filText, enText)) {
+    alert('This phrase contains prohibited words and cannot be used.');
+    return;
+  }
   pfPhrase = { ...phrase, filText, enText };
   pfActiveLang = phraseLang;
   const fs = document.getElementById('phrase-fullscreen');
@@ -130,6 +192,11 @@ function speakPhrase() {
   if (!window.speechSynthesis) return;
 
   const text = getPhrasePlaybackText();
+  if (hasProfanity(text)) {
+    window.speechSynthesis.cancel();
+    alert('This phrase contains prohibited words and cannot be spoken.');
+    return;
+  }
   speakPhraseWithTTS(text);
 }
 
@@ -199,18 +266,37 @@ const addBtn     = document.getElementById('add-phrase-btn');
 const addForm    = document.getElementById('add-phrase-form');
 const saveNewBtn = document.getElementById('save-phrase-btn');
 const cancelBtn  = document.getElementById('cancel-phrase-btn');
+const newPhraseFilInput = document.getElementById('new-phrase-fil');
+const newPhraseEnInput  = document.getElementById('new-phrase-en');
+
+function enforcePhraseInputRules(inputEl) {
+  if (!inputEl) return;
+  const cleaned = sanitizeProfanity(inputEl.value);
+  if (cleaned !== inputEl.value) {
+    inputEl.value = cleaned;
+  }
+}
+
+newPhraseFilInput.addEventListener('input', () => enforcePhraseInputRules(newPhraseFilInput));
+newPhraseEnInput.addEventListener('input', () => enforcePhraseInputRules(newPhraseEnInput));
+newPhraseFilInput.addEventListener('paste', () => setTimeout(() => enforcePhraseInputRules(newPhraseFilInput), 0));
+newPhraseEnInput.addEventListener('paste', () => setTimeout(() => enforcePhraseInputRules(newPhraseEnInput), 0));
 
 addBtn.addEventListener('click', () => {
   addForm.classList.remove('d-none');
   addBtn.classList.add('d-none');
-  document.getElementById('new-phrase-fil').value = '';
-  document.getElementById('new-phrase-en').value  = '';
+  newPhraseFilInput.value = '';
+  newPhraseEnInput.value  = '';
 });
 cancelBtn.addEventListener('click', () => { addForm.classList.add('d-none'); addBtn.classList.remove('d-none'); });
 saveNewBtn.addEventListener('click', () => {
-  const fil = document.getElementById('new-phrase-fil').value.trim();
-  const en  = document.getElementById('new-phrase-en').value.trim();
+  const fil = sanitizeProfanity(newPhraseFilInput.value).trim();
+  const en  = sanitizeProfanity(newPhraseEnInput.value).trim();
   if (!fil) return;
+  if (hasProfanity(fil) || hasProfanity(en)) {
+    alert('Please remove prohibited words before saving this phrase.');
+    return;
+  }
   const all = getStoredPhrases();
   all.push({ id:'custom-' + Date.now(), fil, en, type:'normal' });
   saveStorage('custom_phrases', all);
