@@ -90,7 +90,9 @@ function startFamilyGpsStream() {
     },
     err => {
       console.warn('Initial GPS position error:', err);
-      pushFamilyStatus({ status: 'riding', lat: null, lon: null, ts: Date.now(), stop: savedStop }, true);
+      // Don't push riding+null — watcher will get stuck in GPS placeholder forever
+      // Push offline instead so watcher knows signal failed
+      pushFamilyStatus({ status: 'offline', ts: Date.now() }, true);
     },
     { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
   );
@@ -460,7 +462,15 @@ function renderWatcherPage(watchId) {
         showWatcherMap(data.lat, data.lon, data.stop);
       } else {
         if (mapWrap) mapWrap.style.display = 'none';
-        if (placeholder) placeholder.style.display = 'flex';
+        if (placeholder) {
+          placeholder.style.display = 'flex';
+          const placeholderLabel = placeholder.querySelector('span:last-child');
+          if (placeholderLabel) {
+            placeholderLabel.textContent = ago !== null && ago > 30
+              ? 'GPS signal mahina, hinihintay...'
+              : 'Hinihintay ang GPS signal...';
+          }
+        }
       }
 
     } else if (data.status === 'offline' || isStale) {
