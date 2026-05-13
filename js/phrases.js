@@ -3,13 +3,7 @@
 let phraseLang      = 'fil';
 let pfActiveLang    = 'fil';
 let pfPhrase        = null;
-let pfAudioPlaying  = false;
-let pfAudioElement  = null;
 let cachedVoices    = [];
-
-// Audio file support: set to true when audio files are available
-const AUDIO_ENABLED = false;
-const AUDIO_BASE_URL = '/audio'; // e.g., /audio/greeting-fil.mp3
 
 // Preload voices when they become available
 if (window.speechSynthesis) {
@@ -102,11 +96,6 @@ document.getElementById('pf-lang-toggle').addEventListener('click', () => {
 
 document.getElementById('pf-close').addEventListener('click', () => {
   window.speechSynthesis && window.speechSynthesis.cancel();
-  if (pfAudioElement) {
-    pfAudioElement.pause();
-    pfAudioElement.currentTime = 0;
-    pfAudioPlaying = false;
-  }
   document.getElementById('phrase-fullscreen').classList.add('d-none');
   vibrate(30);
 });
@@ -120,51 +109,10 @@ function getPhrasePlaybackText() {
 }
 
 function speakPhrase() {
-  if (!window.speechSynthesis && !AUDIO_ENABLED) return;
+  if (!window.speechSynthesis) return;
 
   const text = getPhrasePlaybackText();
-
-  // Attempt audio first if enabled
-  if (AUDIO_ENABLED && pfPhrase.id) {
-    playPhraseAudio();
-    return;
-  }
-
-  // Fallback to TTS
   speakPhraseWithTTS(text);
-}
-
-function playPhraseAudio() {
-  const playbackLang = getPhrasePlaybackLang();
-  const audioFile = `${AUDIO_BASE_URL}/${pfPhrase.id}-${playbackLang}.mp3`;
-
-  if (pfAudioElement) {
-    pfAudioElement.pause();
-    pfAudioElement.currentTime = 0;
-  }
-
-  if (!pfAudioElement) {
-    pfAudioElement = new Audio();
-    pfAudioElement.addEventListener('ended', () => {
-      pfAudioPlaying = false;
-      updatePhrasePlayButton();
-    });
-    pfAudioElement.addEventListener('error', (err) => {
-      console.warn(`Audio failed for ${audioFile}:`, err.message);
-      speakPhraseWithTTS(getPhrasePlaybackText());
-    });
-  }
-
-  pfAudioElement.src = audioFile;
-  pfAudioPlaying = true;
-  updatePhrasePlayButton();
-
-  pfAudioElement.play().catch(err => {
-    console.warn('Audio playback failed:', err.message);
-    speakPhraseWithTTS(getPhrasePlaybackText());
-  });
-
-  vibrate(30);
 }
 
 function speakPhraseWithTTS(text) {
@@ -218,16 +166,6 @@ function speakPhraseWithTTS(text) {
 
   window.speechSynthesis.speak(utt);
   vibrate(30);
-}
-
-function updatePhrasePlayButton() {
-  const btn = document.getElementById('pf-speak');
-  if (!btn) return;
-  if (pfAudioPlaying) {
-    btn.style.opacity = '0.5';
-  } else {
-    btn.style.opacity = '1';
-  }
 }
 
 document.getElementById('pf-speak').addEventListener('click', speakPhrase);
