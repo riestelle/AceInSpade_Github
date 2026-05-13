@@ -202,6 +202,9 @@
       transition: transform .1s; position: relative; overflow: hidden;
     }
     .home-card.span-2 { grid-column: span 2; flex-direction: row; align-items: center; min-height: 96px; padding: 20px 24px; gap: 16px; }
+    .home-card.span-2.accent { min-height: 140px; padding: 24px 28px; }
+    .home-card.span-2.accent .home-card-label { font-size: 26px; letter-spacing: -.02em; }
+    .home-card.span-2.accent .home-card-sub { font-size: 14px; opacity: .85; margin-top: 4px; }
     .home-card.accent { background: var(--amber); border: none; color: #271900; }
     .home-card.dashed { background: var(--bg-alt); border: 2px dashed var(--amber); }
     .home-card:disabled { opacity: .45; cursor: not-allowed; }
@@ -292,6 +295,16 @@
       .windshield-text { font-size: 28px; }
       .topbar-title { font-size: 16px; }
       #leaflet-map { height: 160px; }
+      /* Fix Jeepney Type + PWD overlap */
+      .fare-type-pwd-row { flex-direction: column !important; }
+      .fare-type-pwd-row > .col-6 { width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important; }
+      .btn-type { font-size: 11px; }
+      .topbar { padding: 0 12px; }
+      #screen-fare main { padding: 16px 14px !important; }
+    }
+    @media (max-width: 400px) {
+      .fare-type-pwd-row > .col-6 { width: 50% !important; }
+      .btn-type { font-size: 11px; height: 44px; }
     }
 
     /* ── FSL SCREEN ───────────────────────────────────────────────── */
@@ -396,7 +409,7 @@
           <div class="home-card-label">I Am Deaf</div>
           <div class="home-card-sub">"Bingi ako. Hindi ako makarinig."</div>
         </div>
-        <span class="material-symbols-outlined" style="font-size:48px;color:#412d00">front_hand</span>
+        <span class="material-symbols-outlined" style="font-size:64px;color:#412d00">front_hand</span>
       </button>
 
       <button class="home-card" data-nav="phrases">
@@ -630,7 +643,7 @@
           <select id="fare-to" class="select-sp" style="font-size:13px;padding:14px 12px"></select>
         </div>
       </div>
-      <div class="row g-3 mb-4">
+      <div class="row g-3 mb-4 fare-type-pwd-row">
         <div class="col-6">
           <label class="label-sp">Jeepney Type</label>
           <div class="d-flex gap-2">
@@ -675,7 +688,6 @@
 
       <div id="use-in-sabihin-btn-wrap" class="d-none mb-4">
         <button class="btn-outline-amber w-100" style="height:56px" id="use-in-sabihin-btn">
-          <span class="material-symbols-outlined" style="font-size:20px">chat_bubble</span>
           <span id="use-sabihin-label">Use fare in Sabihin Mo →</span>
         </button>
       </div>
@@ -1366,7 +1378,7 @@ function renderFare() {
   const billBtns    = document.getElementById('bill-buttons');
   if (validTrip) {
     billSection.classList.remove('d-none');
-    billBtns.innerHTML = BILL_DENOMINATIONS.filter(b => b >= fare).map(b =>
+    billBtns.innerHTML = BILL_DENOMINATIONS.map(b =>
       `<button class="btn-bill${fareBill===b?' active':''}" onclick="selectBill(${b})">₱${b}</button>`
     ).join('');
   } else {
