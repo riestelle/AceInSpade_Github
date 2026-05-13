@@ -1,0 +1,191 @@
+[
+  {
+    "id": "cubao-gateway",
+    "name": "CUBAO EXPO / GATEWAY",
+    "routeId": "cubao-vito-cruz",
+    "lat": 14.6197,
+    "lon": 121.0532
+  },
+  {
+    "id": "edsa-aurora",
+    "name": "EDSA COR AURORA BLVD",
+    "routeId": "cubao-vito-cruz",
+    "lat": 14.6086,
+    "lon": 121.0218
+  },
+  {
+    "id": "sta-mesa-sm",
+    "name": "STA. MESA / SM CENTERPOINT",
+    "routeId": "cubao-vito-cruz",
+    "lat": 14.6017,
+    "lon": 121.0082
+  },
+  {
+    "id": "quiapo-church-1",
+    "name": "QUIAPO CHURCH",
+    "routeId": "cubao-vito-cruz",
+    "lat": 14.5993,
+    "lon": 120.9836
+  },
+  {
+    "id": "vito-cruz-dlsu",
+    "name": "VITO CRUZ / DLSU",
+    "routeId": "cubao-vito-cruz",
+    "lat": 14.5648,
+    "lon": 120.9932
+  },
+  {
+    "id": "sm-fairview",
+    "name": "SM FAIRVIEW",
+    "routeId": "fairview-quiapo",
+    "lat": 14.7417,
+    "lon": 121.0560
+  },
+  {
+    "id": "commonwealth-ave",
+    "name": "COMMONWEALTH AVE",
+    "routeId": "fairview-quiapo",
+    "lat": 14.7100,
+    "lon": 121.0530
+  },
+  {
+    "id": "philcoa-up",
+    "name": "PHILCOA / UP DILIMAN",
+    "routeId": "fairview-quiapo",
+    "lat": 14.6532,
+    "lon": 121.0437
+  },
+  {
+    "id": "espana-blvd",
+    "name": "ESPANA BLVD",
+    "routeId": "fairview-quiapo",
+    "lat": 14.6098,
+    "lon": 120.9939
+  },
+  {
+    "id": "quiapo-church-2",
+    "name": "QUIAPO CHURCH",
+    "routeId": "fairview-quiapo",
+    "lat": 14.5993,
+    "lon": 120.9836
+  },
+  {
+    "id": "pitx-terminal",
+    "name": "PITX TERMINAL 1",
+    "routeId": "pitx-baclaran",
+    "lat": 14.4868,
+    "lon": 120.9820
+  },
+  {
+    "id": "coastal-moa",
+    "name": "COASTAL ROAD / MALL OF ASIA",
+    "routeId": "pitx-baclaran",
+    "lat": 14.5354,
+    "lon": 120.9822
+  },
+  {
+    "id": "edsa-libertad",
+    "name": "EDSA COR LIBERTAD",
+    "routeId": "pitx-baclaran",
+    "lat": 14.5469,
+    "lon": 121.0003
+  },
+  {
+    "id": "baclaran-church",
+    "name": "BACLARAN CHURCH",
+    "routeId": "pitx-baclaran",
+    "lat": 14.5284,
+    "lon": 120.9982
+  },
+  {
+    "id": "divisoria-market",
+    "name": "DIVISORIA MARKET",
+    "routeId": "divisoria-malabon",
+    "lat": 14.5983,
+    "lon": 120.9666
+  },
+  {
+    "id": "tondo-smokey",
+    "name": "TONDO / SMOKEY MOUNTAIN",
+    "routeId": "divisoria-malabon",
+    "lat": 14.6175,
+    "lon": 120.9637
+  },
+  {
+    "id": "navotas-fishport",
+    "name": "NAVOTAS FISH PORT",
+    "routeId": "divisoria-malabon",
+    "lat": 14.6580,
+    "lon": 120.9440
+  },
+  {
+    "id": "malabon-palengke",
+    "name": "MALABON PALENGKE",
+    "routeId": "divisoria-malabon",
+    "lat": 14.6682,
+    "lon": 120.9576
+  },
+  {
+    "id": "novaliches-terminal",
+    "name": "NOVALICHES TERMINAL",
+    "routeId": "novaliches-quiapo",
+    "lat": 14.7571,
+    "lon": 121.0388
+  },
+  {
+    "id": "caloocan-cityhall",
+    "name": "CALOOCAN CITY HALL",
+    "routeId": "novaliches-quiapo",
+    "lat": 14.6530,
+    "lon": 120.9672
+  },
+  {
+    "id": "avenida-recto",
+    "name": "AVENIDA / RECTO",
+    "routeId": "novaliches-quiapo",
+    "lat": 14.6026,
+    "lon": 120.9826
+  },
+  {
+    "id": "quiapo-church-3",
+    "name": "QUIAPO CHURCH",
+    "routeId": "novaliches-quiapo",
+    "lat": 14.5993,
+    "lon": 120.9836
+  },
+  {
+    "id": "alabang-terminal",
+    "name": "ALABANG TERMINAL",
+    "routeId": "alabang-lawton",
+    "lat": 14.4249,
+    "lon": 121.0399
+  },
+  {
+    "id": "filinvest-ayala",
+    "name": "FILINVEST / AYALA ALABANG",
+    "routeId": "alabang-lawton",
+    "lat": 14.4200,
+    "lon": 121.0261
+  },
+  {
+    "id": "sucat-interchange",
+    "name": "SUCAT INTERCHANGE",
+    "routeId": "alabang-lawton",
+    "lat": 14.4591,
+    "lon": 121.0320
+  },
+  {
+    "id": "paco-market",
+    "name": "PACO MARKET",
+    "routeId": "alabang-lawton",
+    "lat": 14.5674,
+    "lon": 120.9896
+  },
+  {
+    "id": "lawton-cityhall",
+    "name": "LAWTON / MANILA CITY HALL",
+    "routeId": "alabang-lawton",
+    "lat": 14.5901,
+    "lon": 120.9790
+  }
+]
