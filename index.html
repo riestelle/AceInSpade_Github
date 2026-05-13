@@ -1227,6 +1227,13 @@
     { src: 'js/app.js', guard: () => typeof navigate === 'undefined' },
   ];
 
+  const hasAppScript = !!document.querySelector('script[src="js/app.js"]');
+  if (hasAppScript) return;
+
+  const existingScriptSrcs = new Set(
+    Array.from(document.querySelectorAll('script[src]')).map(s => s.getAttribute('src'))
+  );
+
   const loadScript = (src) => fetch(src)
     .then(res => res.ok ? res.text() : Promise.reject(new Error('Failed to fetch ' + src)))
     .then(code => {
@@ -1240,6 +1247,7 @@
 
   scriptFallbacks.reduce((promise, item) => {
     return promise.then(() => {
+      if (existingScriptSrcs.has(item.src)) return Promise.resolve();
       return item.guard() ? loadScript(item.src) : Promise.resolve();
     });
   }, Promise.resolve());
