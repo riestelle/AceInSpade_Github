@@ -307,6 +307,12 @@ function renderWatcherPage(watchId) {
 
   document.body.appendChild(overlay);
 
+  // Request notification permission early — before arrival fires, so the
+  // browser prompt doesn't get blocked at the exact moment the rider arrives
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
   let watcherMap = null;
   let watcherMarker = null;
   let notifiedArrival = false;
