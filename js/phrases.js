@@ -12,11 +12,11 @@ const TTS_VIBRATION_REPEAT_MS = 120;
 
 /* ── PHRASE ICON IMAGES (keyed by phrase id) ───────────────────── */
 const PHRASE_ICON_URLS = {
-  'bayad':     'https://cdn-icons-png.flaticon.com/128/5290/5290777.png',
-  'para':      'https://cdn-icons-png.flaticon.com/128/9125/9125142.png',
-  'emergency': 'https://cdn-icons-png.flaticon.com/128/2014/2014825.png',
-  'tama':      'https://cdn-icons-png.flaticon.com/128/2021/2021551.png',
-  'sukli':     'https://cdn-icons-png.flaticon.com/128/17763/17763038.png',
+  'bayad':     'https://cdn-icons-png.flaticon.com/128/6704/6704159.png',
+  'para':      'https://cdn-icons-png.flaticon.com/128/9125/9125158.png',
+  'emergency': 'https://cdn-icons-png.flaticon.com/128/1878/1878545.png',
+  'tama':      'https://cdn-icons-png.flaticon.com/128/3070/3070409.png',
+  'sukli':     'https://cdn-icons-png.flaticon.com/128/3194/3194670.png',
 };
 
 const PROFANITY_PATTERNS = [
@@ -246,7 +246,7 @@ function renderPhraseList() {
 
     /* ── icon: big image if available, else emoji ── */
     const iconHtml = iconUrl
-      ? `<img src="${iconUrl}" alt="" style="width:56px;height:56px;object-fit:contain;flex-shrink:0;border-radius:10px;" />`
+      ? `<img src="${iconUrl}" alt="" style="width:56px;height:56px;object-fit:contain;flex-shrink:0;border-radius:10px;filter:brightness(0) invert(1);" />`
       : `<span style="font-size:48px;line-height:1;flex-shrink:0">${p.icon || '💬'}</span>`;
 
     const btn = document.createElement('button');
@@ -260,7 +260,7 @@ function renderPhraseList() {
       <div style="display:flex;align-items:center;gap:16px;flex:1;min-width:0">
         ${iconHtml}
         <div style="flex:1;min-width:0">
-          <div style="font-size:18px;font-weight:800;${p.type === 'emergency' ? 'color:#ff6b6b' : 'color:var(--text)'};line-height:1.2">${blocked ? 'BLOCKED PHRASE' : phraseText.mainText}</div>
+          <div style="font-size:18px;font-weight:800;${p.type === 'emergency' ? 'color:#ff6b6b' : 'color:#ffffff'};line-height:1.2">${blocked ? 'BLOCKED PHRASE' : phraseText.mainText}</div>
           <div style="font-size:13px;color:var(--text-muted);margin-top:3px">${blocked ? 'Contains prohibited words' : phraseText.subText}</div>
         </div>
       </div>
