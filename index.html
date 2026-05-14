@@ -141,6 +141,7 @@
       width: 100%;
       max-width: 480px;
       height: 100%;
+      height: 100dvh;
       background: var(--bg);
       position: relative;
       overflow: hidden;
@@ -232,6 +233,21 @@
     }
     .btn-primary-sp:disabled { background: var(--outline-var); color: var(--text-muted); cursor: not-allowed; }
     .btn-primary-sp:active:not(:disabled) { transform: scale(.96); opacity: .9; }
+
+    .gps-home-cta-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 0 0 rgba(52,211,153,0.7);
+      animation: gps-home-pulse 1.6s infinite ease-out;
+      flex-shrink: 0;
+    }
+    @keyframes gps-home-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(52,211,153,0); }
+      100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+    }
 
     .btn-ghost {
       height: 56px; border-radius: 12px;
@@ -416,55 +432,108 @@
       line-height: 1.4;
     }
 
-    /* SABIHIN MO — 30% narrow tall card*/
+    /* SABIHIN MO — companion card */
     .card-sabihin {
-      border-radius: 24px;
-      padding: 20px 10px;
-      background: var(--surface-hi);
-      border: 1.5px solid var(--outline);
+      border-radius: 20px;
+      padding: 14px 10px;
+      background: var(--surface);
+      border: 1px solid var(--outline-var);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 30%; 
-      min-height: 200px; 
+      gap: 8px;
       box-shadow: none;
-    }
-    .card-sabihin-icon img {
-      height: 60px;
-      width: auto;
-      margin-bottom: 10px;
-      filter: brightness(0) saturate(100%) invert(73%) sepia(93%) saturate(1200%) hue-rotate(2deg) brightness(103%) contrast(103%);
-    }
-    .card-sabihin::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(255,184,0,.08) 0%, transparent 60%);
-      pointer-events: none;
+      position: relative;
+      overflow: hidden;
+      transition: transform .1s;
     }
     .card-sabihin:active { transform: scale(.97); }
     .card-sabihin-left { display: flex; align-items: center; gap: 14px; }
     .card-sabihin-icon {
-      font-size: 48px; line-height: 1; margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
     }
-   .card-sabihin-label {
-      font-size: 14px;
+    .card-sabihin-icon img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+      display: block;
+    }
+    .card-sabihin-label {
+      font-size: 11px;
       font-weight: 900;
-      color: var(--amber);
+      color: var(--text);
       text-transform: uppercase;
+      text-align: center;
+      letter-spacing: .02em;
+      line-height: 1.2;
     }
     .card-sabihin-sub {
       display: block;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       color: var(--text-muted);
-      margin-top: 4px;
+      margin-top: 2px;
       line-height: 1.2;
+      text-align: center;
     }
 
-    .card-sabihin .material-symbols-outlined[style*="margin-top: auto"] {
-      margin-top: 8px !important;
-      opacity: 0.5;
+    /* ── DEAF + SABIHIN MO RESPONSIVE ROW ─────────────────────────── */
+    /* Default (≥ 380px): side by side, 68/32 split — Sabihin Mo slightly smaller */
+    .deaf-sabihin-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      align-items: stretch;
+    }
+    .deaf-sabihin-hero {
+      flex: 0 0 calc(67% - 5px);
+      min-height: 150px;
+      width: auto;
+    }
+    .deaf-sabihin-card {
+      flex: 1 1 0;
+      width: auto;
+      min-height: 130px; /* slightly smaller */
+    }
+    /* Small screens (< 380px): stack vertically as list */
+    @media (max-width: 379px) {
+      .deaf-sabihin-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .deaf-sabihin-hero {
+        flex: none;
+        width: 100%;
+        min-height: 100px;
+      }
+      .deaf-sabihin-card {
+        flex: none;
+        width: 100%;
+        min-height: unset;
+        flex-direction: row !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        padding: 12px 16px !important;
+        gap: 14px !important;
+      }
+      /* In list mode: icon left, text right */
+      .deaf-sabihin-card .card-sabihin-icon img {
+        width: 38px !important;
+        height: 38px !important;
+      }
+      .deaf-sabihin-card .card-sabihin-label,
+      .deaf-sabihin-card .card-sabihin-sub {
+        text-align: left !important;
+      }
+      .deaf-sabihin-card .vib-badge {
+        top: 8px !important;
+        right: 8px !important;
+      }
     }
 
     /* Zone: BAGO SUMAKAY */
@@ -527,10 +596,10 @@
 
     /* Legacy classes kept for other screens that use them */
     .home-card {
-      border-radius: 14px; padding: 18px 16px;
-      display: flex; flex-direction: column; align-items: flex-start;
-      justify-content: space-between; min-height: 130px;
-      background: var(--surface); border: 2px solid var(--outline-var);
+      border-radius: 16px; padding: 18px 14px;
+      display: flex; flex-direction: row; align-items: center;
+      justify-content: flex-start; min-height: 140px; gap: 14px;
+      background: var(--surface); border: 1px solid var(--outline-var);
       color: var(--text); text-align: left;
       transition: transform .1s; position: relative; overflow: hidden;
     }
@@ -539,10 +608,18 @@
     .home-card.dashed { background: var(--bg-alt); border: 2px dashed var(--amber); }
     .home-card:disabled { opacity: .45; cursor: not-allowed; }
     .home-card:active:not(:disabled) { transform: scale(.96); }
-    .home-card-icon { font-size: 32px; margin-bottom: auto; }
-    .home-card-label { font-size: 17px; font-weight: 800; text-transform: uppercase; letter-spacing: -.01em; }
-    .home-card-sub   { font-size: 12px; font-weight: 600; opacity: .75; margin-top: 2px; }
-    .home-card.accent .home-card-icon,
+    .home-card-icon {
+      flex: 0 0 64px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .home-card-icon img {
+      width: 64px; height: 64px; object-fit: contain;
+      filter: brightness(0) invert(1);
+    }
+    .home-card-text { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .home-card-label { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: -.01em; color: var(--text); line-height: 1.2; }
+    .home-card-sub   { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px; }
+    .home-card.accent .home-card-icon img { filter: brightness(0); }
     .home-card.accent .home-card-label,
     .home-card.accent .home-card-sub { color: #271900; }
 
@@ -639,6 +716,11 @@
     .gps-search-expanded .search-wrap { background: rgba(255,255,255,0.95); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
     .gps-search-expanded .input-sp { background: transparent; border: none; }
 
+    .gps-progress-wrap { margin-top: 12px; }
+    .gps-progress-track { width: 100%; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); overflow: hidden; }
+    .gps-progress-fill { width: 0; height: 100%; background: linear-gradient(90deg, #f6c700, #f59e0b); transition: width .25s ease; }
+    .gps-progress-label { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 12px; color: var(--text-muted); }
+
     .help-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
     .help-modal { background: var(--bg); border: 2px solid var(--amber); border-radius: 12px; padding: 24px; max-width: 340px; max-height: 80dvh; overflow-y: auto; }
     .help-modal-title { font-size: 16px; font-weight: 900; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; }
@@ -647,34 +729,60 @@
     .help-modal-step strong { color: var(--amber); }
 
     /* ── RESPONSIVE: small phones ─────────────────────────────────── */
+    /* Fare/Route/GPS screens on small phones */
     @media (max-width: 360px) {
-      .hero-deaf { padding: 18px 14px; min-height: 140px; }
-      .hero-deaf-text .hero-label { font-size: 22px; }
-      .hero-deaf-text .hero-sub { font-size: 10px; }
-      .hero-deaf-icon { font-size: 40px; }
-      .card-sabihin { min-height: 140px; }
-      .card-sabihin-icon { font-size: 36px; }
-      .card-sabihin-label { font-size: 11px; }
-      .zone-sakay { padding: 0 12px 4px; gap: 8px; }
-      .zone-prep { padding: 0 12px 20px; }
-      .prep-grid { gap: 8px; }
-      .card-prep { min-height: 100px; padding: 14px 10px; }
-      .card-prep-icon { font-size: 36px; margin-bottom: 8px; }
-      .card-prep-label { font-size: 13px; }
-      .fare-amount { font-size: 44px; }
-      .windshield-text { font-size: 28px; }
-      .topbar-title { font-size: 16px; }
-      #leaflet-map { min-height: 200px; }
-      /* Fix Jeepney Type + PWD overlap */
-      .fare-type-pwd-row { flex-direction: column !important; }
-      .fare-type-pwd-row > .col-6 { width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important; }
       .btn-type { font-size: 11px; }
-      .topbar { padding: 0 12px; }
       #screen-fare main { padding: 16px 14px !important; }
+      .windshield-text { font-size: 28px; }
+      #leaflet-map { min-height: 200px; }
     }
     @media (max-width: 400px) {
-      .fare-type-pwd-row > .col-6 { width: 50% !important; }
       .btn-type { font-size: 11px; height: 44px; }
+    }
+
+    /* ── FARE TYPE + PWD FULL STRETCH ON SMALL SCREENS ─────────────── */
+    @media (max-width: 400px) {
+      .fare-type-pwd-row {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+      }
+      .fare-type-pwd-row .col-6 {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+      }
+      .btn-type { font-size: 13px !important; height: 48px !important; }
+      #pwd-btn { height: 48px !important; }
+    }
+
+    @media (max-width: 380px) {
+      /* Home top row */
+      .hero-deaf { min-height: 120px; padding: 14px; gap: 8px; }
+      .hero-deaf-icon { flex: 0 0 48%; }
+      .hero-deaf-icon img { max-width: 90px; }
+      .hero-deaf-text .hero-label { font-size: 18px; }
+      .hero-deaf-text .hero-sub { font-size: 9px; }
+      /* Sabihin Mo */
+      .card-sabihin { min-height: 120px; padding: 12px 8px; }
+      .card-sabihin-icon img { width: 36px !important; height: 36px !important; }
+      .card-sabihin-label { font-size: 9px; }
+      /* Grid cards */
+      .home-card { min-height: 88px; gap: 8px; padding: 10px 8px; }
+      .home-card-icon img { width: 42px !important; height: 42px !important; }
+      .home-card-icon { flex: 0 0 42px; }
+      .home-card-label { font-size: 10px; }
+      /* CTA button */
+      .btn-primary-sp { height: 56px; font-size: 15px; }
+      /* Topbar */
+      .topbar { height: 56px; padding: 0 12px; }
+      .topbar-title { font-size: 15px; }
+    }
+    @media (max-height: 680px) {
+      .hero-deaf { min-height: 110px; }
+      .card-sabihin { min-height: 110px; }
+      .home-card { min-height: 86px; }
+      .btn-primary-sp { height: 54px; }
     }
 
     /* ── FSL SCREEN ───────────────────────────────────────────────── */
@@ -711,14 +819,16 @@
     .change-display p:last-child  { font-size: 40px; font-weight: 900; color: white; }
 
     /* ── SEARCH INPUT WITH ICON ───────────────────────────────────── */
-    .search-wrap { position: relative; display: flex; align-items: center; }
+    .search-wrap { position: relative; display: flex; align-items: center; width: 100%; }
     .search-wrap .search-icon {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      position: absolute; left: 14px;
+      top: 50%; transform: translateY(-50%);
       display: flex; align-items: center; justify-content: center;
-      pointer-events: none; z-index: 2;
-      color: var(--amber); font-size: 22px; line-height: 1;
+      height: 100%; pointer-events: none; z-index: 2;
+      color: var(--amber); font-size: 20px; line-height: 1;
+      flex-shrink: 0;
     }
-    .search-wrap input { padding-left: 52px; width: 100%; flex: 1; }
+    .search-wrap input { padding-left: 42px !important; width: 100%; flex: 1; min-width: 0; }
 
     /* ── ROUTE LIST ───────────────────────────────────────────────── */
     .route-btn {
@@ -925,85 +1035,138 @@
     <!-- Topbar -->
     <header class="topbar">
       <div class="d-flex align-items-center gap-2">
-        <button id="drawer-open-btn" class="topbar-menu" title="Menu" style="margin-left:-8px">
-          <span class="material-symbols-outlined" style="font-size:26px">menu</span>
-        </button>
         <div class="topbar-logo"><img src="https://res.cloudinary.com/dg19gjwff/image/upload/v1778660895/SenyasPo_ovvmlf.png" alt="SenyasPo" /></div>
         <span class="topbar-title">SENYASPO</span>
       </div>
-      <button id="topbar-family-btn" title="Pamilya">
-        <span class="material-symbols-outlined" style="font-size:24px">group</span>
-        <span id="family-status-dot"></span>
-      </button>
+      <div class="d-flex align-items-center" style="gap:0">
+        <button id="topbar-family-btn" title="Pamilya">
+          <span class="material-symbols-outlined" style="font-size:24px">group</span>
+          <span id="family-status-dot"></span>
+        </button>
+        <button id="drawer-open-btn" class="topbar-menu" title="Menu" style="margin-right:-8px">
+          <span class="material-symbols-outlined" style="font-size:26px">menu</span>
+        </button>
+      </div>
     </header>
 
     <div id="offline-banner" class="banner banner-error d-none">📵 No internet — AI Assistant disabled</div>
 
-    <main class="home-scroll">
-      <div style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px;">
+    <main class="home-scroll" style="position:relative;overflow:hidden;">
 
-        <!-- I AM DEAF — full-width dominant hero -->
-        <button class="hero-deaf" data-nav="deaf" onclick="navigate('deaf')" style="width:100%;min-height:150px;">
-          <div class="vib-badge"><span class="material-symbols-outlined">vibration</span></div>
-          <div class="hero-deaf-icon">
-            <img src="https://cdn-icons-png.flaticon.com/128/3546/3546766.png" alt="I Am Deaf" />
-          </div>
-          <div class="hero-deaf-text">
-            <div class="hero-label">I Am Deaf</div>
-            <div class="hero-sub">"Bingi ako. Hindi ako makarinig."</div>
-          </div>
-        </button>
+      <!-- ── LAYERED BACKGROUND ── -->
+      <!-- Layer 1: deep navy → charcoal diagonal gradient -->
+      <div style="position:absolute;inset:0;z-index:0;background:linear-gradient(145deg,#04080f 0%,#0a1428 40%,#0f1c2e 70%,#111820 100%);pointer-events:none;"></div>
 
-        <!-- SABIHIN MO — full-width secondary, horizontal layout -->
-        <button class="card-sabihin" data-nav="phrases" onclick="navigate('phrases')"
-          style="width:100%;min-height:64px;flex-direction:row;justify-content:flex-start;gap:16px;padding:14px 20px;position:relative;">
-          <div class="vib-badge" style="background:rgba(255,184,0,.08);">
-            <span class="material-symbols-outlined" style="color:var(--amber);opacity:.5">vibration</span>
-          </div>
-          <div class="card-sabihin-icon" style="margin-bottom:0;line-height:0;">
-            <img src="https://cdn-icons-png.flaticon.com/128/589/589708.png" alt="Sabihin Mo" style="height:36px;width:auto;filter:brightness(0) saturate(100%) invert(73%) sepia(93%) saturate(1200%) hue-rotate(2deg) brightness(103%) contrast(103%);" />
-          </div>
-          <div style="text-align:left;flex:1;">
+      <!-- Layer 2: strong amber spotlight glow behind hero cards -->
+      <div style="position:absolute;top:-60px;left:-40px;right:-40px;height:340px;z-index:0;background:radial-gradient(ellipse 90% 70% at 38% 38%, rgba(255,184,0,0.18) 0%, rgba(255,184,0,0.06) 45%, transparent 75%);pointer-events:none;"></div>
+
+      <!-- Layer 3: transport motif SVG behind 2×2 grid -->
+      <svg style="position:absolute;top:230px;left:0;right:0;width:100%;height:300px;z-index:0;opacity:0.08;pointer-events:none;" viewBox="0 0 480 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="60" y1="0" x2="180" y2="300" stroke="#FFB800" stroke-width="2" stroke-dasharray="14 9"/>
+        <line x1="210" y1="0" x2="330" y2="300" stroke="#FFB800" stroke-width="2" stroke-dasharray="14 9"/>
+        <line x1="0" y1="70" x2="480" y2="140" stroke="#FFB800" stroke-width="1.5" stroke-dasharray="18 12"/>
+        <line x1="0" y1="190" x2="480" y2="240" stroke="#FFB800" stroke-width="1.5" stroke-dasharray="18 12"/>
+        <ellipse cx="155" cy="55" rx="15" ry="20" stroke="#FFB800" stroke-width="2.5"/>
+        <circle cx="155" cy="50" r="6" stroke="#FFB800" stroke-width="2"/>
+        <line x1="155" y1="74" x2="155" y2="90" stroke="#FFB800" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="340" cy="185" rx="12" ry="16" stroke="#FFB800" stroke-width="2.5"/>
+        <circle cx="340" cy="181" r="5" stroke="#FFB800" stroke-width="2"/>
+        <line x1="340" y1="200" x2="340" y2="214" stroke="#FFB800" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="75" y="165" width="110" height="48" rx="9" stroke="#FFB800" stroke-width="2"/>
+        <rect x="84" y="153" width="92" height="20" rx="6" stroke="#FFB800" stroke-width="2"/>
+        <circle cx="100" cy="218" r="9" stroke="#FFB800" stroke-width="2"/>
+        <circle cx="168" cy="218" r="9" stroke="#FFB800" stroke-width="2"/>
+        <line x1="84" y1="175" x2="84" y2="200" stroke="#FFB800" stroke-width="1.5"/>
+        <line x1="176" y1="175" x2="176" y2="200" stroke="#FFB800" stroke-width="1.5"/>
+        <line x1="130" y1="153" x2="130" y2="173" stroke="#FFB800" stroke-width="1.5"/>
+        <circle cx="248" cy="115" r="4" fill="#FFB800"/>
+        <circle cx="390" cy="75" r="3" fill="#FFB800"/>
+        <circle cx="88" cy="240" r="2.5" fill="#FFB800"/>
+        <circle cx="420" cy="210" r="3" fill="#FFB800"/>
+      </svg>
+
+      <!-- Layer 4: bottom dark anchor -->
+      <div style="position:absolute;bottom:0;left:0;right:0;height:180px;z-index:0;background:linear-gradient(to top, #03060d 0%, #03060d 20%, transparent 100%);pointer-events:none;"></div>
+
+      <!-- ── CONTENT (above background layers) ── -->
+      <div style="position:relative;z-index:1;padding:18px 16px 16px;display:flex;flex-direction:column;gap:10px;">
+
+        <!-- TOP ROW: I AM DEAF (70%) + SABIHIN MO (30%) — responsive -->
+        <div class="deaf-sabihin-row" style="margin-top:8px;">
+
+          <!-- I AM DEAF hero — amber -->
+          <button class="hero-deaf deaf-sabihin-hero" data-nav="deaf" onclick="navigate('deaf')">
+            <div class="vib-badge"><span class="material-symbols-outlined">vibration</span></div>
+            <div class="hero-deaf-icon">
+              <img src="https://cdn-icons-png.flaticon.com/128/3546/3546766.png" alt="I Am Deaf" />
+            </div>
+            <div class="hero-deaf-text">
+              <div class="hero-label">I Am Deaf</div>
+              <div class="hero-sub">"Bingi ako. Hindi ako makarinig."</div>
+            </div>
+          </button>
+
+          <!-- SABIHIN MO -->
+          <button class="card-sabihin deaf-sabihin-card" data-nav="phrases" onclick="navigate('phrases')">
+            <div class="vib-badge" style="background:rgba(255,255,255,.06);">
+              <span class="material-symbols-outlined" style="color:var(--text-muted);opacity:.6">vibration</span>
+            </div>
+            <div class="card-sabihin-icon">
+              <img src="https://cdn-icons-png.flaticon.com/128/589/589708.png" alt="Sabihin Mo" />
+            </div>
             <div class="card-sabihin-label">Sabihin Mo</div>
-            <div class="card-sabihin-sub">Quick common phrases</div>
-          </div>
-          <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted);flex-shrink:0;">chevron_right</span>
-        </button>
+            <div class="card-sabihin-sub">Quick phrases</div>
+          </button>
 
-        <!-- QUICK ACCESS GRID -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        </div>
+
+        <!-- 2×2 GRID -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;">
+
           <button class="home-card" onclick="navigate('gps')">
-            <span class="material-symbols-outlined home-card-icon">location_on</span>
-            <div>
+            <div class="home-card-icon">
+              <img src="https://cdn-icons-png.flaticon.com/128/3425/3425077.png" alt="Hintuan Ko" />
+            </div>
+            <div class="home-card-text">
               <div class="home-card-label">Hintuan Ko</div>
               <div class="home-card-sub">Set my stop</div>
             </div>
           </button>
+
           <button class="home-card" onclick="navigate('fare')">
-            <span class="material-symbols-outlined home-card-icon">payments</span>
-            <div>
+            <div class="home-card-icon">
+              <img src="https://cdn-icons-png.flaticon.com/128/1662/1662072.png" alt="Bayad" />
+            </div>
+            <div class="home-card-text">
               <div class="home-card-label">Bayad</div>
               <div class="home-card-sub">Fare calculator</div>
             </div>
           </button>
+
           <button class="home-card" onclick="navigate('route')">
-            <span class="material-symbols-outlined home-card-icon">route</span>
-            <div>
+            <div class="home-card-icon">
+              <img src="https://cdn-icons-png.flaticon.com/128/6491/6491443.png" alt="Ruta" />
+            </div>
+            <div class="home-card-text">
               <div class="home-card-label">Ruta</div>
               <div class="home-card-sub">Route reference</div>
             </div>
           </button>
+
           <button class="home-card" onclick="navigate('ai')">
-            <span class="material-symbols-outlined home-card-icon">smart_toy</span>
-            <div>
+            <div class="home-card-icon">
+              <img src="https://cdn-icons-png.flaticon.com/128/9751/9751045.png" alt="AI Guide" />
+            </div>
+            <div class="home-card-text">
               <div class="home-card-label">AI Guide</div>
               <div class="home-card-sub">Ask for directions</div>
             </div>
           </button>
+
         </div>
 
         <!-- SIMULAN ANG BIYAHE — primary CTA -->
-        <button id="start-commute-btn" class="btn-primary-sp" style="height:72px;font-size:20px;border-radius:18px;box-shadow:0 8px 32px rgba(255,184,0,.25);margin-top:2px;">
+        <button id="start-commute-btn" class="btn-primary-sp" style="height:72px;font-size:20px;border-radius:18px;box-shadow:0 8px 32px rgba(255,184,0,.25);margin-top:18px;">
           <span class="material-symbols-outlined" style="font-size:26px">directions_bus</span>
           Simulan ang Biyahe
         </button>
@@ -1100,7 +1263,7 @@
       <button class="d-flex align-items-center gap-1" id="fsl-btn"
         style="background:none; border:2px solid #FFB800; color:#FFB800; padding:7px 12px; border-radius:8px; font-weight:800; font-size:12px; text-transform:uppercase"
         onclick="navigate('fsl')">
-        🤟 FSL
+        FSL
       </button>
       <button id="lang-btn"
        style="background:none;border:2px solid #333;color:#ccc;padding:7px 14px;border-radius:8px;font-weight:700;font-size:13px;text-transform:uppercase"
@@ -1200,7 +1363,7 @@
   ════════════════════════════════════════════════════════════════ -->
   <div id="screen-fsl" class="screen fsl-screen" style="flex-direction:column;">
     <div style="background:var(--bg-alt);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--outline-var);flex-shrink:0">
-      <button style="background:none;border:none;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700" onclick="navigate('deaf')">
+      <button style="background:none;border:none;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700" onclick="goBack()">
         <span class="material-symbols-outlined" style="font-size:24px">arrow_back</span>BACK
       </button>
       <span style="color:var(--amber);font-weight:800;font-size:16px;text-transform:uppercase">FSL Reference</span>
@@ -1261,6 +1424,10 @@
       <button id="phrases-lang-btn" class="tag-mono" style="background:none;border:2px solid #333;color:#ccc;padding:7px 14px;border-radius:8px;font-weight:700;font-size:13px;text-transform:uppercase">FIL</button>
     </header>
     <main class="scroll-main" style="padding:16px 0">
+      <div class="tts-status-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px 12px;">
+        <span id="tts-support-status" style="font-size:12px;color:var(--text-muted);flex:1">Checking TTS voices...</span>
+        <button id="tts-demo-btn" class="btn-outline-amber" style="min-width:130px;height:42px;font-size:12px;padding:0 12px;">TTS Demo</button>
+      </div>
       <p class="tag-mono px-4 mb-3" style="color:var(--text-muted)">Tap a phrase to show it full-screen to the driver or passenger</p>
 
       <!-- Static phrase rows with icons -->
@@ -1526,6 +1693,10 @@
         <p id="selected-stop-name" style="font-size:28px;font-weight:900;color:var(--text);text-transform:uppercase;line-height:1.1"></p>
         <p id="selected-stop-route" style="font-size:13px;color:var(--text-muted);margin-top:4px"></p>
         <p id="selected-stop-distance" style="font-size:14px;color:var(--amber);margin-top:8px;font-weight:700"></p>
+        <div id="gps-progress-wrap" class="gps-progress-wrap d-none">
+          <div class="gps-progress-track"><div id="gps-progress-fill" class="gps-progress-fill"></div></div>
+          <div class="gps-progress-label"><span id="gps-progress-state">Approaching stop</span><span id="gps-progress-distance">--</span></div>
+        </div>
         <div class="mt-3">
           <div style="display:flex;gap:8px;margin-bottom:12px">
             <button id="gps-destination-guide-btn" class="btn-ghost" style="flex:1;height:52px;border:1px solid var(--amber);color:var(--amber);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 4px">
@@ -1540,6 +1711,10 @@
           <button id="set-alert-btn" class="btn-primary-sp" style="height:64px">
             <span class="material-symbols-outlined" style="font-size:22px">notifications_active</span>
             SET ALERT
+          </button>
+          <button id="cancel-alert-btn" class="btn-ghost d-none" style="height:64px;margin-top:8px;border:1px solid #ef4444;color:#ef4444;background:transparent">
+            <span class="material-symbols-outlined" style="font-size:22px">cancel</span>
+            CANCEL ALERT
           </button>
           <button id="sakay-na-btn" class="btn-primary-sp d-none" style="height:64px;margin-top:8px;background:var(--green);color:#fff;border:none">
             <span class="material-symbols-outlined" style="font-size:22px">directions_bus</span>
@@ -1615,7 +1790,7 @@
         <p class="tag-mono" style="color:var(--text-muted);font-size:9px;letter-spacing:.2em;margin-bottom:8px;">🤖 TANONG SA AI</p>
         <div class="quick-ask-card" id="quick-ask-card" style="cursor:pointer;" onclick="if(typeof setAIContext==='function') setAIContext(buildGPSContext()); navigate('ai')">
           <div class="quick-ask-left">
-            <div class="quick-ask-icon"><span class="material-symbols-outlined">psychology</span></div>
+            <div class="quick-ask-icon"><img src="https://cdn-icons-png.flaticon.com/128/18627/18627409.png" alt="AI" style="width:20px;height:20px;object-fit:contain;filter:brightness(0) saturate(100%) invert(73%) sepia(93%) saturate(1200%) hue-rotate(2deg) brightness(103%) contrast(103%);" /></div>
             <div>
               <div class="quick-ask-text">Tanong sa AI</div>
               <div class="quick-ask-sub">Tungkol sa iyong biyahe</div>
@@ -1727,11 +1902,13 @@
   ════════════════════════════════════════════════════════════════ -->
   <div id="screen-family" class="screen">
     <header class="topbar">
-      <button class="btn p-0 d-flex align-items-center gap-2" style="background:none;border:none;color:#888;font-weight:700;font-size:14px" onclick="goBack()">
-        <span class="material-symbols-outlined" style="font-size:20px">arrow_back</span> Bumalik
-      </button>
-      <span style="font-weight:900;font-size:16px;color:#feb700;letter-spacing:.5px">👨‍👩‍👧 PAMILYA</span>
-      <div style="width:72px"></div>
+      <div class="d-flex align-items-center gap-2">
+        <button class="topbar-back" style="background:none;border:none;color:#888;" onclick="goBack()">
+          <span class="material-symbols-outlined" style="font-size:20px">arrow_back</span>
+        </button>
+        <span style="font-weight:900;font-size:16px;color:#feb700;letter-spacing:.5px">PAMILYA</span>
+      </div>
+      <div style="width:48px"></div>
     </header>
 
     <main class="scroll-main" style="padding:16px;display:flex;flex-direction:column;gap:14px">
