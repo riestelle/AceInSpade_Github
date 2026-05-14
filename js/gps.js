@@ -109,15 +109,10 @@ function collapseExpandedSearch() {
   const controls = document.getElementById('gps-map-controls');
   const expandBtn = document.getElementById('gps-expand-btn-map');
   const screen = document.getElementById('screen-gps');
-  const main = screen?.querySelector('main');
 
   if (map) map.classList.remove('fullscreen');
   if (controls) controls.classList.add('d-none');
   if (expandBtn) expandBtn.classList.remove('d-none');
-  if (main) {
-    main.style.padding = '16px 24px';
-    main.style.gap = '16px';
-  }
   if (screen) screen.style.overflow = 'auto';
   gpsMapExpanded = false;
   requestAnimationFrame(() => {
@@ -130,12 +125,11 @@ function toggleMapExpand() {
   const container = document.getElementById('gps-map-container');
   const controls = document.getElementById('gps-map-controls');
   const screen = document.getElementById('screen-gps');
-  const main = screen.querySelector('main');
   const searchNormal = document.getElementById('gps-search-normal');
   const expandBtn = document.getElementById('gps-expand-btn-map');
   const locationInfo = document.getElementById('gps-location-info');
   const legend = document.getElementById('gps-map-legend');
-  if (!map || !container || !controls || !screen || !main) return;
+  if (!map || !container || !controls || !screen) return;
   
   gpsMapExpanded = !gpsMapExpanded;
   
@@ -143,8 +137,6 @@ function toggleMapExpand() {
     map.classList.add('fullscreen');
     controls.classList.remove('d-none');
     if (expandBtn) expandBtn.classList.add('d-none');
-    main.style.padding = '0';
-    main.style.gap = '0';
     screen.style.overflow = 'hidden';
     if (searchNormal) searchNormal.classList.add('d-none');
     
@@ -173,8 +165,6 @@ function toggleMapExpand() {
     map.classList.remove('fullscreen');
     controls.classList.add('d-none');
     if (expandBtn) expandBtn.classList.remove('d-none');
-    main.style.padding = '16px 24px';
-    main.style.gap = '16px';
     screen.style.overflow = 'auto';
     if (searchNormal) searchNormal.classList.remove('d-none');
     
@@ -539,7 +529,14 @@ function showPreviewPopup(result) {
     weight: 3,
   }).addTo(leafletMap);
 
-  const popup = L.popup({ closeButton: true, maxWidth: 260, className: 'gps-preview-popup' })
+  const popup = L.popup({
+      closeButton: true,
+      maxWidth: 260,
+      className: 'gps-preview-popup',
+      autoPanPaddingTopLeft: [16, 16],
+      autoPanPaddingBottomRight: [16, 16],
+      offset: [0, -18]
+    })
     .setLatLng([result.lat, result.lon])
     .setContent(`
       <div class="gps-preview-title" style="font-weight:800;font-size:14px;margin-bottom:8px;text-transform:uppercase;">${result.name}</div>
@@ -566,8 +563,10 @@ function showPreviewPopup(result) {
         result.address = address;
         result.name = address;
         if (titleEl) titleEl.textContent = address;
-        if (subtitleEl) subtitleEl.textContent = 'Custom Pin';
+        if (subtitleEl) subtitleEl.textContent = 'Dropped Pin';
         syncGPSSearchInput(address);
+      } else if (subtitleEl) {
+        subtitleEl.textContent = `${result.lat.toFixed(5)}, ${result.lon.toFixed(5)}`;
       }
     }
 
@@ -613,7 +612,7 @@ function previewSearchResult(result) {
   updateStopMarkers();
 }
 
-function selectCustomPin(place) {
+async function selectCustomPin(place) {
   gpsSelectedStop = {
     id: place.id,
     name: place.name,
@@ -621,7 +620,17 @@ function selectCustomPin(place) {
     lon: place.lon,
     routeId: null,
     type: 'custom',
+    address: place.address || null,
   };
+
+  if (!gpsSelectedStop.address) {
+    const reverseData = await reverseGeocodeLatLng(gpsSelectedStop.lat, gpsSelectedStop.lon);
+    const address = formatReverseGeocodeAddress(reverseData);
+    if (address) {
+      gpsSelectedStop.address = address;
+      gpsSelectedStop.name = address;
+    }
+  }
 
   syncGPSSearchInput(gpsSelectedStop.name);
   if (gpsPreviewMarker) {
@@ -631,8 +640,9 @@ function selectCustomPin(place) {
   document.getElementById('gps-preview-card').classList.add('d-none');
   document.getElementById('selected-stop-card').classList.remove('d-none');
   document.getElementById('selected-stop-name').textContent = gpsSelectedStop.name;
-  document.getElementById('selected-stop-route').textContent = 'Custom Pin';
+  document.getElementById('selected-stop-route').textContent = gpsSelectedStop.address ? 'Dropped Pin' : 'Custom Pin';
   updateStopMarkers();
+  if (gpsCurrentPosition) updateDistanceDisplay();
 
   if (typeof saveStorage === 'function') {
     saveStorage('family_selected_stop', gpsSelectedStop.name);
