@@ -580,7 +580,7 @@
       background: #000; color: white;
       flex-direction: column;
       align-items: center; justify-content: space-between;
-      padding: 80px 24px 40px;
+      padding: 40px 24px 0;
     }
     .alert-screen.active {
       animation: alertpulse 0.6s ease-in-out infinite alternate;
@@ -817,7 +817,7 @@
       display: flex; flex-direction: column; align-items: center;
       justify-content: center; gap: 1px;
       box-shadow: 0 4px 20px rgba(255,184,0,.25);
-      z-index: 200; cursor: pointer;
+      z-index: 199; cursor: pointer;
       transition: transform .1s, box-shadow .1s;
     }
     #floating-sos:active { transform: scale(.93); box-shadow: 0 2px 10px rgba(255,184,0,.15); }
@@ -1681,7 +1681,26 @@
         </div>
       </div>
 
-      <div style="height:72px"></div><!-- space for floating AI -->
+      <!-- ④ FAMILY SHARE LINK — quick access while riding -->
+      <div>
+        <p class="tag-mono" style="color:var(--text-muted);font-size:9px;letter-spacing:.2em;margin-bottom:8px;">👨‍👩‍👧 IPAALAM SA PAMILYA</p>
+        <div style="background:var(--surface);border:1px solid var(--outline-var);border-radius:14px;padding:14px;">
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">I-share ang link para makita ng pamilya mo kung nasaan ka.</p>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+            <input id="commute-family-link" type="text" readonly onclick="this.select()"
+              style="flex:1;background:var(--surface-lo);border:1px solid var(--outline);border-radius:8px;color:var(--amber);font-size:11px;padding:10px 12px;font-family:monospace;min-width:0;" />
+            <button onclick="(function(){var el=document.getElementById('commute-family-link');var url=el.value;navigator.clipboard.writeText(url).catch(()=>{});if(typeof vibrate==='function')vibrate(30);this.innerHTML='<span class=\'material-symbols-outlined\' style=\'font-size:18px\'>check</span>';var b=this;setTimeout(()=>{b.innerHTML='<span class=\'material-symbols-outlined\' style=\'font-size:18px\'>content_copy</span>';},1500);}).call(this)"
+              style="width:44px;height:44px;flex-shrink:0;background:var(--surface-hi);border:1px solid var(--outline);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--amber);">
+              <span class="material-symbols-outlined" style="font-size:18px">content_copy</span>
+            </button>
+          </div>
+          <button id="commute-share-btn" class="btn-primary-sp" style="height:52px;font-size:15px;">
+            <span class="material-symbols-outlined" style="font-size:20px">ios_share</span> I-share sa Pamilya
+          </button>
+        </div>
+      </div>
+
+      <div style="height:16px;"></div>
     </div>
   </div>
 
@@ -2004,8 +2023,8 @@ document.getElementById('topbar-family-btn').addEventListener('click', function(
 (function() {
   const btn = document.getElementById('floating-sos');
 
-  // Hide on alert screen only — family screen no longer has its own SOS
-  const hiddenOn = ['screen-alert'];
+  // Hide on alert and commute screens — commute has its own AI access and para po needs full space
+  const hiddenOn = ['screen-alert', 'screen-commute'];
   function updateSOSVisibility() {
     const active = document.querySelector('.screen.active');
     if (active && hiddenOn.includes(active.id)) {
@@ -2113,12 +2132,9 @@ function initSheetStep2() {
 
 /* ── COMMUTE DASHBOARD SYNC ─────────────────────────────────────── */
 function syncCommuteDashboard() {
-  // Pull stop info from GPS module globals (set by gps.js)
-  const stopName = (typeof gpsSelectedStop !== 'undefined' && gpsSelectedStop)
-    ? (gpsSelectedStop.name || gpsSelectedStop) : null;
-  const stopRoute = (typeof gpsSelectedStop !== 'undefined' && gpsSelectedStop && gpsSelectedStop.route)
-    ? gpsSelectedStop.route : '';
-  const dist = (typeof gpsDistanceKm !== 'undefined') ? gpsDistanceKm : null;
+  const stop = (typeof gpsSelectedStop !== 'undefined') ? gpsSelectedStop : null;
+  const stopName  = stop ? (stop.name || stop) : null;
+  const stopRoute = stop ? (stop.route || '') : '';
 
   const nameEl   = document.getElementById('dash-stop-name');
   const routeEl  = document.getElementById('dash-stop-route');
@@ -2128,15 +2144,26 @@ function syncCommuteDashboard() {
 
   if (stopName) {
     nameEl.textContent  = stopName;
-    routeEl.textContent = stopRoute || '';
+    routeEl.textContent = stopRoute;
   }
-  if (dist !== null && dist !== undefined) {
-    const d = parseFloat(dist);
-    badgeEl.textContent = isNaN(d) ? '? km' : d.toFixed(2) + ' km';
-    // Rough progress: assume avg 10 km total trip → clamp 0–100%
-    const pct = Math.min(100, Math.max(0, Math.round((1 - d / 10) * 100)));
+
+  // Calculate distance live from GPS position + selected stop
+  if (stop && stop.lat && stop.lon &&
+      typeof gpsCurrentPosition !== 'undefined' && gpsCurrentPosition &&
+      typeof haversine === 'function') {
+    const distM = haversine(
+      gpsCurrentPosition.latitude, gpsCurrentPosition.longitude,
+      stop.lat, stop.lon
+    );
+    const distKm = distM / 1000;
+    badgeEl.textContent = distKm < 1 ? Math.round(distM) + ' m' : distKm.toFixed(2) + ' km';
+    const pct = Math.min(100, Math.max(0, Math.round((1 - distKm / 10) * 100)));
     barEl.style.width = pct + '%';
-    barLabel.textContent = d < 0.5 ? 'Malapit na!' : d.toFixed(1) + ' km pa';
+    barLabel.textContent = distKm < 0.5 ? 'Malapit na!' : distKm.toFixed(1) + ' km pa';
+  } else if (stop) {
+    badgeEl.textContent = 'GPS...';
+  } else {
+    badgeEl.textContent = '? km';
   }
 
   // Sync family dot
@@ -2154,6 +2181,24 @@ function syncCommuteDashboard() {
   // Also topbar dot class
   const topDot = document.getElementById('family-status-dot');
   if (topDot) topDot.classList.toggle('sharing', !!isSharingFamily);
+
+  // Populate family share link in commute dashboard
+  const commuteLinkEl  = document.getElementById('commute-family-link');
+  const commuteShareBtn = document.getElementById('commute-share-btn');
+  const shareUrl = (typeof getFamilyShareURL === 'function') ? getFamilyShareURL() : window.location.href;
+  if (commuteLinkEl) commuteLinkEl.value = shareUrl;
+  if (commuteShareBtn) {
+    commuteShareBtn.onclick = () => {
+      if (navigator.share) {
+        navigator.share({ title: 'SenyasPo — Subaybayan ako', text: 'I-click para makita kung nasaan ako sa jeep.', url: shareUrl }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(shareUrl).catch(() => {});
+        alert('Link nakopya! I-paste sa Viber o SMS.');
+      }
+      if (typeof vibrate === 'function') vibrate(30);
+    };
+  }
+  if (typeof familyStartSharingIfNeeded === 'function') familyStartSharingIfNeeded();
 }
 
 // Re-sync whenever user navigates to commute screen
