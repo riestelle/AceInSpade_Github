@@ -598,6 +598,13 @@ function showPreviewPopup(result) {
           gpsPreviewMarker.remove();
           gpsPreviewMarker = null;
         }
+        const selectedCard = document.getElementById('selected-stop-card');
+        if (selectedCard) selectedCard.classList.add('d-none');
+        const distanceLabel = document.getElementById('gps-distance');
+        if (distanceLabel) distanceLabel.classList.add('d-none');
+        if (gpsSelectedStop && gpsSelectedStop.id === result.id) {
+          gpsSelectedStop = null;
+        }
       };
     }
   });
@@ -606,10 +613,22 @@ function showPreviewPopup(result) {
 function previewSearchResult(result) {
   collapseExpandedSearch();
   syncGPSSearchInput(result.name);
+  gpsSelectedStop = result;
+  document.getElementById('selected-stop-card').classList.remove('d-none');
+  document.getElementById('selected-stop-name').textContent = result.name;
+  document.getElementById('selected-stop-route').textContent = getRouteShortCode(result.routeId);
+  const alertBtn = document.getElementById('set-alert-btn');
+  if (alertBtn) {
+    alertBtn.disabled = false;
+    alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> SET ALERT';
+  }
   document.getElementById('gps-preview-card').classList.add('d-none');
   panMapToStop(result);
   showPreviewPopup(result);
   updateStopMarkers();
+  if (gpsCurrentPosition) {
+    updateDistanceDisplay();
+  }
 }
 
 async function selectCustomPin(place) {
