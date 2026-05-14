@@ -534,7 +534,7 @@
       color: var(--text); text-align: left;
       transition: transform .1s; position: relative; overflow: hidden;
     }
-    .home-card.span-2 { grid-column: span 2; flex-direction: row; align-items: center; min-height: 88px; padding: 20px 24px; gap: 16px; }
+    .home-card.span-2 { grid-column: span 2; flex-direction: row; align-items: center; min-height: 96px; padding: 20px 24px; gap: 16px; }
     .home-card.accent { background: var(--amber); border: none; color: #271900; }
     .home-card.dashed { background: var(--bg-alt); border: 2px dashed var(--amber); }
     .home-card:disabled { opacity: .45; cursor: not-allowed; }
@@ -638,11 +638,6 @@
     .gps-search-expanded { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 11; width: calc(100% - 32px); max-width: 90%; }
     .gps-search-expanded .search-wrap { background: rgba(255,255,255,0.95); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
     .gps-search-expanded .input-sp { background: transparent; border: none; }
-
-    .gps-progress-wrap { margin-top: 12px; }
-    .gps-progress-track { width: 100%; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); overflow: hidden; }
-    .gps-progress-fill { width: 0; height: 100%; background: linear-gradient(90deg, #f6c700, #f59e0b); transition: width .25s ease; }
-    .gps-progress-label { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 12px; color: var(--text-muted); }
 
     .help-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
     .help-modal { background: var(--bg); border: 2px solid var(--amber); border-radius: 12px; padding: 24px; max-width: 340px; max-height: 80dvh; overflow-y: auto; }
@@ -1205,7 +1200,7 @@
   ════════════════════════════════════════════════════════════════ -->
   <div id="screen-fsl" class="screen fsl-screen" style="flex-direction:column;">
     <div style="background:var(--bg-alt);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--outline-var);flex-shrink:0">
-      <button style="background:none;border:none;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700" onclick="goBack()">
+      <button style="background:none;border:none;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700" onclick="navigate('deaf')">
         <span class="material-symbols-outlined" style="font-size:24px">arrow_back</span>BACK
       </button>
       <span style="color:var(--amber);font-weight:800;font-size:16px;text-transform:uppercase">FSL Reference</span>
@@ -1266,10 +1261,6 @@
       <button id="phrases-lang-btn" class="tag-mono" style="background:none;border:2px solid #333;color:#ccc;padding:7px 14px;border-radius:8px;font-weight:700;font-size:13px;text-transform:uppercase">FIL</button>
     </header>
     <main class="scroll-main" style="padding:16px 0">
-      <div class="tts-status-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px 12px;">
-        <span id="tts-support-status" style="font-size:12px;color:var(--text-muted);flex:1">Checking TTS voices...</span>
-        <button id="tts-demo-btn" class="btn-outline-amber" style="min-width:130px;height:42px;font-size:12px;padding:0 12px;">TTS Demo</button>
-      </div>
       <p class="tag-mono px-4 mb-3" style="color:var(--text-muted)">Tap a phrase to show it full-screen to the driver or passenger</p>
 
       <!-- Static phrase rows with icons -->
@@ -1501,7 +1492,7 @@
       <!-- DROPDOWN overlays the map (appears below search bar, above map) -->
       <div id="gps-dropdown" class="stop-dropdown d-none" style="position:absolute;top:0;left:16px;right:16px;z-index:30;max-height:60%;overflow-y:auto;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.5);"></div>
 
-      <button id="gps-expand-btn-map" class="gps-map-btn" type="button" onclick="toggleMapExpand()" title="Expand map" style="position:absolute;right:16px;top:16px;z-index:10">
+      <button id="gps-expand-btn-map" class="gps-map-btn" type="button" onclick="toggleMapExpand()" title="Expand map" style="position:absolute;right:16px;bottom:16px;z-index:10">
         <span class="material-symbols-outlined" style="font-size:22px">fullscreen</span>
       </button>
       <div class="gps-map-controls d-none" id="gps-map-controls">
@@ -1535,10 +1526,6 @@
         <p id="selected-stop-name" style="font-size:28px;font-weight:900;color:var(--text);text-transform:uppercase;line-height:1.1"></p>
         <p id="selected-stop-route" style="font-size:13px;color:var(--text-muted);margin-top:4px"></p>
         <p id="selected-stop-distance" style="font-size:14px;color:var(--amber);margin-top:8px;font-weight:700"></p>
-        <div id="gps-progress-wrap" class="gps-progress-wrap d-none">
-          <div class="gps-progress-track"><div id="gps-progress-fill" class="gps-progress-fill"></div></div>
-          <div class="gps-progress-label"><span id="gps-progress-state">Approaching stop</span><span id="gps-progress-distance">--</span></div>
-        </div>
         <div class="mt-3">
           <div style="display:flex;gap:8px;margin-bottom:12px">
             <button id="gps-destination-guide-btn" class="btn-ghost" style="flex:1;height:52px;border:1px solid var(--amber);color:var(--amber);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 4px">
@@ -1550,17 +1537,9 @@
               <span style="font-size:10px;font-weight:700;letter-spacing:.04em">AI</span>
             </button>
           </div>
-          <button id="change-destination-btn" class="btn-primary-sp" style="height:64px;background:var(--amber);margin-bottom:8px">
-            <span class="material-symbols-outlined" style="font-size:22px">edit_location</span>
-            CHANGE DESTINATION
-          </button>
           <button id="set-alert-btn" class="btn-primary-sp" style="height:64px">
             <span class="material-symbols-outlined" style="font-size:22px">notifications_active</span>
             SET ALERT
-          </button>
-          <button id="cancel-alert-btn" class="btn-ghost d-none" style="height:64px;margin-top:8px;border:1px solid #ef4444;color:#ef4444;background:transparent">
-            <span class="material-symbols-outlined" style="font-size:22px">cancel</span>
-            CANCEL ALERT
           </button>
           <button id="sakay-na-btn" class="btn-primary-sp d-none" style="height:64px;margin-top:8px;background:var(--green);color:#fff;border:none">
             <span class="material-symbols-outlined" style="font-size:22px">directions_bus</span>

@@ -284,7 +284,6 @@ function initHome() {
     if (banner) banner.classList.add('d-none');
     if (aiCard) { aiCard.disabled = false; aiCard.style.opacity = '1'; }
   }
-  if (typeof syncHomeGPSStatus === 'function') syncHomeGPSStatus();
 }
 
 function requestStartupPermissions() {
