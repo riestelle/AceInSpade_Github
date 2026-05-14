@@ -549,7 +549,7 @@
       color: var(--text); text-align: left;
       transition: transform .1s; position: relative; overflow: hidden;
     }
-    .home-card.span-2 { grid-column: span 2; flex-direction: row; align-items: center; min-height: 96px; padding: 20px 24px; gap: 16px; }
+    .home-card.span-2 { grid-column: span 2; flex-direction: row; align-items: center; min-height: 88px; padding: 20px 24px; gap: 16px; }
     .home-card.accent { background: var(--amber); border: none; color: #271900; }
     .home-card.dashed { background: var(--bg-alt); border: 2px dashed var(--amber); }
     .home-card:disabled { opacity: .45; cursor: not-allowed; }
@@ -1006,14 +1006,13 @@
               <div class="home-card-sub">Route reference</div>
             </div>
           </button>
-          <button class="home-card" onclick="navigate('ai')">
+          <button class="home-card span-2" onclick="navigate('ai')" style="min-height:88px;">
             <span class="material-symbols-outlined home-card-icon">smart_toy</span>
             <div>
               <div class="home-card-label">AI Guide</div>
               <div class="home-card-sub">Ask for directions</div>
             </div>
           </button>
-          <div></div>
         </div>
 
         <!-- SIMULAN ANG BIYAHE — primary CTA -->
@@ -1560,6 +1559,10 @@
               <span style="font-size:10px;font-weight:700;letter-spacing:.04em">AI</span>
             </button>
           </div>
+          <button id="change-destination-btn" class="btn-primary-sp" style="height:64px;background:var(--amber);margin-bottom:8px">
+            <span class="material-symbols-outlined" style="font-size:22px">edit_location</span>
+            CHANGE DESTINATION
+          </button>
           <button id="set-alert-btn" class="btn-primary-sp" style="height:64px">
             <span class="material-symbols-outlined" style="font-size:22px">notifications_active</span>
             SET ALERT

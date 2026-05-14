@@ -1369,6 +1369,8 @@ function cancelSelectedStop() {
 
 document.getElementById('gps-cancel-btn')?.addEventListener('click', cancelSelectedStop);
 
+document.getElementById('change-destination-btn')?.addEventListener('click', cancelSelectedStop);
+
 document.getElementById('set-alert-btn').addEventListener('click', () => {
   if (!gpsSelectedStop) return;
   if (gpsAlertActive) {
