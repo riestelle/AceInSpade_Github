@@ -483,6 +483,26 @@ function initAlert(stopName) {
   vibrate('signal');
   alertInterval = setInterval(() => vibrate('signal'), 3000);
 
+  // Wire Para Po button — shows the phrase fullscreen so driver can see it
+  const paraPoBtn = document.getElementById('alert-para-po-btn');
+  if (paraPoBtn) {
+    paraPoBtn.onclick = function() {
+      vibrate([200, 100, 200, 100, 400]);
+      // Show the Para po! phrase fullscreen overlay directly
+      const pf = document.getElementById('phrase-fullscreen');
+      const pfMain = document.getElementById('pf-main');
+      const pfSub = document.getElementById('pf-sub');
+      const pfIconImg = document.getElementById('pf-icon-img');
+      if (pf && pfMain) {
+        pfMain.textContent = 'Para po!';
+        if (pfSub) pfSub.textContent = 'Please stop here!';
+        if (pfIconImg) { pfIconImg.src = 'https://cdn-icons-png.flaticon.com/128/9125/9125142.png'; pfIconImg.style.display = 'block'; }
+        pf.classList.remove('d-none');
+        pf.style.background = '#000';
+      }
+    };
+  }
+
   if ('wakeLock' in navigator) {
     navigator.wakeLock.request('screen').then(wl => { alertWakeLock = wl; }).catch(() => {});
   }

@@ -1137,7 +1137,7 @@
     </div>
   </div>
 
-  <div class="flex-grow-1 d-flex flex-column justify-content-center p-4" style="gap:16px;">
+  <div class="scroll-main" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:16px;min-height:0;">
 
     <div style="
       background:#ffffff;
@@ -1691,16 +1691,21 @@
        SCREEN: STOP ALERT TRIGGERED
   ════════════════════════════════════════════════════════════════ -->
   <div id="screen-alert" class="screen alert-screen">
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:24px">
-      <h1 style="font-size:64px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;line-height:1">MALAPIT NA ANG IYONG HINTUAN!</h1>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:20px;padding:24px;">
+      <h1 style="font-size:52px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;line-height:1">MALAPIT NA ANG IYONG HINTUAN!</h1>
       <div>
-        <p style="font-size:14px;color:var(--amber);font-weight:700;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px">STOP NAME</p>
-        <h2 id="alert-stop-name" style="font-size:48px;font-weight:900;color:white;text-transform:uppercase;border-bottom:4px solid var(--amber);padding-bottom:8px">YOUR STOP</h2>
+        <p style="font-size:14px;color:var(--amber);font-weight:700;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px">BABABA KA SA</p>
+        <h2 id="alert-stop-name" style="font-size:44px;font-weight:900;color:white;text-transform:uppercase;border-bottom:4px solid var(--amber);padding-bottom:8px">YOUR STOP</h2>
       </div>
-      <p style="font-size:20px;color:#aaa;margin-top:8px">Signal the driver now — Para po!</p>
+      <!-- Big Para Po button to show the driver -->
+      <button id="alert-para-po-btn"
+        style="width:100%;height:80px;background:var(--amber);border:none;border-radius:18px;font-size:26px;font-weight:900;color:#1a1000;text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 8px 32px rgba(255,184,0,.4);">
+        <span class="material-symbols-outlined" style="font-size:32px">back_hand</span>PARA PO!
+      </button>
+      <p style="font-size:14px;color:#aaa;">I-tap para ipakita sa driver</p>
     </div>
     <button id="alert-dismiss" style="width:100%;height:64px;background:white;color:black;font-weight:900;font-size:20px;border:4px solid white;text-transform:uppercase;letter-spacing:.05em;border-radius:0">
-      NAIINTINDIHAN KO
+      NAIINTINDIHAN KO — UMUWI NA
     </button>
   </div>
 
@@ -1993,10 +1998,16 @@
 
 /* ── TOPBAR FAMILY BTN ──────────────────────────────────────────── */
 document.getElementById('topbar-family-btn').addEventListener('click', function() {
-  // Open the start sheet at step 2 (family sharing) if available, else go to family screen
+  // Open the sheet and jump straight to step 2 (family sharing)
   if (typeof openStartSheet === 'function' && typeof sheetGoTo === 'function') {
-    openStartSheet();
+    // Show overlay + sheet first
+    const overlay = document.getElementById('start-sheet-overlay');
+    const sheet   = document.getElementById('start-sheet');
+    if (overlay) overlay.style.display = 'flex';
+    if (sheet)   { sheet.style.display = 'block'; requestAnimationFrame(() => { sheet.style.transform = 'translateY(0)'; }); }
+    // Then jump to step 2 and populate link
     sheetGoTo(2);
+    if (typeof initSheetStep2 === 'function') initSheetStep2();
   } else if (typeof navigate === 'function') {
     navigate('family');
   }
@@ -2179,12 +2190,10 @@ function syncCommuteDashboard() {
 
 // Re-sync whenever user navigates to commute screen
 document.addEventListener('DOMContentLoaded', function() {
-  const orig = typeof navigate === 'function' ? navigate : null;
-  // Patch navigate to sync dashboard when landing on commute
   const _origNav = window.navigate;
-  window.navigate = function(screen) {
+  window.navigate = function(screen, params, skipHistory) {
     if (screen === 'commute') syncCommuteDashboard();
-    if (typeof _origNav === 'function') _origNav(screen);
+    if (typeof _origNav === 'function') _origNav(screen, params, skipHistory);
   };
 });
 
