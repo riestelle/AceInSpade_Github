@@ -2,8 +2,19 @@
 
 let aiMessages = [];
 let aiLoading = false;
+let aiContext = null;  // GPS/route context injected when coming from hintuan screen
+
+// Call this before navigate('ai') to inject the current stop/route context
+function setAIContext(ctx) {
+  aiContext = ctx || null;
+}
 
 function getAIWelcomeMessage() {
+  if (aiContext && aiContext.stopName) {
+    return appLang === 'en'
+      ? `Hi! SenyasPo AI here 👋 I can see your stop is set to **${aiContext.stopName}**${aiContext.routeCode ? ' on route ' + aiContext.routeCode : ''}. Ask me anything about your trip!`
+      : `Hoy! SenyasPo AI dito 👋 Nakita ko na ang iyong hintuan ay **${aiContext.stopName}**${aiContext.routeCode ? ' sa route ' + aiContext.routeCode : ''}. Tanong mo lang!`;
+  }
   return appLang === 'en'
     ? 'Hi! SenyasPo AI here 👋 Ask me about jeepney routes in English, Filipino, or Taglish.'
     : 'Hoy! SenyasPo AI dito 👋 Tanong mo sa akin tungkol sa jeepney routes — sa Filipino, English, o Taglish.';
@@ -27,10 +38,14 @@ function getAIRoleLabel(role) {
 }
 
 function initAI() {
-  if (aiMessages.length === 0) {
+  // Reset conversation if context changed (user came from a different stop)
+  const currentContextKey = aiContext ? (aiContext.stopName + '|' + aiContext.routeCode) : '';
+  if (aiMessages.length === 0 || aiMessages._contextKey !== currentContextKey) {
     aiMessages = [{ role: 'assistant', text: getAIWelcomeMessage() }];
+    aiMessages._contextKey = currentContextKey;
   } else if (aiMessages.length === 1 && aiMessages[0].role === 'assistant') {
     aiMessages[0].text = getAIWelcomeMessage();
+    aiMessages._contextKey = currentContextKey;
   }
   renderAIStatus();
   renderMessages();
@@ -99,7 +114,7 @@ async function sendAI() {
         max_tokens: 512,
         temperature: 0.4,
         messages: [
-          { role:'system', content: getAISystemPrompt(appLang) },
+          { role:'system', content: getAISystemPrompt(appLang, aiContext) },
           ...aiMessages.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.text })),
         ]
       })

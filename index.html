@@ -1252,7 +1252,7 @@
     <header class="topbar">
       <div class="d-flex align-items-center">
         <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
-        <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
+        <button class="topbar-back" onclick="goBack()"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">SABIHIN MO</span>
       </div>
       <button id="phrases-lang-btn" class="tag-mono" style="background:none;border:2px solid #333;color:#ccc;padding:7px 14px;border-radius:8px;font-weight:700;font-size:13px;text-transform:uppercase">FIL</button>
@@ -1369,7 +1369,7 @@
     <header class="topbar">
       <div class="d-flex align-items-center">
         <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
-        <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
+        <button class="topbar-back" onclick="goBack()"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">FARE CALCULATOR</span>
       </div>
     </header>
@@ -1461,7 +1461,7 @@
     <header class="topbar">
       <div class="d-flex align-items-center">
         <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
-        <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
+        <button class="topbar-back" onclick="goBack()"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">ROUTE REFERENCE</span>
       </div>
     </header>
@@ -1489,7 +1489,7 @@
     <header class="topbar" style="flex-shrink:0">
       <div class="d-flex align-items-center">
         <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
-        <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
+        <button class="topbar-back" onclick="goBack()"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">SET MY STOP</span>
       </div>
       <button id="gps-help-btn" class="topbar-help-btn" type="button" aria-label="How to use Set My Stop"
@@ -1587,7 +1587,7 @@
 
     <div class="commute-topbar">
       <div class="commute-topbar-left">
-        <button onclick="navigate('home')" style="background:none;border:none;color:var(--text);display:flex;align-items:center;gap:4px;font-weight:700;font-size:13px;padding:0">
+        <button onclick="goBack()" style="background:none;border:none;color:var(--text);display:flex;align-items:center;gap:4px;font-weight:700;font-size:13px;padding:0">
           <span class="material-symbols-outlined" style="font-size:22px">arrow_back</span>
         </button>
         <span style="font-size:14px;font-weight:900;color:var(--amber);text-transform:uppercase;letter-spacing:.04em">Commute</span>
@@ -1641,7 +1641,7 @@
       <!-- ③ QUICK-ASK AI — useful mid-ride but not urgent -->
       <div>
         <p class="tag-mono" style="color:var(--text-muted);font-size:9px;letter-spacing:.2em;margin-bottom:8px;">🤖 TANONG SA AI</p>
-        <div class="quick-ask-card" id="quick-ask-card" style="cursor:pointer;" onclick="navigate('ai')">
+        <div class="quick-ask-card" id="quick-ask-card" style="cursor:pointer;" onclick="if(typeof setAIContext==='function') setAIContext(buildGPSContext()); navigate('ai')">
           <div class="quick-ask-left">
             <div class="quick-ask-icon"><span class="material-symbols-outlined">psychology</span></div>
             <div>
@@ -1694,7 +1694,7 @@
     <header class="topbar">
       <div class="d-flex align-items-center">
         <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
-        <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
+        <button class="topbar-back" onclick="goBack()"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">AI ASSISTANT</span>
       </div>
     </header>
@@ -1790,7 +1790,7 @@
     <header class="topbar">
       <div class="d-flex align-items-center">
         <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
-        <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
+        <button class="topbar-back" onclick="goBack()"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">VIBRATION SETTINGS</span>
       </div>
     </header>
@@ -2101,10 +2101,32 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /* ── QUICK-ASK CHIPS ────────────────────────────────────────────── */
+function buildGPSContext() {
+  // Build context object from current GPS state for the AI
+  if (typeof gpsSelectedStop === 'undefined' || !gpsSelectedStop) return null;
+  const route = (typeof ROUTES !== 'undefined' && gpsSelectedStop.routeId)
+    ? ROUTES.find(r => r.id === gpsSelectedStop.routeId)
+    : null;
+  let distanceText = null;
+  if (typeof gpsCurrentPosition !== 'undefined' && gpsCurrentPosition && gpsSelectedStop.lat && gpsSelectedStop.lon) {
+    const dist = haversine(gpsCurrentPosition.lat, gpsCurrentPosition.lon, gpsSelectedStop.lat, gpsSelectedStop.lon);
+    distanceText = dist < 1000
+      ? Math.round(dist) + ' metros'
+      : (dist / 1000).toFixed(1) + ' km';
+  }
+  return {
+    stopName: gpsSelectedStop.name,
+    routeCode: route ? route.code : (gpsSelectedStop.routeId || null),
+    distanceText: distanceText,
+  };
+}
+
 document.querySelectorAll('.quick-ask-chip').forEach(chip => {
   chip.addEventListener('click', function() {
     const question = this.dataset.ask;
     if (!question) return;
+    // Inject GPS context so AI knows the user's stop
+    if (typeof setAIContext === 'function') setAIContext(buildGPSContext());
     // Pre-fill AI input and navigate
     const aiInput = document.getElementById('ai-input');
     if (aiInput) aiInput.value = question;

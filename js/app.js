@@ -1,6 +1,7 @@
 //  SHARED UTILS / NAVIGATION / HOME / DEAF / ROUTE / ALERT / VIB
 
 let currentScreen = 'home';
+let navHistory = [];   // stack of previous screens for back navigation
 let isOnline = navigator.onLine;
 
 let selectedRouteId = (typeof ROUTES !== 'undefined' && Array.isArray(ROUTES) && ROUTES.length > 0)
@@ -222,7 +223,16 @@ function getRouteShortCode(routeId) {
   return (ROUTES.find(r => r.id === routeId) || {}).shortCode || routeId;
 }
 
-function navigate(screenId, params = {}) {
+// Screens that should never be pushed to the back-stack
+const NO_HISTORY_SCREENS = new Set(['home', 'alert']);
+
+function goBack() {
+  // Pop the history stack; fall back to home if empty
+  const prev = navHistory.pop() || 'home';
+  navigate(prev, {}, true /* skipHistory */);
+}
+
+function navigate(screenId, params = {}, skipHistory = false) {
   try {
     vibrate(30);
   } catch (e) {
@@ -237,6 +247,13 @@ function navigate(screenId, params = {}) {
       }
     }
   }
+
+  // Push current screen to history unless going home, or skipHistory
+  if (!skipHistory && !NO_HISTORY_SCREENS.has(screenId) && currentScreen !== screenId) {
+    navHistory.push(currentScreen);
+  }
+  // When navigating home, clear the stack
+  if (screenId === 'home') navHistory = [];
 
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById('screen-' + screenId);
