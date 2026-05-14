@@ -352,7 +352,8 @@ function initDeaf() {
 
 function renderDeaf() {
   const msg = deafMessages[deafLang];
-  document.getElementById('deaf-main-msg').textContent  = msg.main;
+  const mainEl = document.getElementById('deaf-main-msg');
+  if (mainEl) mainEl.innerHTML = msg.main.replace(/\n/g, '<br>');
   const instrEl = document.getElementById('deaf-instruction'); if (instrEl) instrEl.textContent = msg.instruction;
   document.getElementById('deaf-stop-label').innerHTML =
     `<span class="material-symbols-outlined" style="font-size:16px">location_on</span>${msg.stopLabel}`;
@@ -361,7 +362,7 @@ function renderDeaf() {
   const displayBtn = document.getElementById('deaf-stop-display');
   if (deafStop) {
     txt.textContent = deafStop;
-    txt.style.fontSize = '36px';
+    txt.style.fontSize = 'clamp(16px, 5.5vw, 36px)';
     txt.style.color = 'var(--amber)';
     if (displayBtn) {
       displayBtn.style.borderBottomStyle = 'solid';

@@ -1148,7 +1148,7 @@
         </div>
 
         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:20px; gap:4px; background:#ffffff;">
-          <p id="deaf-main-msg" style="font-size:48px; font-weight:900; color:#000000; line-height:1; text-transform:uppercase; margin:0; letter-spacing:-.02em;">BINGI<br>AKO.</p>
+          <p id="deaf-main-msg" style="font-size:clamp(28px, 9vw, 52px); font-weight:900; color:#000000; line-height:1.05; text-transform:uppercase; margin:0; letter-spacing:-.02em; word-break:break-word;">BINGI<br>AKO.</p>
         </div>
       </div>
 
@@ -1161,17 +1161,17 @@
             BABABA AKO SA:
           </p>
           <button id="deaf-stop-display" style="background:transparent; border:none; border-bottom:2.5px dashed rgba(0,0,0,0.35); width:100%; display:flex; align-items:center; padding:4px 0; text-align:left; animation:tapHint 1.8s ease-in-out infinite;">
-            <span id="deaf-stop-text" style="font-size:19px; font-weight:900; color:rgba(0,0,0,0.35); text-transform:uppercase; line-height:1.2;">— TAP TO SET STOP —</span>
+            <span id="deaf-stop-text" style="font-size:clamp(14px, 4.5vw, 19px); font-weight:900; color:rgba(0,0,0,0.35); text-transform:uppercase; line-height:1.2; word-break:break-word;">— TAP TO SET STOP —</span>
           </button>
           <input id="deaf-stop-input" class="d-none"
-              style="background:transparent; border:none; border-bottom:2.5px solid #000000; color:#000000; font-size:19px; font-weight:900; text-align:left; text-transform:uppercase; padding:4px 0; width:100%; outline:none; font-family:inherit;" placeholder="I-TYPE ANG STOP..." />
+              style="background:transparent; border:none; border-bottom:2.5px solid #000000; color:#000000; font-size:clamp(14px, 4.5vw, 19px); font-weight:900; text-align:left; text-transform:uppercase; padding:4px 0; width:100%; outline:none; font-family:inherit;" placeholder="I-TYPE ANG STOP..." />
         </div>
 
         <div style="background: #fcfcfc; padding: 10px; border-radius: 12px; border: 1px solid #f0f0f0;">
           <p style="font-size:9px; font-weight:800; letter-spacing:.22em; text-transform:uppercase; color:#000000; opacity:0.5; margin:0 0 6px; display:flex; align-items:center; gap:4px;">
             ATENSYON:
           </p>
-          <p style="font-size:17px; font-weight:900; color:#000000; text-transform:uppercase; margin:0; letter-spacing:.01em;">
+          <p style="font-size:clamp(13px, 4vw, 17px); font-weight:900; color:#000000; text-transform:uppercase; margin:0; letter-spacing:.01em;">
             PAKITAPIK ANG AKING BALIKAT
           </p>
         </div>
@@ -2146,13 +2146,13 @@ document.querySelectorAll('.quick-ask-chip').forEach(chip => {
   btn.addEventListener('click', function() {
     // Vibrate if available
     if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
-    // Navigate to alert screen (same as GPS alert)
-    const alertStop = document.getElementById('alert-stop-name');
-    const dashStop  = document.getElementById('dash-stop-name');
-    if (alertStop && dashStop && dashStop.textContent !== '— WALANG STOP —') {
-      alertStop.textContent = dashStop.textContent;
-    }
-    if (typeof navigate === 'function') navigate('alert');
+    // Get stop name directly from GPS state (most reliable source)
+    const stopName = (typeof gpsSelectedStop !== 'undefined' && gpsSelectedStop && gpsSelectedStop.name)
+      ? gpsSelectedStop.name
+      : (typeof deafStop !== 'undefined' && deafStop)
+        ? deafStop
+        : '';
+    if (typeof navigate === 'function') navigate('alert', { stopName });
     // Notify family if sharing
     if (typeof familySendParaPo === 'function') familySendParaPo();
   });
