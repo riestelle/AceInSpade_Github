@@ -347,6 +347,12 @@ function getPhrasePlaybackLang() {
 }
 
 function getPhrasePlaybackText() {
+  if (!pfPhrase) {
+    // Triggered from outside phrases screen (e.g. alert/commute Para Po button)
+    // Read whatever text is currently shown in the fullscreen overlay
+    const el = document.getElementById('pf-main');
+    return el ? el.textContent : '';
+  }
   return getPhraseTextOrder(pfPhrase.filText, pfPhrase.enText, pfActiveLang).mainText;
 }
 
