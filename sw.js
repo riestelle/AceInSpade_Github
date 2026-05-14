@@ -7,6 +7,7 @@ const ASSETS = [
   "/data/routes.json",
   "/js/data.js",
   "/js/fare.js",
+  "/js/family.js",
   "/js/gps.js",
   "/js/phrases.js",
   "/js/ai.js",

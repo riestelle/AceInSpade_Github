@@ -1,7 +1,7 @@
 {
   "name": "SenyasPo - Deaf Commuter Guide",
   "short_name": "SenyasPo",
-  "description": "Jeepney app for deaf and hard-of-hearing Filipino commuters with GPS alerts and text-to-speech",
+  "description": "Jeepney app for deaf and hard-of-hearing Filipino commuters with GPS alerts, visual communication cards, and offline fare calculator",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
