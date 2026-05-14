@@ -161,6 +161,16 @@ function sanitizeProfanity(text) {
   return sanitized.replace(/\s{2,}/g, ' ').trim();
 }
 
+// Live version: no trim so spaces while typing are preserved
+function sanitizeProfanityLive(text) {
+  if (!text) return '';
+  let sanitized = String(text);
+  PROFANITY_PATTERNS.forEach(pattern => {
+    sanitized = sanitized.replace(pattern, '');
+  });
+  return sanitized.replace(/\s{3,}/g, '  ');
+}
+
 function getPhraseDirectionLabel(lang) {
   return lang === 'fil' ? 'FIL → EN' : 'EN → FIL';
 }
@@ -469,9 +479,12 @@ const newPhraseEnInput  = document.getElementById('new-phrase-en');
 
 function enforcePhraseInputRules(inputEl) {
   if (!inputEl) return;
-  const cleaned = sanitizeProfanity(inputEl.value);
+  // Use live version so trailing spaces are preserved while the user is typing
+  const cleaned = sanitizeProfanityLive(inputEl.value);
   if (cleaned !== inputEl.value) {
+    const pos = inputEl.selectionStart;
     inputEl.value = cleaned;
+    inputEl.setSelectionRange(pos, pos);
   }
 }
 

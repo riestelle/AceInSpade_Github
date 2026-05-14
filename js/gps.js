@@ -399,7 +399,7 @@ function scoreOSMResult(place, query) {
 async function fetchOSMSearchResults(query, signal) {
   const normalized = normalizeSearchText(query);
   if (!normalized || normalized.length < 3) return [];
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&q=${encodeURIComponent(normalized)}`;
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&countrycodes=ph&viewbox=116.87,21.32,126.60,4.58&bounded=1&q=${encodeURIComponent(normalized)}`;
   const response = await fetch(url, { signal, headers: { Accept: 'application/json' } });
   if (!response.ok) return [];
   const data = await response.json();
@@ -658,7 +658,34 @@ function initLeafletMap() {
   
   // Update stop markers when map moves/zooms
   leafletMap.on('moveend', updateStopMarkers);
-  
+
+  // Allow tapping/clicking anywhere on the map to create a custom stop pin
+  leafletMap.on('click', function(e) {
+    const lat = e.latlng.lat;
+    const lon = e.latlng.lng;
+    // Remove any existing preview marker
+    if (leafletPreviewMarker) { leafletMap.removeLayer(leafletPreviewMarker); leafletPreviewMarker = null; }
+    // Create a custom stop from the tapped location
+    const customStop = {
+      id: 'custom:' + Date.now(),
+      type: 'custom',
+      name: 'Custom Pin',
+      lat: lat,
+      lon: lon,
+      routeId: null,
+      source: 'Map Pin'
+    };
+    // Show preview for the custom pin
+    leafletPreviewMarker = L.circleMarker([lat, lon], {
+      radius: 10,
+      color: '#fff',
+      fillColor: '#feb700',
+      fillOpacity: 1,
+      weight: 2
+    }).addTo(leafletMap);
+    previewSearchResult(customStop);
+  });
+
   setTimeout(() => {
     if (leafletMap) leafletMap.invalidateSize();
   }, 100);

@@ -326,6 +326,11 @@ const deafMessages = {
 };
 
 function initDeaf() {
+  // Auto-fill deaf stop from GPS selected stop if deaf stop not manually set
+  if (!deafStop && typeof gpsSelectedStop !== 'undefined' && gpsSelectedStop && gpsSelectedStop.name) {
+    deafStop = gpsSelectedStop.name.toUpperCase();
+    saveStorage('deaf_stop', deafStop);
+  }
   renderDeaf();
   document.getElementById('lang-btn').textContent = deafLang === 'fil' ? 'FIL → EN' : 'EN → FIL';
 }

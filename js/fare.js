@@ -4,7 +4,7 @@ let fareRouteId   = ROUTES[0].id;
 let fareFromIdx   = 0;
 let fareToIdx     = ROUTES[0].stops.length - 1;
 let fareJeepType  = 'traditional';
-let farePWD       = false;
+let farePWD       = true;
 let fareBill      = null;
 
 function initFare() {
@@ -46,12 +46,12 @@ function renderFare() {
   const strike = document.getElementById('pwd-strikethrough');
   if (farePWD && validTrip) {
     strike.classList.remove('d-none');
-    strike.textContent = `₱${baseFare.toFixed(2)}`;
+    strike.textContent = `₱${Math.ceil(baseFare)}`;
   } else {
     strike.classList.add('d-none');
   }
   document.getElementById('fare-meta').textContent   = !validTrip ? 'Select different stops' : farePWD ? `${distKm} km · PWD 20% OFF` : `${distKm} km`;
-  document.getElementById('fare-amount').textContent = validTrip ? `₱${fare.toFixed(2)}` : '—';
+  document.getElementById('fare-amount').textContent = validTrip ? `₱${Math.ceil(fare)}` : '—';
 
   const billSection = document.getElementById('bill-section');
   const billBtns    = document.getElementById('bill-buttons');
@@ -71,7 +71,7 @@ function renderFare() {
     const change = Math.round((fareBill - fare)*100)/100;
     changeDis.classList.remove('d-none');
     billErr.classList.add('d-none');
-    document.getElementById('change-amount').textContent = change >= 0 ? `₱${change.toFixed(2)}` : '—';
+    document.getElementById('change-amount').textContent = change >= 0 ? `₱${Math.ceil(fareBill - Math.ceil(fare))}` : '—';
     change < 0 ? billErr.classList.remove('d-none') : billErr.classList.add('d-none');
     change < 0 ? changeDis.classList.add('d-none') : {};
   } else {
@@ -83,7 +83,7 @@ function renderFare() {
     saveStorage('last_fare', { amount: fare, route: route.shortCode, isPWD: farePWD });
     const wrap = document.getElementById('use-in-sabihin-btn-wrap');
     wrap.classList.remove('d-none');
-    document.getElementById('use-sabihin-label').textContent = `Use ₱${fare.toFixed(2)} in Sabihin Mo →`;
+    document.getElementById('use-sabihin-label').textContent = `Use ₱${Math.ceil(fare)} in Sabihin Mo →`;
   } else {
     document.getElementById('use-in-sabihin-btn-wrap').classList.add('d-none');
   }
