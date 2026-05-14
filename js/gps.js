@@ -85,6 +85,8 @@ function updateGPSActionButton() {
 
 function restoreGPSUI() {
   if (!gpsSelectedStop) return;
+  const emptyCard = document.getElementById('gps-empty-card');
+  if (emptyCard) emptyCard.classList.add('d-none');
   document.getElementById('gps-search').value = gpsSelectedStop.name;
   document.getElementById('gps-dropdown').classList.add('d-none');
   document.getElementById('gps-preview-card').classList.add('d-none');
@@ -294,12 +296,16 @@ function initGPS() {
     document.getElementById('gps-preview-card').classList.add('d-none');
     if (leafletPreviewMarker) { leafletPreviewMarker.remove(); leafletPreviewMarker = null; }
     document.getElementById('selected-stop-card').classList.add('d-none');
+    const emptyCard = document.getElementById('gps-empty-card');
+    if (emptyCard) emptyCard.classList.remove('d-none');
     document.getElementById('alert-active-msg').classList.add('d-none');
     document.getElementById('gps-error').classList.add('d-none');
     const mapLabel = document.getElementById('map-label');
     if (mapLabel) mapLabel.textContent = 'Select a stop above';
   } else {
     restoreGPSUI();
+    const emptyCard = document.getElementById('gps-empty-card');
+    if (emptyCard) emptyCard.classList.add('d-none');
     if (!gpsCurrentPosition) {
       document.getElementById('gps-distance').classList.add('d-none');
     }
@@ -614,14 +620,12 @@ function previewSearchResult(result) {
   collapseExpandedSearch();
   syncGPSSearchInput(result.name);
   gpsSelectedStop = result;
+  const emptyCard = document.getElementById('gps-empty-card');
+  if (emptyCard) emptyCard.classList.add('d-none');
   document.getElementById('selected-stop-card').classList.remove('d-none');
   document.getElementById('selected-stop-name').textContent = result.name;
-  document.getElementById('selected-stop-route').textContent = getRouteShortCode(result.routeId);
-  const alertBtn = document.getElementById('set-alert-btn');
-  if (alertBtn) {
-    alertBtn.disabled = false;
-    alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> SET ALERT';
-  }
+  document.getElementById('selected-stop-route').textContent = result.routeId ? getRouteShortCode(result.routeId) : (result.type === 'osm' ? 'OpenStreetMap' : 'Custom Pin');
+  updateGPSActionButton();
   document.getElementById('gps-preview-card').classList.add('d-none');
   panMapToStop(result);
   showPreviewPopup(result);
@@ -657,10 +661,13 @@ async function selectCustomPin(place) {
     gpsPreviewMarker = null;
   }
   document.getElementById('gps-preview-card').classList.add('d-none');
+  const emptyCard = document.getElementById('gps-empty-card');
+  if (emptyCard) emptyCard.classList.add('d-none');
   document.getElementById('selected-stop-card').classList.remove('d-none');
   document.getElementById('selected-stop-name').textContent = gpsSelectedStop.name;
   document.getElementById('selected-stop-route').textContent = gpsSelectedStop.address ? 'Dropped Pin' : 'Custom Pin';
   updateStopMarkers();
+  updateGPSActionButton();
   if (gpsCurrentPosition) updateDistanceDisplay();
 
   if (typeof saveStorage === 'function') {
@@ -687,10 +694,13 @@ function selectOSMPlace(place) {
 
   syncGPSSearchInput(gpsSelectedStop.name);
   document.getElementById('gps-preview-card').classList.add('d-none');
+  const emptyCard = document.getElementById('gps-empty-card');
+  if (emptyCard) emptyCard.classList.add('d-none');
   document.getElementById('selected-stop-card').classList.remove('d-none');
   document.getElementById('selected-stop-name').textContent = gpsSelectedStop.name;
   document.getElementById('selected-stop-route').textContent = 'OpenStreetMap';
   updateStopMarkers();
+  updateGPSActionButton();
 
   if (typeof saveStorage === 'function') {
     saveStorage('family_selected_stop', gpsSelectedStop.name);
@@ -1231,12 +1241,15 @@ function selectGPSStop(id) {
   collapseExpandedSearch();
   gpsSelectedStop = stop;
   syncGPSSearchInput(stop.name);
+  const emptyCard = document.getElementById('gps-empty-card');
+  if (emptyCard) emptyCard.classList.add('d-none');
   document.getElementById('gps-preview-card').classList.add('d-none');
   document.getElementById('selected-stop-card').classList.remove('d-none');
   document.getElementById('selected-stop-name').textContent  = stop.name;
   document.getElementById('selected-stop-route').textContent = getRouteShortCode(stop.routeId);
   panMapToStop(stop);
   updateStopMarkers();
+  updateGPSActionButton();
   
   // Update distance display if we have current position
   if (gpsCurrentPosition) {
@@ -1271,6 +1284,8 @@ function cancelSelectedStop() {
   document.getElementById('gps-distance').classList.add('d-none');
   document.getElementById('alert-active-msg').classList.add('d-none');
   document.getElementById('gps-error').classList.add('d-none');
+  const emptyCard = document.getElementById('gps-empty-card');
+  if (emptyCard) emptyCard.classList.remove('d-none');
   const alertBtn = document.getElementById('set-alert-btn');
   if (alertBtn) {
     alertBtn.disabled = true;

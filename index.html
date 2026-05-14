@@ -1655,6 +1655,7 @@
     <!-- MAP stretches to fill remaining height, with overlays inside -->
     <div id="gps-map-container" style="position:relative;flex:1;min-height:0;">
       <div id="leaflet-map" style="height:100%;border-radius:0;"></div>
+    <div id="map-label" style="position:absolute;top:20px;left:16px;right:16px;z-index:15;pointer-events:none;text-align:center;color:var(--text-muted);font-size:13px;line-height:1.4;">Tap a stop on the map or search above to begin.</div>
 
       <!-- DROPDOWN overlays the map (appears below search bar, above map) -->
       <div id="gps-dropdown" class="stop-dropdown d-none" style="position:absolute;top:0;left:16px;right:16px;z-index:30;max-height:60%;overflow-y:auto;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.5);"></div>
@@ -1687,6 +1688,13 @@
     <div style="padding:0 16px 16px;">
       <p id="gps-distance" class="d-none" style="font-size:16px;font-weight:700;color:var(--amber);text-align:center;padding:8px 0 0"></p>
       <p id="gps-error" class="d-none" style="color:#ef4444;font-size:14px;font-weight:700;text-align:center;padding:8px 0 0"></p>
+      
+      <div id="gps-empty-card" class="selected-stop-card">
+        <p class="tag-mono mb-1" style="color:var(--amber);letter-spacing:.15em">SET MY STOP</p>
+        <p style="font-size:15px;color:var(--text);line-height:1.6;margin:0">
+          Search for a stop name above or tap anywhere on the map to choose a destination. Confirm the preview to show the stop controls.
+        </p>
+      </div>
       
       <div id="selected-stop-card" class="selected-stop-card d-none">
         <p class="tag-mono mb-1" style="color:var(--amber);letter-spacing:.15em">SELECTED STOP</p>
