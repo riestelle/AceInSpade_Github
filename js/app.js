@@ -261,13 +261,11 @@ function initHome() {
   const aiCard = document.getElementById('ai-card');
   const banner = document.getElementById('offline-banner');
   if (!isOnline) {
-    banner.classList.remove('d-none');
-    aiCard.disabled = true;
-    aiCard.style.opacity = '.45';
+    if (banner) banner.classList.remove('d-none');
+    if (aiCard) { aiCard.disabled = true; aiCard.style.opacity = '.45'; }
   } else {
-    banner.classList.add('d-none');
-    aiCard.disabled = false;
-    aiCard.style.opacity = '1';
+    if (banner) banner.classList.add('d-none');
+    if (aiCard) { aiCard.disabled = false; aiCard.style.opacity = '1'; }
   }
 }
 
@@ -308,7 +306,7 @@ document.querySelectorAll('[data-nav]').forEach(btn => {
     if (!this.disabled) navigate(target);
   });
 });
-document.getElementById('home-vib-btn').addEventListener('click', () => navigate('vib'));
+document.getElementById('home-vib-btn')?.addEventListener('click', () => navigate('vib'));
 
 const deafMessages = {
   fil: {
@@ -338,7 +336,7 @@ function initDeaf() {
 function renderDeaf() {
   const msg = deafMessages[deafLang];
   document.getElementById('deaf-main-msg').textContent  = msg.main;
-  document.getElementById('deaf-instruction').textContent = msg.instruction;
+  const instrEl = document.getElementById('deaf-instruction'); if (instrEl) instrEl.textContent = msg.instruction;
   document.getElementById('deaf-stop-label').innerHTML =
     `<span class="material-symbols-outlined" style="font-size:16px">location_on</span>${msg.stopLabel}`;
 
