@@ -1053,34 +1053,33 @@
       </div>
 
       <!-- STEP 2: Pamilya -->
-      <!-- STEP 2: Pamilya — share link inline -->
+      <!-- STEP 2: Pamilya — link shown directly on page -->
       <div id="sheet-step-2" style="display:none;">
         <p style="font-size:10px;font-weight:800;color:var(--amber);letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px;">Hakbang 2 ng 3</p>
         <p style="font-size:22px;font-weight:900;color:white;margin-bottom:4px;">Ipaalam sa Pamilya</p>
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">I-share ang link na ito sa kamag-anak mo. Makikita nila ang iyong live na lokasyon. Walang login kailangan.</p>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">I-share ang link na ito. Kapag binuksan ng pamilya mo, makikita nila kung nasaan ka. Walang login kailangan.</p>
 
-        <div style="background:var(--surface-lo);border:1px solid var(--outline);border-radius:12px;padding:12px 14px;margin-bottom:12px;">
-          <p style="font-size:10px;font-weight:800;color:var(--amber);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">🔗 SHAREABLE LINK</p>
-          <p id="sheet-family-link-text" style="font-size:12px;color:var(--amber);font-family:monospace;word-break:break-all;margin-bottom:10px;line-height:1.5;">...</p>
-          <div style="display:flex;gap:8px;">
-            <button id="sheet-copy-btn" class="btn-ghost" style="flex:1;font-size:13px;height:44px;">
-              <span class="material-symbols-outlined" style="font-size:16px">content_copy</span> Kopyahin
-            </button>
-            <button id="sheet-share-btn" class="btn-primary-sp" style="flex:1;font-size:13px;height:44px;">
-              <span class="material-symbols-outlined" style="font-size:16px">ios_share</span> I-share
-            </button>
-          </div>
-        </div>
+        <!-- The link itself, shown as a tappable/selectable field -->
+        <p style="font-size:11px;font-weight:800;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">🔗 Link para sa Pamilya</p>
+        <input id="sheet-family-link-text" type="text" readonly
+          onclick="this.select()"
+          style="width:100%;background:var(--surface-lo);border:1px solid var(--outline);border-radius:10px;color:var(--amber);font-size:12px;padding:12px 14px;margin-bottom:12px;font-family:monospace;word-break:break-all;cursor:text;"
+        />
 
-        <p id="sheet-family-status" style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:12px;">⬜ Hindi pa aktibo ang live sharing</p>
-
-        <button id="sheet-start-sharing-btn" class="btn-primary-sp" style="width:100%;height:52px;font-size:15px;margin-bottom:10px;background:#1a5e1a;border:2px solid var(--green);">
-          <span class="material-symbols-outlined" style="font-size:20px">share_location</span>
-          I-on ang Live Sharing
+        <!-- Single share button — most important action -->
+        <button id="sheet-share-btn" class="btn-primary-sp" style="width:100%;height:56px;font-size:17px;margin-bottom:8px;">
+          <span class="material-symbols-outlined" style="font-size:22px">ios_share</span>
+          I-share sa Pamilya
         </button>
+        <button id="sheet-copy-btn" class="btn-ghost" style="width:100%;height:44px;font-size:14px;margin-bottom:12px;">
+          <span class="material-symbols-outlined" style="font-size:16px">content_copy</span> Kopyahin ang Link
+        </button>
+
+        <p id="sheet-family-status" style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:14px;">⬜ Hindi pa aktibo ang live sharing</p>
+
         <button onclick="sheetGoTo(3);"
           style="width:100%;height:44px;border:none;background:none;color:var(--text-muted);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">
-          Laktawan →
+          Susunod →
         </button>
       </div>
 
@@ -2063,11 +2062,10 @@ function initSheetStep2() {
   const linkEl   = document.getElementById('sheet-family-link-text');
   const copyBtn  = document.getElementById('sheet-copy-btn');
   const shareBtn = document.getElementById('sheet-share-btn');
-  const startBtn = document.getElementById('sheet-start-sharing-btn');
   const statusEl = document.getElementById('sheet-family-status');
 
   const url = (typeof getFamilyShareURL === 'function') ? getFamilyShareURL() : window.location.href;
-  if (linkEl) linkEl.textContent = url;
+  if (linkEl) linkEl.value = url;
 
   // Auto-start sharing as soon as step 2 is shown
   if (typeof familyStartSharingIfNeeded === 'function') familyStartSharingIfNeeded();
@@ -2075,15 +2073,8 @@ function initSheetStep2() {
   function updateSharingStatus() {
     const active = (typeof familyIsWatching !== 'undefined') && familyIsWatching;
     if (statusEl) {
-      statusEl.textContent = active ? '🔴 Live — aktibo ang pagbabahagi' : '⬜ Hindi pa aktibo ang live sharing';
+      statusEl.textContent = active ? '🔴 Live — aktibo na ang pagbabahagi' : '⬜ Hindi pa aktibo ang live sharing';
       statusEl.style.color = active ? '#f87171' : 'var(--text-muted)';
-    }
-    if (startBtn) {
-      startBtn.innerHTML = active
-        ? '<span class="material-symbols-outlined" style="font-size:20px">stop_circle</span> Itigil ang Sharing'
-        : '<span class="material-symbols-outlined" style="font-size:20px">share_location</span> I-on ang Live Sharing';
-      startBtn.style.background = active ? '#b91c1c' : '#1a5e1a';
-      startBtn.style.borderColor = active ? '#dc2626' : 'var(--green)';
     }
   }
 
@@ -2119,21 +2110,7 @@ function initSheetStep2() {
     };
   }
 
-  if (startBtn) {
-    startBtn.onclick = () => {
-      if (typeof familyIsWatching !== 'undefined' && familyIsWatching) {
-        // Toggle off
-        if (typeof stopFamilyGpsStream === 'function') stopFamilyGpsStream();
-        familyIsWatching = false;
-        if (typeof saveStorage === 'function') saveStorage('family_is_watching', false);
-        if (typeof renderFamilyStatus === 'function') renderFamilyStatus();
-      } else {
-        if (typeof familyStartSharingIfNeeded === 'function') familyStartSharingIfNeeded();
-      }
-      if (typeof vibrate === 'function') vibrate(40);
-      updateSharingStatus();
-    };
-  }
+
 }
 
 /* ── SAKAY NA BUTTON (GPS screen) ──────────────────────────────── */
