@@ -649,3 +649,33 @@ function renderWatcherPage(watchId) {
   });
 }
 
+// ── PUBLIC HELPERS called from index.html / other modules ───────
+
+// Start sharing if not already active (called when commute begins)
+function familyStartSharingIfNeeded() {
+  if (!familyIsWatching) {
+    familyIsWatching = true;
+    startFamilyGpsStream();
+    saveStorage('family_is_watching', true);
+    renderFamilyStatus();
+  }
+}
+
+// Push destination + para po alert to family watchers
+function familySendParaPo() {
+  if (!familyIsWatching) return;
+  const stopName = (typeof gpsSelectedStop !== 'undefined' && gpsSelectedStop && gpsSelectedStop.name)
+    ? gpsSelectedStop.name
+    : (typeof alertStopName !== 'undefined' && alertStopName) ? alertStopName : null;
+  pushFamilyStatus({
+    status: 'para_po',
+    stop: stopName || '(unknown)',
+    ts: Date.now(),
+  }, true);
+}
+
+// Push destination when stop is selected / commute starts
+function familyPushStatus(update) {
+  if (!familyIsWatching) return;
+  pushFamilyStatus({ ...update, ts: Date.now() }, true);
+}

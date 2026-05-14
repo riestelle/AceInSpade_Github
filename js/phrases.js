@@ -171,17 +171,15 @@ function sanitizeProfanityLive(text) {
   return sanitized.replace(/\s{3,}/g, '  ');
 }
 
-function getPhraseDirectionLabel(lang) {
-  return lang === 'fil' ? 'FIL → EN' : 'EN → FIL';
+function getPhraseTextOrder(filText, enText, lang) {
+  // lang = the language to DISPLAY as main (fil = show Filipino big, en = show English big)
+  const mainText = lang === 'fil' ? filText : enText;
+  const subText  = lang === 'fil' ? enText  : filText;
+  return { sourceLang: lang, targetLang: lang === 'fil' ? 'en' : 'fil', mainText, subText };
 }
 
-function getPhraseTextOrder(filText, enText, lang) {
-  const sourceLang = lang === 'fil' ? 'fil' : 'en';
-  const targetLang = sourceLang === 'fil' ? 'en' : 'fil';
-  const mainText = targetLang === 'fil' ? filText : enText;
-  const subText  = targetLang === 'fil' ? enText : filText;
-
-  return { sourceLang, targetLang, mainText, subText };
+function getPhraseDirectionLabel(lang) {
+  return lang === 'fil' ? 'FILIPINO' : 'ENGLISH';
 }
 
 // Preload voices when they become available
@@ -325,7 +323,7 @@ function renderPhraseFullscreen() {
   document.getElementById('pf-main').textContent = phraseText.mainText;
   document.getElementById('pf-sub').textContent  = phraseText.subText;
   document.getElementById('pf-lang').textContent = getPhraseDirectionLabel(pfActiveLang);
-  document.getElementById('pf-lang-toggle').textContent = getPhraseDirectionLabel(pfActiveLang);
+  document.getElementById('pf-lang-toggle').textContent = pfActiveLang === 'fil' ? 'EN →' : '← FIL';
 }
 
 document.getElementById('pf-lang-toggle').addEventListener('click', () => {
@@ -345,7 +343,7 @@ document.getElementById('pf-close').addEventListener('click', () => {
 });
 
 function getPhrasePlaybackLang() {
-  return pfActiveLang === 'fil' ? 'en' : 'fil';
+  return pfActiveLang; // speak whatever language is currently shown as main
 }
 
 function getPhrasePlaybackText() {

@@ -1057,7 +1057,8 @@
         <p style="font-size:10px;font-weight:800;color:var(--amber);letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px;">Hakbang 2 ng 3</p>
         <p style="font-size:22px;font-weight:900;color:white;margin-bottom:4px;">Ipaalam sa Pamilya?</p>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.5;">Pwedeng makita ng pamilya mo ang iyong live location habang nakasakay ka. Hindi kailangan ng login.</p>
-        <button onclick="closeStartSheet(); if(typeof navigate==='function') navigate('family');"
+        <button onclick="closeStartSheet(); if(typeof navigate==='function') navigate('family');\
+ if(typeof familyStartSharingIfNeeded==='function') familyStartSharingIfNeeded();"
           class="btn-primary-sp" style="height:64px;font-size:18px;margin-bottom:12px;background:#1a5e1a;border:2px solid var(--green);">
           <span class="material-symbols-outlined" style="font-size:24px">group</span>
           I-share sa Pamilya
@@ -1073,7 +1074,7 @@
         <p style="font-size:10px;font-weight:800;color:var(--amber);letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px;">Hakbang 3 ng 3</p>
         <p style="font-size:22px;font-weight:900;color:white;margin-bottom:4px;">Handa ka na!</p>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.5;">Kapag nakasakay ka na, buksan ang Commute Dashboard. Lahat ng kailangan mo nasa isang screen.</p>
-        <button onclick="closeStartSheet(); syncCommuteDashboard(); if(typeof navigate==='function') navigate('commute');"
+        <button onclick="closeStartSheet(); syncCommuteDashboard(); if(typeof familyStartSharingIfNeeded==='function') familyStartSharingIfNeeded(); if(typeof familyPushStatus==='function') familyPushStatus({ status:'commute_started', destination: (typeof gpsSelectedStop!=='undefined'&&gpsSelectedStop)?gpsSelectedStop.name:null }); if(typeof navigate==='function') navigate('commute');"
           class="btn-primary-sp" style="height:72px;font-size:20px;box-shadow:0 8px 24px rgba(255,184,0,.35);">
           <span class="material-symbols-outlined" style="font-size:28px">directions_bus</span>
           SAKAY NA!
