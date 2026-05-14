@@ -23,31 +23,63 @@ let gpsSearchController = null;
 let gpsCurrentSearchQuery = '';
 
 function saveGPSState() {
-  if (typeof saveStorage !== 'function') return;
-  saveStorage('gps_selected_stop', gpsSelectedStop ? {
-    id: gpsSelectedStop.id,
-    name: gpsSelectedStop.name,
-    lat: gpsSelectedStop.lat,
-    lon: gpsSelectedStop.lon,
-    routeId: gpsSelectedStop.routeId || null,
-    type: gpsSelectedStop.type || 'local'
-  } : null);
-  saveStorage('gps_alert_active', gpsAlertActive);
+  try {
+    const storage = window.sessionStorage || window.localStorage;
+    if (gpsSelectedStop) {
+      storage.setItem('gps_selected_stop', JSON.stringify({
+        id: gpsSelectedStop.id,
+        name: gpsSelectedStop.name,
+        lat: gpsSelectedStop.lat,
+        lon: gpsSelectedStop.lon,
+        routeId: gpsSelectedStop.routeId || null,
+        type: gpsSelectedStop.type || 'local'
+      }));
+    } else {
+      storage.removeItem('gps_selected_stop');
+    }
+    storage.setItem('gps_alert_active', JSON.stringify(gpsAlertActive));
+  } catch (e) {
+    // ignore storage errors
+  }
 }
 
 function loadPersistedGPSState() {
-  if (typeof loadStorage !== 'function') return;
-  const storedStop = loadStorage('gps_selected_stop', null);
-  if (storedStop && storedStop.id) {
-    if (storedStop.type === 'osm') {
-      gpsSelectedStop = storedStop;
-    } else {
-      const stop = STOPS_DB.find(s => s.id === storedStop.id);
-      gpsSelectedStop = stop || storedStop;
+  try {
+    const storage = window.sessionStorage || window.localStorage;
+
+    // Clean up any legacy localStorage values from old versions.
+    if (window.localStorage && window.sessionStorage) {
+      window.localStorage.removeItem('gps_selected_stop');
+      window.localStorage.removeItem('gps_alert_active');
     }
+
+    const rawStop = storage.getItem('gps_selected_stop');
+    const storedStop = rawStop ? JSON.parse(rawStop) : null;
+    if (storedStop && storedStop.id) {
+      if (storedStop.type === 'osm') {
+        gpsSelectedStop = storedStop;
+      } else {
+        const stop = STOPS_DB.find(s => s.id === storedStop.id);
+        gpsSelectedStop = stop || storedStop;
+      }
+    }
+    const rawActive = storage.getItem('gps_alert_active');
+    gpsAlertActive = rawActive !== null ? JSON.parse(rawActive) : false;
+  } catch (e) {
+    gpsSelectedStop = null;
+    gpsAlertActive = false;
   }
-  gpsAlertActive = loadStorage('gps_alert_active', false);
 }
+
+window.addEventListener('beforeunload', () => {
+  try {
+    const storage = window.sessionStorage || window.localStorage;
+    storage.removeItem('gps_selected_stop');
+    storage.removeItem('gps_alert_active');
+  } catch (e) {
+    // ignore storage errors
+  }
+});
 
 function syncGPSSearchInput(value) {
   const mainInput = document.getElementById('gps-search');
@@ -64,15 +96,17 @@ function syncGPSSearchInput(value) {
 function updateGPSActionButton() {
   const alertBtn = document.getElementById('set-alert-btn');
   if (!alertBtn) return;
+  const cancelBtn = document.getElementById('cancel-alert-btn');
   if (gpsAlertActive) {
     alertBtn.disabled = false;
     alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">refresh</span> CHANGE DESTINATION';
-    alertBtn.title = 'Change your current destination';
+    alertBtn.title = 'Choose a new destination for your alert';
     document.getElementById('alert-active-msg').classList.remove('d-none');
     const trackingBadge = document.getElementById('home-tracking-badge');
     if (trackingBadge) trackingBadge.classList.remove('d-none');
     const sakayBtn = document.getElementById('sakay-na-btn');
     if (sakayBtn) sakayBtn.classList.remove('d-none');
+    if (cancelBtn) cancelBtn.classList.remove('d-none');
   } else {
     alertBtn.disabled = false;
     alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> SET ALERT';
@@ -80,6 +114,7 @@ function updateGPSActionButton() {
     document.getElementById('alert-active-msg').classList.add('d-none');
     const sakayBtn = document.getElementById('sakay-na-btn');
     if (sakayBtn) sakayBtn.classList.add('d-none');
+    if (cancelBtn) cancelBtn.classList.add('d-none');
   }
 }
 
@@ -94,6 +129,8 @@ function restoreGPSUI() {
   updateGPSActionButton();
   if (gpsCurrentPosition) {
     updateDistanceDisplay();
+  } else {
+    document.getElementById('gps-progress-wrap')?.classList.add('d-none');
   }
 }
 
@@ -109,15 +146,10 @@ function collapseExpandedSearch() {
   const controls = document.getElementById('gps-map-controls');
   const expandBtn = document.getElementById('gps-expand-btn-map');
   const screen = document.getElementById('screen-gps');
-  const main = screen?.querySelector('main');
 
   if (map) map.classList.remove('fullscreen');
   if (controls) controls.classList.add('d-none');
   if (expandBtn) expandBtn.classList.remove('d-none');
-  if (main) {
-    main.style.padding = '16px 24px';
-    main.style.gap = '16px';
-  }
   if (screen) screen.style.overflow = 'auto';
   gpsMapExpanded = false;
   requestAnimationFrame(() => {
@@ -130,12 +162,11 @@ function toggleMapExpand() {
   const container = document.getElementById('gps-map-container');
   const controls = document.getElementById('gps-map-controls');
   const screen = document.getElementById('screen-gps');
-  const main = screen.querySelector('main');
   const searchNormal = document.getElementById('gps-search-normal');
   const expandBtn = document.getElementById('gps-expand-btn-map');
   const locationInfo = document.getElementById('gps-location-info');
   const legend = document.getElementById('gps-map-legend');
-  if (!map || !container || !controls || !screen || !main) return;
+  if (!map || !container || !controls || !screen) return;
   
   gpsMapExpanded = !gpsMapExpanded;
   
@@ -143,8 +174,6 @@ function toggleMapExpand() {
     map.classList.add('fullscreen');
     controls.classList.remove('d-none');
     if (expandBtn) expandBtn.classList.add('d-none');
-    main.style.padding = '0';
-    main.style.gap = '0';
     screen.style.overflow = 'hidden';
     if (searchNormal) searchNormal.classList.add('d-none');
     
@@ -173,8 +202,6 @@ function toggleMapExpand() {
     map.classList.remove('fullscreen');
     controls.classList.add('d-none');
     if (expandBtn) expandBtn.classList.remove('d-none');
-    main.style.padding = '16px 24px';
-    main.style.gap = '16px';
     screen.style.overflow = 'auto';
     if (searchNormal) searchNormal.classList.remove('d-none');
     
@@ -238,6 +265,65 @@ function updateDistanceDisplay() {
     : `${(dist / 1000).toFixed(2)}km away`;
   
   document.getElementById('selected-stop-distance').textContent = `📍 ${distLabel}`;
+  updateGPSProgressIndicator(dist);
+}
+
+function syncHomeGPSStatus() {
+  const btn = document.getElementById('start-commute-btn');
+  const label = document.getElementById('gps-home-cta-label');
+  const indicator = document.getElementById('gps-home-cta-indicator');
+  if (!btn || !label || !indicator) return;
+
+  if (!gpsSelectedStop) {
+    label.textContent = 'Hintuan Ko';
+    indicator.classList.add('d-none');
+    btn.classList.remove('gps-home-active');
+  } else {
+    label.textContent = gpsAlertActive ? 'Simulan ang Biyahe' : 'Hintuan Ko Active';
+    indicator.classList.remove('d-none');
+    btn.classList.add('gps-home-active');
+  }
+}
+
+function updateGPSProgressIndicator(distMeters) {
+  const wrap = document.getElementById('gps-progress-wrap');
+  const fill = document.getElementById('gps-progress-fill');
+  const state = document.getElementById('gps-progress-state');
+  const distanceLabel = document.getElementById('gps-progress-distance');
+  if (!wrap || !fill || !state || !distanceLabel || !gpsCurrentPosition || !gpsSelectedStop) {
+    if (wrap) wrap.classList.add('d-none');
+    return;
+  }
+
+  const dist = typeof distMeters === 'number'
+    ? distMeters
+    : haversine(
+        gpsCurrentPosition.latitude,
+        gpsCurrentPosition.longitude,
+        gpsSelectedStop.lat,
+        gpsSelectedStop.lon
+      );
+
+  const maxDistance = 10000; // 10 km is full progress range
+  const pct = Math.min(100, Math.max(0, Math.round((maxDistance - dist) / maxDistance * 100)));
+  fill.style.width = `${pct}%`;
+  wrap.classList.remove('d-none');
+
+  distanceLabel.textContent = dist < 1000
+    ? `${Math.round(dist)}m`
+    : `${(dist / 1000).toFixed(2)}km`;
+
+  if (dist <= 150) {
+    state.textContent = 'Almost there';
+  } else if (dist <= 500) {
+    state.textContent = 'Very close';
+  } else if (dist <= 1000) {
+    state.textContent = 'Nearby';
+  } else if (dist <= 5000) {
+    state.textContent = 'Getting closer';
+  } else {
+    state.textContent = 'Heading to destination';
+  }
 }
 
 function previewGPSStop(id) {
@@ -290,10 +376,6 @@ function previewGPSStop(id) {
 }
 
 function initGPS() {
-  const hadActiveAlert = typeof loadStorage === 'function' && loadStorage('gps_alert_active', false);
-  if (!hadActiveAlert) {
-    cleanupGPS();
-  }
   loadPersistedGPSState();
 
   if (!gpsSelectedStop) {
@@ -433,7 +515,33 @@ async function fetchOSMSearchResults(query, signal) {
     lon: parseFloat(place.lon),
     routeId: null,
     source: 'OpenStreetMap',
+    osmData: place,
   })) : [];
+}
+
+async function reverseGeocodeLatLng(lat, lon) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=18&addressdetails=1`;
+    const response = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+function formatReverseGeocodeAddress(data) {
+  if (!data || !data.address) return null;
+  const address = data.address;
+  const parts = [];
+  if (address.road) parts.push(address.road);
+  if (address.suburb && !parts.includes(address.suburb)) parts.push(address.suburb);
+  if (address.neighbourhood && !parts.includes(address.neighbourhood)) parts.push(address.neighbourhood);
+  if (address.city && !parts.includes(address.city)) parts.push(address.city);
+  else if (address.town && !parts.includes(address.town)) parts.push(address.town);
+  else if (address.village && !parts.includes(address.village)) parts.push(address.village);
+  if (address.state && !parts.includes(address.state)) parts.push(address.state);
+  return parts.join(', ') || data.display_name || null;
 }
 
 function mergeSearchResults(localResults, osmResults, query) {
@@ -513,11 +621,18 @@ function showPreviewPopup(result) {
     weight: 3,
   }).addTo(leafletMap);
 
-  const popup = L.popup({ closeButton: true, maxWidth: 260, className: 'gps-preview-popup' })
+  const popup = L.popup({
+      closeButton: true,
+      maxWidth: 260,
+      className: 'gps-preview-popup',
+      autoPanPaddingTopLeft: [16, 16],
+      autoPanPaddingBottomRight: [16, 16],
+      offset: [0, -18]
+    })
     .setLatLng([result.lat, result.lon])
     .setContent(`
-      <div style="font-weight:800;font-size:14px;margin-bottom:8px;text-transform:uppercase;">${result.name}</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">${result.routeId ? getRouteShortCode(result.routeId) : (result.type === 'osm' ? 'OpenStreetMap' : '')}</div>
+      <div class="gps-preview-title" style="font-weight:800;font-size:14px;margin-bottom:8px;text-transform:uppercase;">${result.name}</div>
+      <div class="gps-preview-subtitle" style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">${result.routeId ? getRouteShortCode(result.routeId) : (result.type === 'osm' ? 'OpenStreetMap' : '')}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
         <button class="gps-popup-btn gps-popup-confirm" style="flex:1;min-width:120px;height:38px;background:var(--amber);border:none;border-radius:10px;color:#271900;font-weight:800">CONFIRM</button>
         <button class="gps-popup-btn gps-popup-cancel" style="flex:1;min-width:120px;height:38px;border:1px solid var(--outline-var);border-radius:10px;background:transparent;color:var(--text);font-weight:800">BACK</button>
@@ -525,14 +640,42 @@ function showPreviewPopup(result) {
     `);
 
   gpsPreviewMarker.bindPopup(popup).openPopup();
-  gpsPreviewMarker.on('popupopen', () => {
+  gpsPreviewMarker.on('popupopen', async () => {
     const container = popup.getElement();
     if (!container) return;
+    const titleEl = container.querySelector('.gps-preview-title');
+    const subtitleEl = container.querySelector('.gps-preview-subtitle');
     const confirmBtn = container.querySelector('.gps-popup-confirm');
     const cancelBtn = container.querySelector('.gps-popup-cancel');
+
+    if (result.type === 'custom' && !result.address) {
+      const reverseData = await reverseGeocodeLatLng(result.lat, result.lon);
+      const address = formatReverseGeocodeAddress(reverseData);
+      if (address) {
+        result.address = address;
+        result.name = address;
+        if (titleEl) titleEl.textContent = address;
+        if (subtitleEl) subtitleEl.textContent = 'Dropped Pin';
+        syncGPSSearchInput(address);
+      } else if (subtitleEl) {
+        subtitleEl.textContent = `${result.lat.toFixed(5)}, ${result.lon.toFixed(5)}`;
+      }
+    }
+
     if (confirmBtn) {
-      confirmBtn.onclick = () => {
-        if (result.type === 'osm') {
+      confirmBtn.onclick = async () => {
+        if (result.type === 'custom') {
+          if (!result.address) {
+            const reverseData = await reverseGeocodeLatLng(result.lat, result.lon);
+            const address = formatReverseGeocodeAddress(reverseData);
+            if (address) {
+              result.address = address;
+              result.name = address;
+              syncGPSSearchInput(address);
+            }
+          }
+          selectCustomPin(result);
+        } else if (result.type === 'osm') {
           selectOSMPlace(result);
         } else {
           selectGPSStop(result.id);
@@ -561,6 +704,51 @@ function previewSearchResult(result) {
   updateStopMarkers();
 }
 
+async function selectCustomPin(place) {
+  gpsSelectedStop = {
+    id: place.id,
+    name: place.name,
+    lat: place.lat,
+    lon: place.lon,
+    routeId: null,
+    type: 'custom',
+    address: place.address || null,
+  };
+
+  if (!gpsSelectedStop.address) {
+    const reverseData = await reverseGeocodeLatLng(gpsSelectedStop.lat, gpsSelectedStop.lon);
+    const address = formatReverseGeocodeAddress(reverseData);
+    if (address) {
+      gpsSelectedStop.address = address;
+      gpsSelectedStop.name = address;
+    }
+  }
+
+  syncGPSSearchInput(gpsSelectedStop.name);
+  if (gpsPreviewMarker) {
+    gpsPreviewMarker.remove();
+    gpsPreviewMarker = null;
+  }
+  document.getElementById('gps-preview-card').classList.add('d-none');
+  document.getElementById('selected-stop-card').classList.remove('d-none');
+  document.getElementById('selected-stop-name').textContent = gpsSelectedStop.name;
+  document.getElementById('selected-stop-route').textContent = gpsSelectedStop.address ? 'Dropped Pin' : 'Custom Pin';
+  updateStopMarkers();
+  if (gpsCurrentPosition) updateDistanceDisplay();
+
+  if (typeof saveStorage === 'function') {
+    saveStorage('family_selected_stop', gpsSelectedStop.name);
+  }
+  saveGPSState();
+  syncHomeGPSStatus();
+
+  const alertBtn = document.getElementById('set-alert-btn');
+  if (alertBtn) {
+    alertBtn.disabled = false;
+    alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> SET ALERT';
+  }
+}
+
 function selectOSMPlace(place) {
   gpsSelectedStop = {
     id: place.id,
@@ -582,6 +770,7 @@ function selectOSMPlace(place) {
     saveStorage('family_selected_stop', gpsSelectedStop.name);
   }
   saveGPSState();
+  syncHomeGPSStatus();
 
   const alertBtn = document.getElementById('set-alert-btn');
   if (alertBtn) {
@@ -796,6 +985,10 @@ function startLocationWatch() {
         }).addTo(leafletMap).bindPopup('You are here');
       } else {
         gpsLiveMarker.setLatLng([userLat, userLon]);
+      }
+
+      if (gpsSelectedStop) {
+        updateDistanceDisplay();
       }
 
       if (!gpsLiveAccuracy) {
@@ -1134,6 +1327,7 @@ function selectGPSStop(id) {
     saveStorage('family_selected_stop', stop.name);
   }
   saveGPSState();
+  syncHomeGPSStatus();
   const alertBtn = document.getElementById('set-alert-btn');
   alertBtn.disabled = false;
   alertBtn.textContent = '';
@@ -1155,8 +1349,8 @@ function cancelSelectedStop() {
   document.getElementById('gps-preview-card').classList.add('d-none');
   document.getElementById('selected-stop-card').classList.add('d-none');
   document.getElementById('gps-distance').classList.add('d-none');
+  document.getElementById('gps-progress-wrap')?.classList.add('d-none');
   document.getElementById('alert-active-msg').classList.add('d-none');
-  document.getElementById('gps-error').classList.add('d-none');
   const alertBtn = document.getElementById('set-alert-btn');
   if (alertBtn) {
     alertBtn.disabled = true;
@@ -1170,6 +1364,7 @@ function cancelSelectedStop() {
   const sakayBtn = document.getElementById('sakay-na-btn');
   if (sakayBtn) sakayBtn.classList.add('d-none');
   hideGPSPermissionButton();
+  syncHomeGPSStatus();
 }
 
 document.getElementById('gps-cancel-btn')?.addEventListener('click', cancelSelectedStop);
@@ -1177,6 +1372,7 @@ document.getElementById('gps-cancel-btn')?.addEventListener('click', cancelSelec
 document.getElementById('set-alert-btn').addEventListener('click', () => {
   if (!gpsSelectedStop) return;
   if (gpsAlertActive) {
+    // Keep the active alert running, but let the user choose a new stop.
     cancelSelectedStop();
     return;
   }
@@ -1251,6 +1447,13 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
     { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
   );
 });
+
+const cancelAlertButton = document.getElementById('cancel-alert-btn');
+if (cancelAlertButton) {
+  cancelAlertButton.addEventListener('click', () => {
+    cancelSelectedStop();
+  });
+}
 
 // Help modal for "How to set stop"
 ['gps-help-btn','gps-selected-help-btn'].forEach(id => {
