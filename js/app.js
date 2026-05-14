@@ -297,18 +297,125 @@ function requestStartupPermissions() {
   );
 }
 
-function requestStartupNotifications() {
-  if (!('Notification' in window) || Notification.permission !== 'default') return;
-  if (typeof requestNotifPermission === 'function') {
-    requestNotifPermission();
+async function queryPermissionState(name) {
+  if (navigator.permissions) {
+    try {
+      const status = await navigator.permissions.query({ name });
+      return status.state === 'default' ? 'prompt' : status.state;
+    } catch {
+      // Fallback if permission name is not supported or query fails
+    }
+  }
+
+  if (name === 'notifications' && 'Notification' in window) {
+    const permission = Notification.permission;
+    return permission === 'default' ? 'prompt' : permission;
+  }
+
+  if (name === 'geolocation' && 'geolocation' in navigator) {
+    return 'prompt';
+  }
+
+  return 'unsupported';
+}
+
+function formatPermissionLabel(state) {
+  if (state === 'granted') return 'Allowed';
+  if (state === 'prompt') return 'Ask on start';
+  if (state === 'denied') return 'Blocked';
+  return 'Unavailable';
+}
+
+function updatePermissionButton(button, state, type) {
+  if (!button) return;
+  if (state === 'granted') {
+    button.textContent = 'Enabled';
+    button.disabled = true;
+    button.style.opacity = '0.5';
+  } else if (state === 'prompt') {
+    button.textContent = `Enable ${type}`;
+    button.disabled = false;
+    button.style.opacity = '1';
+  } else if (state === 'denied') {
+    button.textContent = 'Open browser settings';
+    button.disabled = false;
+    button.style.opacity = '1';
   } else {
-    Notification.requestPermission().then(() => {});
+    button.textContent = `Enable ${type}`;
+    button.disabled = false;
+    button.style.opacity = '1';
   }
 }
 
-function requestStartupAccess() {
-  requestStartupPermissions();
-  requestStartupNotifications();
+async function renderPermissionSettings() {
+  const geoStatusEl = document.getElementById('permission-geolocation-status');
+  const notifStatusEl = document.getElementById('permission-notifications-status');
+  const geoBtn = document.getElementById('permission-geolocation-btn');
+  const notifBtn = document.getElementById('permission-notifications-btn');
+
+  const geoState = await queryPermissionState('geolocation');
+  const notifState = await queryPermissionState('notifications');
+
+  if (geoStatusEl) geoStatusEl.textContent = formatPermissionLabel(geoState);
+  if (notifStatusEl) notifStatusEl.textContent = formatPermissionLabel(notifState);
+
+  updatePermissionButton(geoBtn, geoState, 'Location');
+  updatePermissionButton(notifBtn, notifState, 'Notifications');
+}
+
+function requestGeolocationPermission() {
+  if (!navigator.geolocation) {
+    alert('Geolocation is not supported by this browser.');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    () => {
+      saveStorage('gps_permission_requested', true);
+      renderPermissionSettings();
+    },
+    async err => {
+      saveStorage('gps_permission_requested', true);
+      await renderPermissionSettings();
+      if (err.code === err.PERMISSION_DENIED) {
+        alert('Location access is blocked. Please enable it in your browser/site settings.');
+      }
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+function requestNotificationPermission() {
+  if (!('Notification' in window)) {
+    alert('Notifications are not supported by this browser.');
+    return;
+  }
+  Notification.requestPermission().then(result => {
+    if (result === 'granted') {
+      renderPermissionSettings();
+    } else if (result === 'denied') {
+      renderPermissionSettings();
+      alert('Notifications are blocked. Please enable them in your browser/site settings.');
+    }
+  });
+}
+
+async function requestStartupNotifications() {
+  if (!('Notification' in window) || Notification.permission !== 'default') return;
+  requestNotificationPermission();
+}
+
+async function requestStartupAccess() {
+  const geoState = await queryPermissionState('geolocation');
+  if ((geoState === 'prompt' || geoState === 'unsupported') && navigator.geolocation) {
+    requestStartupPermissions();
+  }
+
+  const notifState = await queryPermissionState('notifications');
+  if (notifState === 'prompt' || notifState === 'unsupported') {
+    requestStartupNotifications();
+  }
+
+  renderPermissionSettings();
 }
 
 if (document.readyState === 'complete') {
@@ -541,6 +648,7 @@ function initVib() {
   vibTiming    = validateStorageValue('vib_timing', loadStorage('vib_timing', 'normal'), VALID_VIB_TIMINGS, 'normal');
   renderVibOptions();
   renderVibDemo();
+  renderPermissionSettings();
 }
 
 function renderVibOptions() {
@@ -603,6 +711,14 @@ document.querySelectorAll('[data-app-lang]').forEach(btn => {
     });
     vibrate('approach');
   });
+});
+
+document.getElementById('permission-geolocation-btn')?.addEventListener('click', () => {
+  requestGeolocationPermission();
+});
+
+document.getElementById('permission-notifications-btn')?.addEventListener('click', () => {
+  requestNotificationPermission();
 });
 
 function renderAppLanguageOptions() {
