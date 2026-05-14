@@ -363,8 +363,8 @@
       align-items: center;
       justify-content: flex-start;
       border: none;
-      width: 70%;
-      min-height: 200px;
+      width: 100%;
+      min-height: 160px;
       position: relative;
       overflow: hidden;
       gap: 12px;
@@ -769,7 +769,7 @@
     .drawer-logo img { width: 100%; height: 100%; object-fit: contain; }
     .drawer-app-name { font-size: 15px; font-weight: 900; color: var(--amber); letter-spacing: .06em; text-transform: uppercase; }
     .drawer-app-sub  { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-top: 2px; }
-    .drawer-nav { display: flex; flex-direction: column; padding: 4px 0; flex: 1; }
+    .drawer-nav { display: flex; flex-direction: column; padding: 4px 0; }
     .drawer-item {
       display: flex; align-items: center; gap: 14px;
       padding: 10px 20px; background: none; border: none;
@@ -947,7 +947,7 @@
     <div id="offline-banner" class="banner banner-error d-none">📵 No internet — AI Assistant disabled</div>
 
     <main class="home-scroll">
-      <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px;">
 
         <!-- I AM DEAF — full-width dominant hero -->
         <button class="hero-deaf" data-nav="deaf" onclick="navigate('deaf')" style="width:100%;min-height:150px;">
@@ -977,12 +977,44 @@
           <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted);flex-shrink:0;">chevron_right</span>
         </button>
 
+        <!-- QUICK ACCESS GRID -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="home-card" onclick="navigate('gps')">
+            <span class="material-symbols-outlined home-card-icon">location_on</span>
+            <div>
+              <div class="home-card-label">Hintuan Ko</div>
+              <div class="home-card-sub">Set my stop</div>
+            </div>
+          </button>
+          <button class="home-card" onclick="navigate('fare')">
+            <span class="material-symbols-outlined home-card-icon">payments</span>
+            <div>
+              <div class="home-card-label">Bayad</div>
+              <div class="home-card-sub">Fare calculator</div>
+            </div>
+          </button>
+          <button class="home-card" onclick="navigate('route')">
+            <span class="material-symbols-outlined home-card-icon">route</span>
+            <div>
+              <div class="home-card-label">Ruta</div>
+              <div class="home-card-sub">Route reference</div>
+            </div>
+          </button>
+          <button class="home-card" onclick="navigate('ai')">
+            <span class="material-symbols-outlined home-card-icon">smart_toy</span>
+            <div>
+              <div class="home-card-label">AI Guide</div>
+              <div class="home-card-sub">Ask for directions</div>
+            </div>
+          </button>
+        </div>
+
         <!-- SIMULAN ANG BIYAHE — primary CTA -->
         <button id="start-commute-btn" class="btn-primary-sp" style="height:72px;font-size:20px;border-radius:18px;box-shadow:0 8px 32px rgba(255,184,0,.25);margin-top:2px;">
           <span class="material-symbols-outlined" style="font-size:26px">directions_bus</span>
           Simulan ang Biyahe
         </button>
-        <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:-2px;letter-spacing:.03em;">I-set ang stop mo at pamilya bago sumakay</p>
+        <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:2px;letter-spacing:.03em;">I-set ang stop mo at pamilya bago sumakay</p>
 
       </div>
     </main>
@@ -1215,6 +1247,7 @@
   <div id="screen-phrases" class="screen">
     <header class="topbar">
       <div class="d-flex align-items-center">
+        <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
         <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">SABIHIN MO</span>
       </div>
@@ -1325,6 +1358,7 @@
   <div id="screen-fare" class="screen">
     <header class="topbar">
       <div class="d-flex align-items-center">
+        <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
         <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">FARE CALCULATOR</span>
       </div>
@@ -1416,6 +1450,7 @@
   <div id="screen-route" class="screen">
     <header class="topbar">
       <div class="d-flex align-items-center">
+        <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
         <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">ROUTE REFERENCE</span>
       </div>
@@ -1443,6 +1478,7 @@
     <!-- HEADER -->
     <header class="topbar" style="flex-shrink:0">
       <div class="d-flex align-items-center">
+        <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
         <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">SET MY STOP</span>
       </div>
@@ -1647,6 +1683,7 @@
   <div id="screen-ai" class="screen">
     <header class="topbar">
       <div class="d-flex align-items-center">
+        <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
         <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">AI ASSISTANT</span>
       </div>
@@ -1742,6 +1779,7 @@
   <div id="screen-vib" class="screen">
     <header class="topbar">
       <div class="d-flex align-items-center">
+        <button class="topbar-menu drawer-open-trigger" onclick="event.stopPropagation()"><span class="material-symbols-outlined" style="font-size:26px">menu</span></button>
         <button class="topbar-back" onclick="navigate('home')"><span class="material-symbols-outlined" style="font-size:28px">arrow_back</span></button>
         <span class="topbar-title">VIBRATION SETTINGS</span>
       </div>
@@ -1912,6 +1950,7 @@
   }
 
   document.getElementById('drawer-open-btn').addEventListener('click', openDrawer);
+  document.querySelectorAll('.drawer-open-trigger').forEach(btn => btn.addEventListener('click', openDrawer));
   overlay.addEventListener('click', closeDrawer);
 
   // Drawer nav items
