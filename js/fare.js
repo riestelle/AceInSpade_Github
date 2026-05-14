@@ -4,7 +4,7 @@ let fareRouteId   = ROUTES[0].id;
 let fareFromIdx   = 0;
 let fareToIdx     = ROUTES[0].stops.length - 1;
 let fareJeepType  = 'traditional';
-let farePWD       = true;
+let farePWD       = false;
 let fareBill      = null;
 
 function initFare() {

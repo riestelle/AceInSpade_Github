@@ -341,14 +341,24 @@ function renderDeaf() {
     `<span class="material-symbols-outlined" style="font-size:16px">location_on</span>${msg.stopLabel}`;
 
   const txt = document.getElementById('deaf-stop-text');
+  const displayBtn = document.getElementById('deaf-stop-display');
   if (deafStop) {
     txt.textContent = deafStop;
     txt.style.fontSize = '36px';
     txt.style.color = 'var(--amber)';
+    if (displayBtn) {
+      displayBtn.style.borderBottomStyle = 'solid';
+      displayBtn.style.borderBottomColor = '#000';
+      displayBtn.style.animation = 'none';
+    }
   } else {
     txt.textContent = '— TAP TO SET STOP —';
     txt.style.fontSize = '22px';
-    txt.style.color = '#444';
+    txt.style.color = 'rgba(0,0,0,0.35)';
+    if (displayBtn) {
+      displayBtn.style.borderBottomStyle = 'dashed';
+      displayBtn.style.animation = 'tapHint 1.8s ease-in-out infinite';
+    }
   }
 }
 

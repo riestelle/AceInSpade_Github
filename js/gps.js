@@ -64,10 +64,14 @@ function restoreGPSUI() {
       document.getElementById('alert-active-msg').classList.remove('d-none');
       const trackingBadge = document.getElementById('home-tracking-badge');
       if (trackingBadge) trackingBadge.classList.remove('d-none');
+      const sakayBtn = document.getElementById('sakay-na-btn');
+      if (sakayBtn) sakayBtn.classList.remove('d-none');
     } else {
       alertBtn.disabled = false;
       alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> SET ALERT';
       document.getElementById('alert-active-msg').classList.add('d-none');
+      const sakayBtn = document.getElementById('sakay-na-btn');
+      if (sakayBtn) sakayBtn.classList.add('d-none');
     }
   }
   if (gpsCurrentPosition) {
@@ -1115,6 +1119,8 @@ function cancelSelectedStop() {
   }
   const trackingBadge = document.getElementById('home-tracking-badge');
   if (trackingBadge) trackingBadge.classList.add('d-none');
+  const sakayBtn = document.getElementById('sakay-na-btn');
+  if (sakayBtn) sakayBtn.classList.add('d-none');
   hideGPSPermissionButton();
 }
 
@@ -1134,7 +1140,11 @@ document.getElementById('set-alert-btn').addEventListener('click', () => {
   alertBtn.disabled = true;
   alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> ALERT ACTIVE';
   document.getElementById('alert-active-msg').classList.remove('d-none');
-  
+
+  // Show SAKAY NA button now that alert is active
+  const sakayBtn = document.getElementById('sakay-na-btn');
+  if (sakayBtn) sakayBtn.classList.remove('d-none');
+
   // Show tracking indicator on home screen
   const trackingBadge = document.getElementById('home-tracking-badge');
   if (trackingBadge) trackingBadge.classList.remove('d-none');

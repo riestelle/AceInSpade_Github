@@ -589,6 +589,10 @@
       from { background: #000; color: white; }
       to   { background: #fff; color: #000; }
     }
+    @keyframes tapHint {
+      0%, 100% { border-bottom-color: rgba(0,0,0,0.15); }
+      50%       { border-bottom-color: rgba(0,0,0,0.55); }
+    }
 
     /* ── DEAF CARD ────────────────────────────────────────────────── */
     .deaf-screen { background: var(--bg); }
@@ -1156,8 +1160,8 @@
           <p id="deaf-stop-label" style="font-size:9px; font-weight:800; letter-spacing:.22em; text-transform:uppercase; color:#000000; opacity:0.5; margin:0 0 6px; display:flex; align-items:center; gap:4px;">
             BABABA AKO SA:
           </p>
-          <button id="deaf-stop-display" style="background:transparent; border:none; border-bottom:2.5px solid #000000; width:100%; display:flex; align-items:center; padding:4px 0; text-align:left;">
-            <span id="deaf-stop-text" style="font-size:19px; font-weight:900; color:rgba(0,0,0,0.3); text-transform:uppercase; line-height:1.2;">— TAP TO SET —</span>
+          <button id="deaf-stop-display" style="background:transparent; border:none; border-bottom:2.5px dashed rgba(0,0,0,0.35); width:100%; display:flex; align-items:center; padding:4px 0; text-align:left; animation:tapHint 1.8s ease-in-out infinite;">
+            <span id="deaf-stop-text" style="font-size:19px; font-weight:900; color:rgba(0,0,0,0.35); text-transform:uppercase; line-height:1.2;">— TAP TO SET STOP —</span>
           </button>
           <input id="deaf-stop-input" class="d-none"
               style="background:transparent; border:none; border-bottom:2.5px solid #000000; color:#000000; font-size:19px; font-weight:900; text-align:left; text-transform:uppercase; padding:4px 0; width:100%; outline:none; font-family:inherit;" placeholder="I-TYPE ANG STOP..." />
@@ -1340,13 +1344,19 @@
         <p id="pf-main" style="font-size:56px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;text-align:center;line-height:1.1;color:white;word-break:break-word"></p>
         <p id="pf-sub" style="font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#888"></p>
       </div>
-      <div style="position:absolute;bottom:24px;left:0;right:0;display:flex;justify-content:center;gap:24px;align-items:center">
-        <button id="pf-speak" style="width:64px;height:64px;border-radius:50%;background:#111;border:3px solid var(--amber);color:var(--amber);display:flex;align-items:center;justify-content:center" title="Read translated subtitle aloud">
-          <span class="material-symbols-outlined" style="font-size:28px">volume_up</span>
-        </button>
-        <button id="pf-close" style="width:64px;height:64px;border-radius:50%;background:#111;border:3px solid #333;color:white;display:flex;align-items:center;justify-content:center">
-          <span class="material-symbols-outlined" style="font-size:28px">close</span>
-        </button>
+      <div style="position:absolute;bottom:24px;left:0;right:0;display:flex;justify-content:center;gap:24px;align-items:flex-end">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <span style="font-size:10px;font-weight:800;color:var(--amber);text-transform:uppercase;letter-spacing:.12em;opacity:.8">Para sa Driver</span>
+          <button id="pf-speak" style="width:64px;height:64px;border-radius:50%;background:#111;border:3px solid var(--amber);color:var(--amber);display:flex;align-items:center;justify-content:center" title="Read phrase aloud for the driver to hear">
+            <span class="material-symbols-outlined" style="font-size:28px">volume_up</span>
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <span style="font-size:10px;font-weight:800;color:#666;text-transform:uppercase;letter-spacing:.12em;opacity:.8">Isara</span>
+          <button id="pf-close" style="width:64px;height:64px;border-radius:50%;background:#111;border:3px solid #333;color:white;display:flex;align-items:center;justify-content:center">
+            <span class="material-symbols-outlined" style="font-size:28px">close</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1559,7 +1569,7 @@
             <span class="material-symbols-outlined" style="font-size:22px">notifications_active</span>
             SET ALERT
           </button>
-          <button id="sakay-na-btn" class="btn-primary-sp" style="height:64px;margin-top:8px;background:var(--green);color:#fff;border:none">
+          <button id="sakay-na-btn" class="btn-primary-sp d-none" style="height:64px;margin-top:8px;background:var(--green);color:#fff;border:none">
             <span class="material-symbols-outlined" style="font-size:22px">directions_bus</span>
             SAKAY NA — SIMULAN ANG COMMUTE
           </button>
