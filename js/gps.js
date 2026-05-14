@@ -433,33 +433,7 @@ async function fetchOSMSearchResults(query, signal) {
     lon: parseFloat(place.lon),
     routeId: null,
     source: 'OpenStreetMap',
-    osmData: place,
   })) : [];
-}
-
-async function reverseGeocodeLatLng(lat, lon) {
-  try {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=18&addressdetails=1`;
-    const response = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (!response.ok) return null;
-    return await response.json();
-  } catch (e) {
-    return null;
-  }
-}
-
-function formatReverseGeocodeAddress(data) {
-  if (!data || !data.address) return null;
-  const address = data.address;
-  const parts = [];
-  if (address.road) parts.push(address.road);
-  if (address.suburb && !parts.includes(address.suburb)) parts.push(address.suburb);
-  if (address.neighbourhood && !parts.includes(address.neighbourhood)) parts.push(address.neighbourhood);
-  if (address.city && !parts.includes(address.city)) parts.push(address.city);
-  else if (address.town && !parts.includes(address.town)) parts.push(address.town);
-  else if (address.village && !parts.includes(address.village)) parts.push(address.village);
-  if (address.state && !parts.includes(address.state)) parts.push(address.state);
-  return parts.join(', ') || data.display_name || null;
 }
 
 function mergeSearchResults(localResults, osmResults, query) {
@@ -542,8 +516,8 @@ function showPreviewPopup(result) {
   const popup = L.popup({ closeButton: true, maxWidth: 260, className: 'gps-preview-popup' })
     .setLatLng([result.lat, result.lon])
     .setContent(`
-      <div class="gps-preview-title" style="font-weight:800;font-size:14px;margin-bottom:8px;text-transform:uppercase;">${result.name}</div>
-      <div class="gps-preview-subtitle" style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">${result.routeId ? getRouteShortCode(result.routeId) : (result.type === 'osm' ? 'OpenStreetMap' : '')}</div>
+      <div style="font-weight:800;font-size:14px;margin-bottom:8px;text-transform:uppercase;">${result.name}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">${result.routeId ? getRouteShortCode(result.routeId) : (result.type === 'osm' ? 'OpenStreetMap' : '')}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
         <button class="gps-popup-btn gps-popup-confirm" style="flex:1;min-width:120px;height:38px;background:var(--amber);border:none;border-radius:10px;color:#271900;font-weight:800">CONFIRM</button>
         <button class="gps-popup-btn gps-popup-cancel" style="flex:1;min-width:120px;height:38px;border:1px solid var(--outline-var);border-radius:10px;background:transparent;color:var(--text);font-weight:800">BACK</button>
@@ -551,40 +525,14 @@ function showPreviewPopup(result) {
     `);
 
   gpsPreviewMarker.bindPopup(popup).openPopup();
-  gpsPreviewMarker.on('popupopen', async () => {
+  gpsPreviewMarker.on('popupopen', () => {
     const container = popup.getElement();
     if (!container) return;
-    const titleEl = container.querySelector('.gps-preview-title');
-    const subtitleEl = container.querySelector('.gps-preview-subtitle');
     const confirmBtn = container.querySelector('.gps-popup-confirm');
     const cancelBtn = container.querySelector('.gps-popup-cancel');
-
-    if (result.type === 'custom' && !result.address) {
-      const reverseData = await reverseGeocodeLatLng(result.lat, result.lon);
-      const address = formatReverseGeocodeAddress(reverseData);
-      if (address) {
-        result.address = address;
-        result.name = address;
-        if (titleEl) titleEl.textContent = address;
-        if (subtitleEl) subtitleEl.textContent = 'Custom Pin';
-        syncGPSSearchInput(address);
-      }
-    }
-
     if (confirmBtn) {
-      confirmBtn.onclick = async () => {
-        if (result.type === 'custom') {
-          if (!result.address) {
-            const reverseData = await reverseGeocodeLatLng(result.lat, result.lon);
-            const address = formatReverseGeocodeAddress(reverseData);
-            if (address) {
-              result.address = address;
-              result.name = address;
-              syncGPSSearchInput(address);
-            }
-          }
-          selectCustomPin(result);
-        } else if (result.type === 'osm') {
+      confirmBtn.onclick = () => {
+        if (result.type === 'osm') {
           selectOSMPlace(result);
         } else {
           selectGPSStop(result.id);
@@ -611,39 +559,6 @@ function previewSearchResult(result) {
   panMapToStop(result);
   showPreviewPopup(result);
   updateStopMarkers();
-}
-
-function selectCustomPin(place) {
-  gpsSelectedStop = {
-    id: place.id,
-    name: place.name,
-    lat: place.lat,
-    lon: place.lon,
-    routeId: null,
-    type: 'custom',
-  };
-
-  syncGPSSearchInput(gpsSelectedStop.name);
-  if (gpsPreviewMarker) {
-    gpsPreviewMarker.remove();
-    gpsPreviewMarker = null;
-  }
-  document.getElementById('gps-preview-card').classList.add('d-none');
-  document.getElementById('selected-stop-card').classList.remove('d-none');
-  document.getElementById('selected-stop-name').textContent = gpsSelectedStop.name;
-  document.getElementById('selected-stop-route').textContent = 'Custom Pin';
-  updateStopMarkers();
-
-  if (typeof saveStorage === 'function') {
-    saveStorage('family_selected_stop', gpsSelectedStop.name);
-  }
-  saveGPSState();
-
-  const alertBtn = document.getElementById('set-alert-btn');
-  if (alertBtn) {
-    alertBtn.disabled = false;
-    alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> SET ALERT';
-  }
 }
 
 function selectOSMPlace(place) {
