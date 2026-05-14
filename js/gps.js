@@ -7,6 +7,7 @@ let gpsLiveWatchId    = null;
 let gpsLiveMarker     = null;
 let gpsLiveAccuracy   = null;
 let gpsPreviewMarker  = null;
+let gpsPreviewStop    = null;
 let gpsProgressStartDistance = null;
 let gpsPermissionRequested = false;
 let gpsPermissionRetryTimeout = null;
@@ -690,14 +691,58 @@ function showPreviewPopup(result) {
           gpsPreviewMarker.remove();
           gpsPreviewMarker = null;
         }
+        gpsPreviewStop = null;
+        if (!gpsSelectedStop) {
+          renderPreviewSelectedStop(null);
+        }
       };
     }
   });
 }
 
+function renderPreviewSelectedStop(result) {
+  const selectedStopCard = document.getElementById('selected-stop-card');
+  if (!selectedStopCard) return;
+
+  if (!result) {
+    selectedStopCard.classList.add('d-none');
+    return;
+  }
+
+  selectedStopCard.classList.remove('d-none');
+  document.getElementById('selected-stop-name').textContent = result.name;
+  document.getElementById('selected-stop-route').textContent =
+    result.type === 'osm'
+      ? 'OpenStreetMap'
+      : result.routeId
+        ? getRouteShortCode(result.routeId)
+        : result.address
+          ? 'Dropped Pin'
+          : 'Preview Stop';
+
+  const distanceEl = document.getElementById('selected-stop-distance');
+  if (gpsCurrentPosition && result.lat && result.lon && distanceEl) {
+    const dist = haversine(gpsCurrentPosition.latitude, gpsCurrentPosition.longitude, result.lat, result.lon);
+    distanceEl.textContent = dist < 1000 ? `${Math.round(dist)}m away` : `${(dist / 1000).toFixed(2)}km away`;
+  } else if (distanceEl) {
+    distanceEl.textContent = '';
+  }
+
+  const progressWrap = document.getElementById('gps-progress-wrap');
+  if (progressWrap) progressWrap.classList.add('d-none');
+
+  const alertBtn = document.getElementById('set-alert-btn');
+  if (alertBtn) {
+    alertBtn.disabled = false;
+    alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> SET ALERT';
+  }
+}
+
 function previewSearchResult(result) {
   collapseExpandedSearch();
+  gpsPreviewStop = result;
   syncGPSSearchInput(result.name);
+  renderPreviewSelectedStop(result);
   document.getElementById('gps-preview-card').classList.add('d-none');
   panMapToStop(result);
   showPreviewPopup(result);
@@ -705,6 +750,7 @@ function previewSearchResult(result) {
 }
 
 async function selectCustomPin(place) {
+  gpsPreviewStop = null;
   gpsSelectedStop = {
     id: place.id,
     name: place.name,
@@ -750,6 +796,7 @@ async function selectCustomPin(place) {
 }
 
 function selectOSMPlace(place) {
+  gpsPreviewStop = null;
   gpsSelectedStop = {
     id: place.id,
     name: place.name,
@@ -1307,6 +1354,7 @@ function panMapToStop(stop) {
 function selectGPSStop(id) {
   const stop = STOPS_DB.find(s => s.id === id);
   if (!stop) return;
+  gpsPreviewStop = null;
   collapseExpandedSearch();
   gpsSelectedStop = stop;
   syncGPSSearchInput(stop.name);
