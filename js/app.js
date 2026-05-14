@@ -471,6 +471,11 @@ document.getElementById('route-search').addEventListener('input', function() {
 });
 
 function initAlert(stopName) {
+  // Hide install banners so they don't push the alert screen content
+  ['install-banner', 'ios-install-banner'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
   // Try to recover stop name if not passed in
   if (!stopName && typeof gpsSelectedStop !== 'undefined' && gpsSelectedStop && gpsSelectedStop.name) {
     stopName = gpsSelectedStop.name;
@@ -514,6 +519,12 @@ function cleanupAlert() {
   if (alertWakeLock) { alertWakeLock.release().catch(() => {}); alertWakeLock = null; }
   const alertEl = document.getElementById('screen-alert');
   if (alertEl) alertEl.classList.remove('active');
+  // Restore install banners if they were previously visible
+  const installBanner = document.getElementById('install-banner');
+  if (installBanner && installBanner._wasVisible) {
+    installBanner.style.display = 'flex';
+    delete installBanner._wasVisible;
+  }
 }
 
 document.getElementById('alert-dismiss').addEventListener('click', () => {
