@@ -1106,7 +1106,7 @@
   <div id="screen-deaf" class="screen deaf-screen" style="min-height:100dvh; flex-direction:column; font-family: sans-serif;">
 
   <div class="deaf-top" style="padding: 15px 20px; display:flex; justify-content:space-between; align-items:center;">
-    <button class="btn p-0 d-flex align-items-center gap-2" style="background:none; border:none; color:var(--text-var); font-weight:700; font-size:14px" onclick="navigate('home')">
+    <button class="btn p-0 d-flex align-items-center gap-2" style="background:none; border:none; color:var(--text-var); font-weight:700; font-size:14px" onclick="goBack()">
       <span class="material-symbols-outlined" style="font-size:20px">arrow_back</span>BACK
     </button>
     <div class="d-flex gap-2">
@@ -1201,7 +1201,7 @@
     </div></div>
 
   <div class="p-4">
-    <button class="btn-ghost w-100" onclick="navigate('home')" style="background:rgba(255,255,255,0.05); color:#ffffff; border:1px solid rgba(255,255,255,0.2); height:55px; border-radius:15px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight: 700; font-size: 15px;">
+    <button class="btn-ghost w-100" onclick="goBack()" style="background:rgba(255,255,255,0.05); color:#ffffff; border:1px solid rgba(255,255,255,0.2); height:55px; border-radius:15px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight: 700; font-size: 15px;">
       <span class="material-symbols-outlined">close</span>CLOSE
     </button>
   </div>
@@ -1746,7 +1746,7 @@
   ════════════════════════════════════════════════════════════════ -->
   <div id="screen-family" class="screen">
     <header class="topbar">
-      <button class="btn p-0 d-flex align-items-center gap-2" style="background:none;border:none;color:#888;font-weight:700;font-size:14px" onclick="navigate('home')">
+      <button class="btn p-0 d-flex align-items-center gap-2" style="background:none;border:none;color:#888;font-weight:700;font-size:14px" onclick="goBack()">
         <span class="material-symbols-outlined" style="font-size:20px">arrow_back</span> Bumalik
       </button>
       <span style="font-weight:900;font-size:16px;color:#feb700;letter-spacing:.5px">👨‍👩‍👧 PAMILYA</span>
@@ -2068,6 +2068,9 @@ function initSheetStep2() {
 
   const url = (typeof getFamilyShareURL === 'function') ? getFamilyShareURL() : window.location.href;
   if (linkEl) linkEl.textContent = url;
+
+  // Auto-start sharing as soon as step 2 is shown
+  if (typeof familyStartSharingIfNeeded === 'function') familyStartSharingIfNeeded();
 
   function updateSharingStatus() {
     const active = (typeof familyIsWatching !== 'undefined') && familyIsWatching;
