@@ -618,20 +618,16 @@ function showPreviewPopup(result) {
 
 function previewSearchResult(result) {
   collapseExpandedSearch();
+  document.getElementById('gps-dropdown').classList.add('d-none');
   syncGPSSearchInput(result.name);
-  gpsSelectedStop = result;
-  const emptyCard = document.getElementById('gps-empty-card');
-  if (emptyCard) emptyCard.classList.add('d-none');
-  document.getElementById('selected-stop-card').classList.remove('d-none');
-  document.getElementById('selected-stop-name').textContent = result.name;
-  document.getElementById('selected-stop-route').textContent = result.routeId ? getRouteShortCode(result.routeId) : (result.type === 'osm' ? 'OpenStreetMap' : 'Custom Pin');
-  updateGPSActionButton();
-  document.getElementById('gps-preview-card').classList.add('d-none');
-  panMapToStop(result);
-  showPreviewPopup(result);
-  updateStopMarkers();
-  if (gpsCurrentPosition) {
-    updateDistanceDisplay();
+  if (result.type === 'custom') {
+    selectCustomPin(result);
+  } else if (result.type === 'osm') {
+    selectOSMPlace(result);
+  } else if (result.id) {
+    selectGPSStop(result.id);
+  } else {
+    selectCustomPin(result);
   }
 }
 
@@ -660,6 +656,7 @@ async function selectCustomPin(place) {
     gpsPreviewMarker.remove();
     gpsPreviewMarker = null;
   }
+  document.getElementById('gps-dropdown').classList.add('d-none');
   document.getElementById('gps-preview-card').classList.add('d-none');
   const emptyCard = document.getElementById('gps-empty-card');
   if (emptyCard) emptyCard.classList.add('d-none');
@@ -693,6 +690,7 @@ function selectOSMPlace(place) {
   };
 
   syncGPSSearchInput(gpsSelectedStop.name);
+  document.getElementById('gps-dropdown').classList.add('d-none');
   document.getElementById('gps-preview-card').classList.add('d-none');
   const emptyCard = document.getElementById('gps-empty-card');
   if (emptyCard) emptyCard.classList.add('d-none');
@@ -1241,6 +1239,7 @@ function selectGPSStop(id) {
   collapseExpandedSearch();
   gpsSelectedStop = stop;
   syncGPSSearchInput(stop.name);
+  document.getElementById('gps-dropdown').classList.add('d-none');
   const emptyCard = document.getElementById('gps-empty-card');
   if (emptyCard) emptyCard.classList.add('d-none');
   document.getElementById('gps-preview-card').classList.add('d-none');
