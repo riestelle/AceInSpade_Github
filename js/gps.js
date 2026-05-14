@@ -539,6 +539,17 @@ function selectOSMPlace(place) {
     alertBtn.disabled = false;
     alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> SET ALERT';
   }
+
+  // Return to the start sheet at step 2 if we came from the sheet flow
+  if (window._fromSheet) {
+    window._fromSheet = false;
+    setTimeout(() => {
+      if (typeof openStartSheet === 'function' && typeof sheetGoTo === 'function') {
+        openStartSheet();
+        sheetGoTo(2);
+      }
+    }, 150);
+  }
 }
 
 // Score search results by relevance
@@ -1091,6 +1102,18 @@ function selectGPSStop(id) {
   alertBtn.textContent = '';
   alertBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">notifications_active</span> SET ALERT';
   vibrate(40);
+
+  // Return to the start sheet at step 2 if we came from the sheet flow
+  if (window._fromSheet) {
+    window._fromSheet = false;
+    setTimeout(() => {
+      if (typeof navigate === 'function') navigate('gps'); // ensure we're on GPS first
+      if (typeof openStartSheet === 'function' && typeof sheetGoTo === 'function') {
+        openStartSheet();
+        sheetGoTo(2);
+      }
+    }, 150);
+  }
 }
 
 function cancelSelectedStop() {
