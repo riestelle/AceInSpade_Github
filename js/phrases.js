@@ -192,44 +192,16 @@ if (window.speechSynthesis) {
   cachedVoices = window.speechSynthesis.getVoices();
 }
 
-function renderTTSVoiceStatus({ fil = false, en = false } = {}) {
-  const statusEl = document.getElementById('tts-support-status');
-  const demoBtn = document.getElementById('tts-demo-btn');
-  let message = 'No Filipino or English TTS voices detected.';
-
-  if (fil && en) {
-    message = 'Filipino and English TTS voices are available.';
-  } else if (fil) {
-    message = 'Filipino TTS available; English voice missing.';
-  } else if (en) {
-    message = 'English TTS available; Filipino voice missing.';
-  }
-
-  if (statusEl) statusEl.textContent = message;
-  if (demoBtn) demoBtn.disabled = !fil && !en;
-}
-
 function checkTTSVoiceSupport() {
-  const statusEl = document.getElementById('tts-support-status');
-  const demoBtn = document.getElementById('tts-demo-btn');
-
   if (!window.speechSynthesis) {
-    if (statusEl) statusEl.textContent = 'Speech synthesis is not supported by this browser.';
-    if (demoBtn) demoBtn.disabled = true;
     showTTSVoiceWarning({ synthAvailable: false, fil: false, en: false });
     return;
   }
 
   const voices = getAvailableVoices();
-  if (!voices || voices.length === 0) {
-    if (statusEl) statusEl.textContent = 'Checking available TTS voices...';
-    if (demoBtn) demoBtn.disabled = true;
-    return;
-  }
+  if (!voices || voices.length === 0) return;
 
   const support = getTTSVoiceSupportStatus(voices);
-  renderTTSVoiceStatus(support);
-
   if (!support.fil && !support.en) {
     showTTSVoiceWarning({ synthAvailable: true, fil: false, en: false });
   } else if (phraseLang === 'fil' && !support.fil) {
@@ -237,40 +209,6 @@ function checkTTSVoiceSupport() {
   } else if (phraseLang === 'en' && !support.en) {
     showTTSVoiceWarning({ synthAvailable: true, fil: support.fil, en: false });
   }
-}
-
-function speakTTSDemo() {
-  if (!window.speechSynthesis) {
-    alert('Speech synthesis is not available in this browser.');
-    return;
-  }
-
-  const voices = getAvailableVoices();
-  const support = getTTSVoiceSupportStatus(voices);
-  if (!support.fil && !support.en) {
-    alert('No Filipino or English TTS voice is available for demo playback.');
-    return;
-  }
-
-  const playbackLang = phraseLang === 'fil' ? 'fil' : 'en';
-  const demoText = playbackLang === 'fil' ? 'Magandang araw po.' : 'Good day.';
-  const utterance = new SpeechSynthesisUtterance(demoText);
-  utterance.lang = playbackLang === 'fil' ? 'tl-PH' : 'en-PH';
-  utterance.rate = 0.85;
-  utterance.pitch = 1;
-
-  const selectedVoice = findBestVoiceForLanguage(voices, playbackLang);
-  if (selectedVoice) {
-    utterance.voice = selectedVoice;
-  }
-
-  utterance.onstart = startPhraseVibration;
-  utterance.onend = clearPhraseVibration;
-  utterance.onerror = clearPhraseVibration;
-
-  window.speechSynthesis.cancel();
-  clearPhraseVibration();
-  window.speechSynthesis.speak(utterance);
 }
 
 function initPhrases() {
@@ -281,10 +219,7 @@ function initPhrases() {
   }
   document.getElementById('phrases-lang-btn').textContent = getPhraseDirectionLabel(phraseLang);
   renderPhraseList();
-  const statusEl = document.getElementById('tts-support-status');
-  const demoBtn = document.getElementById('tts-demo-btn');
-  if (statusEl) statusEl.textContent = 'Checking available TTS voices...';
-  if (demoBtn) demoBtn.disabled = true;
+
   checkTTSVoiceSupport();
 }
 
@@ -530,15 +465,12 @@ function speakPhraseWithTTS(text) {
 }
 
 document.getElementById('pf-speak').addEventListener('click', speakPhrase);
-document.getElementById('tts-demo-btn').addEventListener('click', speakTTSDemo);
 
 document.getElementById('phrases-lang-btn').addEventListener('click', () => {
   phraseLang = phraseLang === 'fil' ? 'en' : 'fil';
   saveStorage('phrase_lang', phraseLang);
   document.getElementById('phrases-lang-btn').textContent = getPhraseDirectionLabel(phraseLang);
   renderPhraseList();
-  renderTTSVoiceStatus(getTTSVoiceSupportStatus(getAvailableVoices()));
-  checkTTSVoiceSupport();
   vibrate(30);
 });
 

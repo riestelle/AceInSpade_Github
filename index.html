@@ -233,21 +233,6 @@
     .btn-primary-sp:disabled { background: var(--outline-var); color: var(--text-muted); cursor: not-allowed; }
     .btn-primary-sp:active:not(:disabled) { transform: scale(.96); opacity: .9; }
 
-    .gps-home-cta-indicator {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #34d399;
-      box-shadow: 0 0 0 0 rgba(52,211,153,0.7);
-      animation: gps-home-pulse 1.6s infinite ease-out;
-      flex-shrink: 0;
-    }
-    @keyframes gps-home-pulse {
-      0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(52,211,153,0); }
-      100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
-    }
-
     .btn-ghost {
       height: 56px; border-radius: 12px;
       background: var(--surface); border: 1px solid var(--outline);
@@ -654,11 +639,6 @@
     .gps-search-expanded .search-wrap { background: rgba(255,255,255,0.95); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
     .gps-search-expanded .input-sp { background: transparent; border: none; }
 
-    .gps-progress-wrap { margin-top: 12px; }
-    .gps-progress-track { width: 100%; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); overflow: hidden; }
-    .gps-progress-fill { width: 0; height: 100%; background: linear-gradient(90deg, #f6c700, #f59e0b); transition: width .25s ease; }
-    .gps-progress-label { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 12px; color: var(--text-muted); }
-
     .help-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
     .help-modal { background: var(--bg); border: 2px solid var(--amber); border-radius: 12px; padding: 24px; max-width: 340px; max-height: 80dvh; overflow-y: auto; }
     .help-modal-title { font-size: 16px; font-weight: 900; color: var(--amber); margin-bottom: 12px; text-transform: uppercase; }
@@ -992,6 +972,13 @@
 
         <!-- QUICK ACCESS GRID -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="home-card" onclick="navigate('gps')">
+            <span class="material-symbols-outlined home-card-icon">location_on</span>
+            <div>
+              <div class="home-card-label">Hintuan Ko</div>
+              <div class="home-card-sub">Set my stop</div>
+            </div>
+          </button>
           <button class="home-card" onclick="navigate('fare')">
             <span class="material-symbols-outlined home-card-icon">payments</span>
             <div>
@@ -1013,14 +1000,12 @@
               <div class="home-card-sub">Ask for directions</div>
             </div>
           </button>
-          <div></div>
         </div>
 
         <!-- SIMULAN ANG BIYAHE — primary CTA -->
-        <button id="start-commute-btn" class="btn-primary-sp" style="height:72px;font-size:20px;border-radius:18px;box-shadow:0 8px 32px rgba(255,184,0,.25);margin-top:2px;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;">
+        <button id="start-commute-btn" class="btn-primary-sp" style="height:72px;font-size:20px;border-radius:18px;box-shadow:0 8px 32px rgba(255,184,0,.25);margin-top:2px;">
           <span class="material-symbols-outlined" style="font-size:26px">directions_bus</span>
-          <span id="gps-home-cta-label">Hintuan Ko</span>
-          <span id="gps-home-cta-indicator" class="gps-home-cta-indicator d-none" title="Stop active"></span>
+          Simulan ang Biyahe
         </button>
         <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:2px;letter-spacing:.03em;">I-set ang stop mo at pamilya bago sumakay</p>
 
@@ -1215,7 +1200,7 @@
   ════════════════════════════════════════════════════════════════ -->
   <div id="screen-fsl" class="screen fsl-screen" style="flex-direction:column;">
     <div style="background:var(--bg-alt);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--outline-var);flex-shrink:0">
-      <button style="background:none;border:none;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700" onclick="goBack()">
+      <button style="background:none;border:none;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700" onclick="navigate('deaf')">
         <span class="material-symbols-outlined" style="font-size:24px">arrow_back</span>BACK
       </button>
       <span style="color:var(--amber);font-weight:800;font-size:16px;text-transform:uppercase">FSL Reference</span>
@@ -1276,10 +1261,6 @@
       <button id="phrases-lang-btn" class="tag-mono" style="background:none;border:2px solid #333;color:#ccc;padding:7px 14px;border-radius:8px;font-weight:700;font-size:13px;text-transform:uppercase">FIL</button>
     </header>
     <main class="scroll-main" style="padding:16px 0">
-      <div class="tts-status-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px 12px;">
-        <span id="tts-support-status" style="font-size:12px;color:var(--text-muted);flex:1">Checking TTS voices...</span>
-        <button id="tts-demo-btn" class="btn-outline-amber" style="min-width:130px;height:42px;font-size:12px;padding:0 12px;">TTS Demo</button>
-      </div>
       <p class="tag-mono px-4 mb-3" style="color:var(--text-muted)">Tap a phrase to show it full-screen to the driver or passenger</p>
 
       <!-- Static phrase rows with icons -->
@@ -1545,10 +1526,6 @@
         <p id="selected-stop-name" style="font-size:28px;font-weight:900;color:var(--text);text-transform:uppercase;line-height:1.1"></p>
         <p id="selected-stop-route" style="font-size:13px;color:var(--text-muted);margin-top:4px"></p>
         <p id="selected-stop-distance" style="font-size:14px;color:var(--amber);margin-top:8px;font-weight:700"></p>
-        <div id="gps-progress-wrap" class="gps-progress-wrap d-none">
-          <div class="gps-progress-track"><div id="gps-progress-fill" class="gps-progress-fill"></div></div>
-          <div class="gps-progress-label"><span id="gps-progress-state">Approaching stop</span><span id="gps-progress-distance">--</span></div>
-        </div>
         <div class="mt-3">
           <div style="display:flex;gap:8px;margin-bottom:12px">
             <button id="gps-destination-guide-btn" class="btn-ghost" style="flex:1;height:52px;border:1px solid var(--amber);color:var(--amber);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 4px">
@@ -1563,10 +1540,6 @@
           <button id="set-alert-btn" class="btn-primary-sp" style="height:64px">
             <span class="material-symbols-outlined" style="font-size:22px">notifications_active</span>
             SET ALERT
-          </button>
-          <button id="cancel-alert-btn" class="btn-ghost d-none" style="height:64px;margin-top:8px;border:1px solid #ef4444;color:#ef4444;background:transparent">
-            <span class="material-symbols-outlined" style="font-size:22px">cancel</span>
-            CANCEL ALERT
           </button>
           <button id="sakay-na-btn" class="btn-primary-sp d-none" style="height:64px;margin-top:8px;background:var(--green);color:#fff;border:none">
             <span class="material-symbols-outlined" style="font-size:22px">directions_bus</span>
