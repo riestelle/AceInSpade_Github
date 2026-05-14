@@ -581,19 +581,15 @@
       flex-direction: column;
       align-items: center; justify-content: space-between;
       padding: 40px 24px 0;
-      position: relative;
     }
-    .alert-screen.active::before {
-      content: '';
-      position: absolute; inset: 0;
-      animation: alertpulse 0.6s ease-in-out infinite alternate;
-      pointer-events: none;
-      z-index: 0;
+    .alert-screen.active {
+      animation: alertpulse 0.8s ease-in-out infinite alternate;
     }
-    .alert-screen > * { position: relative; z-index: 1; }
+    /* Buttons inside must never be blocked by animation */
+    .alert-screen button { position: relative; z-index: 10; touch-action: manipulation; }
     @keyframes alertpulse {
-      from { background: rgba(0,0,0,0); }
-      to   { background: rgba(255,255,255,0.15); }
+      from { background: #000; }
+      to   { background: #1a1a1a; }
     }
     @keyframes tapHint {
       0%, 100% { border-bottom-color: rgba(0,0,0,0.15); }
@@ -1047,7 +1043,7 @@
         <p style="font-size:10px;font-weight:800;color:var(--amber);letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px;">Hakbang 1 ng 3</p>
         <p style="font-size:22px;font-weight:900;color:white;margin-bottom:4px;">Saan ka bababa?</p>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.5;">I-set ang iyong hintuan para malaman ng app kung kailan ka dapat bumaba.</p>
-        <button onclick="closeStartSheet(); if(typeof navigate==='function') navigate('gps');"
+        <button onclick="closeStartSheet(); window._returnToSheetStep2=true; if(typeof navigate==='function') navigate('gps');"
           class="btn-primary-sp" style="height:64px;font-size:18px;margin-bottom:12px;">
           <span class="material-symbols-outlined" style="font-size:24px">location_on</span>
           Pumili ng Hintuan
@@ -1724,7 +1720,7 @@
       <!-- Big Para Po button to show the driver -->
       <button id="alert-para-po-btn"
         onclick="(function(){ if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]); var pf=document.getElementById('phrase-fullscreen'); var pfMain=document.getElementById('pf-main'); var pfSub=document.getElementById('pf-sub'); var pfImg=document.getElementById('pf-icon-img'); if(pf&&pfMain){ pfMain.textContent='Para po!'; if(pfSub) pfSub.textContent='Please stop here!'; if(pfImg){pfImg.src='https://cdn-icons-png.flaticon.com/128/9125/9125142.png';pfImg.style.display='block';} pf.classList.remove('d-none'); pf.style.background='#000'; } })()"
-        style="width:100%;height:80px;background:var(--amber);border:none;border-radius:18px;font-size:26px;font-weight:900;color:#1a1000;text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 8px 32px rgba(255,184,0,.4);cursor:pointer;">
+        style="width:100%;height:80px;background:var(--amber);border:none;border-radius:18px;font-size:26px;font-weight:900;color:#1a1000;text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 8px 32px rgba(255,184,0,.4);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;position:relative;z-index:10;">
         <span class="material-symbols-outlined" style="font-size:32px">back_hand</span>PARA PO!
       </button>
       <p style="font-size:14px;color:#aaa;">I-tap para ipakita sa driver</p>
@@ -2213,6 +2209,16 @@ document.addEventListener('DOMContentLoaded', function() {
   const _origNav = window.navigate;
   window.navigate = function(screen, params, skipHistory) {
     if (screen === 'commute') syncCommuteDashboard();
+    // If user set a stop and we're returning home, reopen sheet at step 2
+    if (screen === 'home' && window._returnToSheetStep2 && typeof gpsSelectedStop !== 'undefined' && gpsSelectedStop) {
+      window._returnToSheetStep2 = false;
+      if (typeof _origNav === 'function') _origNav(screen, params, skipHistory);
+      setTimeout(() => {
+        if (typeof openStartSheet === 'function') openStartSheet();
+        if (typeof sheetGoTo === 'function') sheetGoTo(2);
+      }, 100);
+      return;
+    }
     if (typeof _origNav === 'function') _origNav(screen, params, skipHistory);
   };
 });
