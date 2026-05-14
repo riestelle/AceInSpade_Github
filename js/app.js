@@ -224,7 +224,7 @@ function getRouteShortCode(routeId) {
 }
 
 // Screens that should never be pushed to the back-stack
-const NO_HISTORY_SCREENS = new Set(['home', 'alert']);
+const NO_HISTORY_SCREENS = new Set(['alert']);
 
 function goBack() {
   // Pop the history stack; fall back to home if empty
@@ -248,7 +248,7 @@ function navigate(screenId, params = {}, skipHistory = false) {
     }
   }
 
-  // Push current screen to history unless going home, or skipHistory
+  // Push current screen to history unless it's an alert screen, or skipHistory
   if (!skipHistory && !NO_HISTORY_SCREENS.has(screenId) && currentScreen !== screenId) {
     navHistory.push(currentScreen);
   }
@@ -471,6 +471,13 @@ document.getElementById('route-search').addEventListener('input', function() {
 });
 
 function initAlert(stopName) {
+  // Try to recover stop name if not passed in
+  if (!stopName && typeof gpsSelectedStop !== 'undefined' && gpsSelectedStop && gpsSelectedStop.name) {
+    stopName = gpsSelectedStop.name;
+  }
+  if (!stopName && typeof deafStop !== 'undefined' && deafStop) {
+    stopName = deafStop;
+  }
   alertStopName = stopName;
   document.getElementById('alert-stop-name').textContent = stopName || 'YOUR STOP';
   vibrate('signal');
